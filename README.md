@@ -1,50 +1,49 @@
-# Welcome to your Expo app 👋
+# 강원대 카풀 Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## project structure
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+- **파일 이름은 snake case**
 
 ```bash
-npm run reset-project
+ㄴ 📂 app
+ㄴ 📂 assets
+ㄴ 📂 entities
+   ㄴ 📂 common #공통 요소
+      ㄴ 📂 components
+      ㄴ 📂 hooks
+      ㄴ 📂 services #서버데이터 요청
+      ㄴ 📂 utils
+   ㄴ 📂 {feature} #하나의 기능 요소 (ex 페이지)
+      ㄴ # common 하위 폴더 구조와 같음
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## tech stack
 
-## Learn more
+- react native
+- expo
+- [styled-component](https://styled-components.com/docs/basics#react-native)
+- eslint, prettier, huscky
 
-To learn more about developing your project with Expo, look at the following resources:
+## convention
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 코드
 
-## Join the community
+- prettierrc, eslintrc 파일 참고
+- **import 순서, 세미콜론/쌍따옴표 사용, 변수 네이밍 등 제약 다수**
 
-Join our community of developers creating universal apps.
+### git PR / commit
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+| **Type**         | **Description**                                   |
+| ---------------- | ------------------------------------------------- |
+| ✨**`Feat`**     | 새로운 기능 추가                                  |
+| 🔨**`Fix`**      | 버그 수정                                         |
+| 📝**`Docs`**     | 문서 작성 및 수정                                 |
+| ⭐️**`Style`**   | 코드 스타일 및 포맷 변경(함수명/변수명 변경 포함) |
+| 🧠**`Refactor`** | 코드 리팩토링(기능은 같으나 로직이 변경된 경우)   |
+| **`Test`**       | 테스트 구현                                       |
+| 🍎**`Chore`**    | 기타 수정 사항(ex: gitignore, application.yml)    |
+| 🎨**`Design`**   | CSS 등 사용자 UI 디자인 변경                      |
+| **`Comment`**    | 주석 작성 및 수정                                 |
+| **`Rename`**     | 파일/폴더 명 수정 및 이동 작업                    |
+| **`Remove`**     | 파일/폴더 삭제                                    |
+| 🔥**`Hotfix`**   | 급하게 치명적인 버그를 고쳐야 하는 경우           |

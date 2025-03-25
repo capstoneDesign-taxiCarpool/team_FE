@@ -10,7 +10,7 @@ type Props = {
   onPress: () => void;
 };
 
-export default function Button({ title, icon, onPress }: Props) {
+export default function BasicButton({ title, icon, onPress }: Props) {
   return (
     <TouchableHighlight onPress={onPress}>
       <StyledButton>

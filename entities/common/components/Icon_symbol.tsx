@@ -11,6 +11,8 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   "bubble.left.fill": "chat",
   "person.circle": "account-circle",
+  "paperplane.circle": "send",
+  "magnifyingglass.circle": "search",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],
@@ -29,7 +31,6 @@ export function IconSymbol({
   name,
   size = 24,
   color,
-  style,
 }: {
   name: IconSymbolName;
   size?: number;
@@ -37,5 +38,5 @@ export function IconSymbol({
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return <MaterialIcons color={color} size={size} name={MAPPING[name]} />;
 }

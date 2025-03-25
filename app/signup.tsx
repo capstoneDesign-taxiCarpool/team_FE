@@ -5,14 +5,18 @@ import styled from "styled-components/native";
 import CircleButton from "@/entities/common/components/button_circle";
 import InnerShadow from "@/entities/common/components/inner_shadow";
 import { FontSizes } from "@/entities/common/util/style_var";
-import PersonalInfo from "@/entities/signup/components/personal_info";
-import VertifyEmail from "@/entities/signup/components/vertify_email";
+import PersonalInfo from "@/entities/signup/personal_info";
+import VertifyEmail from "@/entities/signup/vertify_email";
 
-const handleSignup = (nickname: string, sex: number) => {
-  console.log(`닉네임: ${nickname}, 성별: ${sex === 0 ? "남성" : "여성"}`);
+const handleSignup = (emailCode: string, nickname: string, sex: number) => {
+  console.log(
+    `이메일 코드: ${emailCode} 닉네임: ${nickname}, 성별: ${sex === 0 ? "남성" : "여성"}`,
+  );
 };
 
 export default function Signup() {
+  const [emailCode, setEmailCode] = useState<string>("");
+  const [nickname, setNickname] = useState<string>("");
   const [sex, setSex] = useState<number>(0);
 
   return (
@@ -25,10 +29,13 @@ export default function Signup() {
         “인증코드 보내기” 버튼을 눌러주세요`}
         </NoticeText>
       </View>
-      <VertifyEmail />
-      <PersonalInfo sex={sex} setSex={setSex} />
+      <VertifyEmail emailCode={emailCode} setEmailCode={setEmailCode} />
+      <PersonalInfo sex={sex} setSex={setSex} nickname={nickname} setNickname={setNickname} />
       <SubmitButton>
-        <CircleButton icon="magnifyingglass.circle" onPress={() => handleSignup("rh", sex)} />
+        <CircleButton
+          icon="magnifyingglass.circle"
+          onPress={() => handleSignup(emailCode, nickname, sex)}
+        />
       </SubmitButton>
     </Container>
   );

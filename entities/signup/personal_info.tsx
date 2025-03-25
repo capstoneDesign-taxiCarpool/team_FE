@@ -1,6 +1,8 @@
-import { Text, TouchableWithoutFeedback } from "react-native";
+import { useEffect } from "react";
+import { Pressable, Text } from "react-native";
 import styled from "styled-components/native";
 
+import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import InputContainer from "./input_container";
@@ -11,23 +13,38 @@ import InputContainer from "./input_container";
 export default function PersonalInfo({
   sex,
   setSex,
+  nickname,
+  setNickname,
 }: {
   sex: number;
   setSex: (v: number) => void;
+  nickname: string;
+  setNickname: (v: string) => void;
 }) {
+  useEffect(() => {
+    fetchInstance()
+      .get("/랜덤 닉네임 생성 API")
+      .then((res) => setNickname(String(res.data)))
+      .catch((err) => {
+        //TODO 에러 로깅
+        console.error(err);
+        setNickname(`이름${Math.floor(Math.random() * 1000)}`);
+      });
+  }, [setNickname]);
+
   return (
     <Container>
       <InputContainer title="닉네임">
-        <Input />
+        <Input value={nickname} onChangeText={setNickname} />
       </InputContainer>
       <InputContainer title="성별">
-        <TouchableWithoutFeedback onPress={() => setSex(0)}>
+        <Pressable onPress={() => setSex(0)}>
           <SelectText active={sex === 0}>남성</SelectText>
-        </TouchableWithoutFeedback>
+        </Pressable>
         <Text> / </Text>
-        <TouchableWithoutFeedback onPress={() => setSex(1)}>
+        <Pressable onPress={() => setSex(1)}>
           <SelectText active={sex === 1}>여성</SelectText>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </InputContainer>
     </Container>
   );
@@ -36,10 +53,11 @@ export default function PersonalInfo({
 const Container = styled.View({
   display: "flex",
   flexDirection: "column",
-  gap: "0.5rem",
+  gap: "0.7rem",
 });
 const Input = styled.TextInput({
   fontSize: FontSizes.medium,
+  textAlign: "center",
   border: "none",
 });
 const SelectText = styled.Text<{ active: boolean }>((props) =>

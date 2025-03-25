@@ -1,3 +1,5 @@
+import { Text } from "react-native";
+
 export default function HomeScreen() {
-  return <div>홈페이지</div>;
+  return <Text>홈페이지</Text>;
 }

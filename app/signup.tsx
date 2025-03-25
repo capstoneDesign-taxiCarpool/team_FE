@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 
 import CircleButton from "@/entities/common/components/button_circle";
 import InnerShadow from "@/entities/common/components/inner_shadow";
+import { authCode } from "@/entities/common/util/storage";
 import { FontSizes } from "@/entities/common/util/style_var";
 import PersonalInfo from "@/entities/signup/personal_info";
 import VertifyEmail from "@/entities/signup/vertify_email";
@@ -12,6 +13,7 @@ const handleSignup = (emailCode: string, nickname: string, sex: number) => {
   console.log(
     `이메일 코드: ${emailCode} 닉네임: ${nickname}, 성별: ${sex === 0 ? "남성" : "여성"}`,
   );
+  authCode.set(emailCode);
 };
 
 export default function Signup() {

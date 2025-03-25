@@ -31,7 +31,8 @@ const vertifyCode = (
   setCheckState: (v: number) => void,
 ) => {
   setEmailCode(v);
-  if (checkState === 0 || v.length !== 6) {
+  if (checkState === 0) return;
+  if (v.length !== 6) {
     setCheckState(1);
     return;
   }

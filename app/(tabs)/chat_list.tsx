@@ -1,3 +1,5 @@
+import { Text } from "react-native";
+
 export default function ChatList() {
-  return <div>참여한 카풀방 리스트</div>;
+  return <Text>참여한 카풀방 리스트</Text>;
 }

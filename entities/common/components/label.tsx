@@ -21,7 +21,7 @@ const StyledText = styled.Text({
   color: Colors.white,
   fontSize: FontSizes.medium,
   fontWeight: "bold",
-  minWidth: "7rem",
+  minWidth: "100px",
   textAlign: "center",
-  padding: "0.3rem 0.8rem",
+  padding: "5px 15px",
 });

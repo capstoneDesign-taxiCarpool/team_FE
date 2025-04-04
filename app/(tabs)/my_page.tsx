@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
+import ActivityViews from "@/entities/common/components/activity_views";
 import { authCode as authCodeStorage } from "@/entities/common/util/storage";
 
 export default function MyPage() {
@@ -14,6 +15,7 @@ export default function MyPage() {
     <View>
       <Text>{authCode}</Text>
       <Link href="/signup">회원가입</Link>
+      <ActivityViews />
     </View>
   );
 }

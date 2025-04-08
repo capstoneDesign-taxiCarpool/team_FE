@@ -9,7 +9,7 @@ export const Colors = {
 
 export const FontSizes = {
   small: "14px",
-  medium: "20px",
-  large: "24px",
-  large2: "28px",
+  medium: "16px",
+  large: "20px",
+  large2: "24px",
 };

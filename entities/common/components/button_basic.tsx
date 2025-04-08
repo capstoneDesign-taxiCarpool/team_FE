@@ -26,8 +26,8 @@ const StyledButton = styled.View<{ disabled: boolean }>((props) => ({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  gap: "0.3rem",
-  padding: "0.3rem 0.5rem 0.3rem 0.7rem",
+  gap: "10px",
+  padding: "5px 8px 5px 15px",
   background: props.disabled ? Colors.gray : Colors.side,
   borderRadius: "30px",
 }));

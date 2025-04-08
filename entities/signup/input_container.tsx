@@ -36,8 +36,9 @@ const Container = styled.View({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  gap: "0.5rem",
-  padding: "0.3rem 0rem",
+  width: "100%",
+  gap: "10px",
+  padding: "8px 0",
   borderBottomColor: Colors.darkGray,
   borderBottomWidth: 1,
 });
@@ -49,6 +50,6 @@ const InputGroupDiv = styled.View({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  gap: "0.5rem",
+  gap: "6px",
   textAlign: "center",
 });

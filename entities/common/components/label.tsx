@@ -1,12 +1,10 @@
 import styled from "styled-components/native";
 
 import { Colors, FontSizes } from "../util/style_var";
-import InnerShadow from "./inner_shadow";
 
 export default function Label({ title }: { title: string }) {
   return (
     <StyledLabel aria-label={`${title} 입력 라벨`}>
-      <InnerShadow />
       <StyledText>{title}</StyledText>
     </StyledLabel>
   );

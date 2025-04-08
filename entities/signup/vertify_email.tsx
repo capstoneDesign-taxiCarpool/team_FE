@@ -63,11 +63,11 @@ export default function VertifyEmail({
 
   return (
     <Container>
-      <InputContainer title="강원대 이메일" handleClick={() => emailInputRef.current?.focus()}>
-        <Input ref={emailInputRef} value={email} onChangeText={setEmail} />
-        <MailText>@kangwon.ac.kr</MailText>
-      </InputContainer>
       <AlignRight>
+        <InputContainer title="강원대 메일" handleClick={() => emailInputRef.current?.focus()}>
+          <Input ref={emailInputRef} value={email} onChangeText={setEmail} />
+          <MailText>@kangwon.ac.kr</MailText>
+        </InputContainer>
         <BasicButton
           title="인증코드 보내기"
           icon="paperplane.circle"
@@ -75,15 +75,15 @@ export default function VertifyEmail({
           disabled={checkState !== 0}
         />
       </AlignRight>
-      <VertifyCode
-        autoCapitalize="characters"
-        maxLength={6}
-        value={emailCode}
-        placeholderTextColor={Colors.gray}
-        placeholder="인증코드 입력"
-        onChangeText={(v) => vertifyCode(v, checkState, email, setEmailCode, setCheckState)}
-      />
       <AlignRight>
+        <VertifyCode
+          autoCapitalize="characters"
+          maxLength={6}
+          value={emailCode}
+          placeholderTextColor={Colors.gray}
+          placeholder="인증코드 입력"
+          onChangeText={(v) => vertifyCode(v, checkState, email, setEmailCode, setCheckState)}
+        />
         <VertifyResult>
           {checkState === 1 && "인증코드를 입력해주세요"}
           {checkState === 2 && "❌ 인증코드를 다시 확인해주세요"}
@@ -97,7 +97,7 @@ export default function VertifyEmail({
 const Container = styled.View({
   display: "flex",
   flexDirection: "column",
-  gap: "0.7rem",
+  gap: "20px",
 });
 
 // TODO typescript가 ref를 인식하지 못해 임시방편함. 원인파악 필요
@@ -114,11 +114,14 @@ const MailText = styled.Text({
 
 const AlignRight = styled.View({
   display: "flex",
-  flexDirection: "row-reverse",
+  flexDirection: "column",
+  alignItems: "flex-end",
+  gap: "7px",
 });
 
 const VertifyCode = styled.TextInput({
-  padding: "1rem",
+  padding: "20px",
+  width: "100%",
   fontSize: FontSizes.large2,
   borderColor: Colors.main,
   borderWidth: "2px",

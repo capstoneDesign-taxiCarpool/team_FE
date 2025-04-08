@@ -20,7 +20,7 @@ export default function CircleButton({ icon, onPress }: Props) {
 }
 
 const StyledButton = styled.View({
-  padding: "1rem",
+  padding: "20px",
   background: Colors.side,
   borderRadius: "60px",
   shadowColor: "#000",

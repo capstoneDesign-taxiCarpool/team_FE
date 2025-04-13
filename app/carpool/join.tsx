@@ -1,21 +1,17 @@
-import { Link } from "expo-router";
-import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import React from "react";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 
-import ActivityViews from "@/entities/common/components/activity_views";
-import { authCode as authCodeStorage } from "@/entities/common/util/storage";
-
-export default function MyPage() {
-  const [authCode, setAuthCode] = useState<string>("");
-  useEffect(() => {
-    authCodeStorage.get().then((code) => setAuthCode(code ?? "로그인 안됨"));
-  }, []);
-
+export default function Join() {
   return (
-    <View>
-      <Text>{authCode}</Text>
-      <Link href="/signup">회원가입</Link>
-      <ActivityViews />
-    </View>
+    <MapView
+      style={{ flex: 1 }}
+      provider={PROVIDER_GOOGLE}
+      initialRegion={{
+        latitude: 42,
+        longitude: 30,
+        latitudeDelta: 1,
+        longitudeDelta: 1,
+      }}
+    />
   );
 }

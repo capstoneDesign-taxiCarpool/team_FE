@@ -13,6 +13,7 @@ const MAPPING = {
   "person.circle": "account-circle",
   "paperplane.circle": "send",
   "magnifyingglass.circle": "search",
+  "arrow.2.circlepath.circle": "swap-vert",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

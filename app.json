@@ -52,6 +52,12 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow taxiCarpool to access your Face ID biometric data."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "강원대카풀에서 위치정보를 사용하도록 허용하시겠습니까?"
+        }
       ]
     ],
     "experiments": {

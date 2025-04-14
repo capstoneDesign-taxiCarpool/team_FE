@@ -14,7 +14,7 @@
       ㄴ 📂 services #서버데이터 요청
       ㄴ 📂 utils
    ㄴ 📂 {feature} #하나의 기능 요소 (ex 페이지)
-      ㄴ # common 하위 폴더 구조와 같음
+      ㄴ # common 하위 폴더 구조와 같음 (components로만 이루어진 경우 하위폴더 생략 가능)
 ```
 
 ## tech stack

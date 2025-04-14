@@ -8,8 +8,8 @@ export const Colors = {
 };
 
 export const FontSizes = {
-  small: "12px",
-  medium: "14px",
-  large: "16px",
-  large2: "24px",
+  small: "14px",
+  medium: "20px",
+  large: "24px",
+  large2: "28px",
 };

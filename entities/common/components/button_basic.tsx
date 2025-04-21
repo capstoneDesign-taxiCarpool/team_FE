@@ -9,9 +9,16 @@ type Props = {
   icon: IconSymbolName;
   onPress: () => void;
   disabled?: boolean;
+  isToRight?: boolean; // 전체 width 기준 오른쪽 정렬을 할 것인가? TODO: 실제 구현 필요
 };
 
-export default function BasicButton({ title, icon, onPress, disabled = false }: Props) {
+export default function BasicButton({
+  title,
+  icon,
+  onPress,
+  disabled = false,
+  isToRight = false,
+}: Props) {
   return (
     <TouchableHighlight onPress={onPress} disabled={disabled}>
       <StyledButton disabled={disabled}>

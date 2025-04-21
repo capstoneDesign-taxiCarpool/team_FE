@@ -14,6 +14,9 @@ const MAPPING = {
   "paperplane.circle": "send",
   "magnifyingglass.circle": "search",
   "arrow.2.circlepath.circle": "swap-vert",
+  "arrow.right": "arrow-forward",
+  clock: "access-time",
+  "person.3": "people",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],
@@ -31,11 +34,11 @@ export type IconSymbolName = keyof typeof MAPPING;
 export function IconSymbol({
   name,
   size = 24,
-  color,
+  color = "#2C2C2C",
 }: {
   name: IconSymbolName;
   size?: number;
-  color: string | OpaqueColorValue;
+  color?: string | OpaqueColorValue;
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {

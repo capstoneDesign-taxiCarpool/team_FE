@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface State {
+export interface Party {
   partyId: number | null;
   when2go: number | null;
   departure: {
@@ -15,13 +15,13 @@ interface State {
   } | null;
   maxMembers: number;
   curMembers: number;
-  options: "NO_TALKING" | "SAME_SEX" | "PAY_IN_TAXI"[];
+  options: ("NO_TALKING" | "SAME_SEX" | "PAY_IN_TAXI")[];
 }
 interface setState {
-  setPartyState: (newState: Partial<State>) => void;
+  setPartyState: (newState: Partial<Party>) => void;
 }
 
-const usePartyStore = create<State & setState>((set) => ({
+const usePartyStore = create<Party & setState>((set) => ({
   partyId: null,
   when2go: null,
   departure: null,
@@ -29,7 +29,7 @@ const usePartyStore = create<State & setState>((set) => ({
   maxMembers: 1,
   curMembers: 1,
   options: [],
-  setPartyState: (newState: Partial<State>) => set(() => ({ ...newState })),
+  setPartyState: (newState: Partial<Party>) => set(() => ({ ...newState })),
 }));
 
 export default usePartyStore;

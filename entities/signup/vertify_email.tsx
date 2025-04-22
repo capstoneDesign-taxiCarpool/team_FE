@@ -70,7 +70,7 @@ export default function VertifyEmail({
         </InputContainer>
         <BasicButton
           title="인증코드 보내기"
-          icon="paperplane.circle"
+          icon="paperplane.fill"
           onPress={() => handleSendCode(email, setCheckState)}
           disabled={checkState !== 0}
         />

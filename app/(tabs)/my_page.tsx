@@ -17,7 +17,7 @@ export default function MyPage() {
     <View>
       <Text>{authCode}</Text>
       <Link href="/signup">회원가입</Link>
-      <Text onPress={() => router.push("/carpool/join")}>Go Home</Text>
+      <Text onPress={() => router.push("/carpool/recruit")}>테스트 버튼</Text>
     </View>
   );
 }

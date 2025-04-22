@@ -1,28 +1,14 @@
-import { Image, TextInput } from "react-native";
+import { TextInput } from "react-native";
 import styled from "styled-components/native";
 
-import VerticalRoad from "@/assets/images/vertical_road.png";
 import PartyCardList from "@/entities/carpool/party_card_list";
-import { IconSymbol } from "@/entities/common/components/Icon_symbol";
+import PartySetting from "@/entities/carpool/party_setting";
 import Label from "@/entities/common/components/label";
 
 export default function Join() {
   return (
     <Container>
-      <GroupContainer>
-        <RowContainer>
-          <Label title="출발 시간" />
-          <TextInput placeholder="출발 시간" />
-        </RowContainer>
-        <RowContainer>
-          <Image source={VerticalRoad} />
-          <GroupContainer>
-            <TextInput placeholder="출발지" />
-            <IconSymbol name="arrow.2.circlepath.circle" size={24} color="#000" />
-            <TextInput placeholder="도착지" />
-          </GroupContainer>
-        </RowContainer>
-      </GroupContainer>
+      <PartySetting />
       <GroupContainer>
         <RowContainer>
           <Label title="동승자" />

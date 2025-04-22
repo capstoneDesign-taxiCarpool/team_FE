@@ -11,12 +11,13 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   "bubble.left.fill": "chat",
   "person.circle": "account-circle",
-  "paperplane.circle": "send",
   "magnifyingglass.circle": "search",
   "arrow.2.circlepath.circle": "swap-vert",
   "arrow.right": "arrow-forward",
   clock: "access-time",
   "person.3": "people",
+  checkmark: "check",
+  "plus.circle": "add-circle-outline",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

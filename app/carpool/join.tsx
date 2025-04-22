@@ -1,8 +1,8 @@
 import { TextInput } from "react-native";
 import styled from "styled-components/native";
 
-import PartyCardList from "@/entities/carpool/party_card_list";
-import PartySetting from "@/entities/carpool/party_setting";
+import PartyCardList from "@/entities/carpool/components/party_card_list";
+import PartySetting from "@/entities/carpool/components/party_setting";
 import Label from "@/entities/common/components/label";
 
 export default function Join() {

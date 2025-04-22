@@ -2,10 +2,10 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import styled from "styled-components/native";
 
 import VerticalRoad from "@/assets/images/vertical_road.png";
+import MapWithMarker from "@/entities/carpool/components/map_with_marker";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import { Colors } from "@/entities/common/util/style_var";
@@ -59,26 +59,15 @@ export default function FindTrack() {
         </ColContainer>
       </LocationBar>
 
-      {/* 지도 */}
-      <Map
-        provider={PROVIDER_GOOGLE}
-        initialRegion={{
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-        showsUserLocation={true}
-      >
-        <Marker
-          coordinate={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-          }}
-          title={"현재 위치"}
-          description="여기가 당신의 현재 위치입니다."
-        />
-      </Map>
+      <MapWithMarker
+        markers={[
+          {
+            name: "(테스트) 현재 위치",
+            lat: location.latitude,
+            lng: location.longitude,
+          },
+        ]}
+      />
 
       <CompleteBtnContainer>
         <CircleButton
@@ -95,12 +84,6 @@ export default function FindTrack() {
 
 const Container = styled.View({
   flex: 1,
-});
-
-const Map = styled(MapView)({
-  flex: 1,
-  width: "100%",
-  height: "100%",
 });
 
 // 위치 표시줄 스타일

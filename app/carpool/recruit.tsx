@@ -1,13 +1,16 @@
+import { useRouter } from "expo-router";
 import { Text, TextInput } from "react-native";
 import styled from "styled-components/native";
 
-import PartySetting from "@/entities/carpool/party_setting";
+import PartySetting from "@/entities/carpool/components/party_setting";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 import { Colors } from "@/entities/common/util/style_var";
 
 export default function Recruit() {
+  const router = useRouter();
+
   return (
     <Container>
       <PartySetting />
@@ -43,7 +46,7 @@ export default function Recruit() {
       <CircleButton
         icon="checkmark"
         onPress={() => {
-          console.log("check");
+          router.push("/carpool/recheck");
         }}
       />
     </Container>

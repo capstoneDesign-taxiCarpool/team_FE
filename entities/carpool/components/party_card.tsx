@@ -1,53 +1,23 @@
-import React from "react";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import styled from "styled-components/native";
 
-import { Party } from "@/entities/common/store/usePartyStore";
-
-import BasicButton from "../common/components/button_basic";
-import { IconSymbol } from "../common/components/Icon_symbol";
-
-export default ({ partys }: { partys: Party[] }) => {
-  return (
-    <View>
-      {partys.map((v) => {
-        return (
-          <PartyCard
-            key={v.partyId}
-            when2go={v.when2go}
-            departure={v.departure}
-            destination={v.destination}
-            maxMembers={v.maxMembers}
-            curMembers={v.curMembers}
-            options={v.options}
-            buttons={
-              <BasicButton
-                title="자세히"
-                icon="magnifyingglass.circle"
-                onPress={() => {}}
-                isToRight
-              />
-            }
-          />
-        );
-      })}
-    </View>
-  );
-};
+import { IconSymbol } from "../../common/components/Icon_symbol";
+import { Party } from "../types";
 
 type Buttons = {
   buttons: React.ReactNode;
 };
 
-const PartyCard = ({
+export default function PartyCard({
   when2go,
   departure,
   destination,
   maxMembers,
   curMembers,
   options,
+  comment = "",
   buttons,
-}: Omit<Party, "partyId"> & Buttons) => {
+}: Omit<Party, "partyId"> & Buttons) {
   return (
     <Container>
       <Path>
@@ -68,10 +38,11 @@ const PartyCard = ({
       <Instructor>
         <Text>{options.length > 0 ? `#${options[0]}` : ""}</Text>
       </Instructor>
+      <Text>{comment}</Text>
       {buttons}
     </Container>
   );
-};
+}
 
 const Container = styled.View({
   marginTop: "10px",

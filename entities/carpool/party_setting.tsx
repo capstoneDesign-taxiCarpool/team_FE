@@ -1,11 +1,17 @@
-import { Image, TextInput } from "react-native";
+import { useRouter } from "expo-router";
+import { Image, Text, TextInput, TouchableHighlight } from "react-native";
 import styled from "styled-components/native";
 
 import VerticalRoad from "@/assets/images/vertical_road.png";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 
+/**
+ * @returns 출발 시간 + 출발경로 입력
+ */
 export default function PartySetting() {
+  const router = useRouter();
+
   return (
     <Container>
       <RowContainer>
@@ -15,9 +21,13 @@ export default function PartySetting() {
       <RowContainer>
         <Image source={VerticalRoad} />
         <Container>
-          <TextInput placeholder="출발지" />
+          <TouchableHighlight onPress={() => router.push("/carpool/find_track")}>
+            <Text>출발지</Text>
+          </TouchableHighlight>
           <IconSymbol name="arrow.2.circlepath.circle" size={24} color="#000" />
-          <TextInput placeholder="도착지" />
+          <TouchableHighlight onPress={() => router.push("/carpool/find_track")}>
+            <Text>도착지</Text>
+          </TouchableHighlight>
         </Container>
       </RowContainer>
     </Container>

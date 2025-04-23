@@ -11,6 +11,6 @@ export interface Party {
 
 export interface LocationInfo {
   name: string;
-  lat: number;
-  lng: number;
+  x: number;
+  y: number;
 }

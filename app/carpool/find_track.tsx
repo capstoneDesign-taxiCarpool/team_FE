@@ -63,8 +63,8 @@ export default function FindTrack() {
         markers={[
           {
             name: "(테스트) 현재 위치",
-            lat: location.latitude,
-            lng: location.longitude,
+            x: location.latitude,
+            y: location.longitude,
           },
         ]}
       />

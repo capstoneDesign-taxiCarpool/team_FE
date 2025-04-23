@@ -9,16 +9,16 @@ export default function Recheck() {
     <Container>
       <PartyCard
         when2go={9393939}
-        departure={{ name: "출발지", lat: 0, lng: 0 }}
-        destination={{ name: "도착지", lat: 0, lng: 0 }}
+        departure={{ name: "출발지", x: 0, y: 0 }}
+        destination={{ name: "도착지", x: 0, y: 0 }}
         maxMembers={4}
         curMembers={2}
         options={["NO_TALKING"]}
         buttons={<BasicButton title="참여하기" icon="bubble.left.fill" onPress={() => {}} />}
       />
       <MapWithMarker
-        departure={{ name: "출발지", lat: 0, lng: 0 }}
-        destination={{ name: "도착지", lat: 10, lng: 10 }}
+        departure={{ name: "출발지", x: 0, y: 0 }}
+        destination={{ name: "도착지", x: 10, y: 10 }}
       />
     </Container>
   );

@@ -18,8 +18,8 @@ export default function MapWithMarker({
         <Marker
           key={index}
           coordinate={{
-            latitude: loc.lat,
-            longitude: loc.lng,
+            latitude: loc.x,
+            longitude: loc.y,
           }}
           title={loc.name}
           description={""}
@@ -28,8 +28,8 @@ export default function MapWithMarker({
       {departure && (
         <Marker
           coordinate={{
-            latitude: departure.lat,
-            longitude: departure.lng,
+            latitude: departure.x,
+            longitude: departure.y,
           }}
           title={departure.name}
           pinColor="blue"
@@ -39,8 +39,8 @@ export default function MapWithMarker({
       {destination && (
         <Marker
           coordinate={{
-            latitude: destination.lat,
-            longitude: destination.lng,
+            latitude: destination.x,
+            longitude: destination.y,
           }}
           title={destination.name}
           pinColor="red"

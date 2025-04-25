@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Text, TextInput } from "react-native";
 import styled from "styled-components/native";
 
+import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
@@ -14,12 +15,12 @@ export default function Recruit() {
   return (
     <Container>
       <PartySetting />
-      <GroupContainer>
+      <ColContainer>
         <RowContainer>
           <Label title="모집 인원" />
           <TextInput keyboardType="numeric" value={"3"} />
         </RowContainer>
-      </GroupContainer>
+      </ColContainer>
       <ExtraSetting
         title="추가 옵션"
         children={
@@ -57,17 +58,6 @@ const Container = styled.View({
   display: "flex",
   flexDirection: "column",
   gap: "35px",
-});
-const GroupContainer = styled.View({
-  display: "flex",
-  flexDirection: "column",
-  alignContent: "center",
-  gap: "10px",
-});
-const RowContainer = styled.View({
-  display: "flex",
-  flexDirection: "row",
-  gap: "10px",
 });
 
 const OptionButton = styled.Pressable({

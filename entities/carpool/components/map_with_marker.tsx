@@ -1,19 +1,55 @@
+import { useEffect, useRef } from "react";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import styled from "styled-components/native";
+
+import { Colors } from "@/entities/common/util/style_var";
 
 import { LocationInfo } from "../types";
 
 export default function MapWithMarker({
   markers = [],
+  selectedIndex,
+  setSelectedIndex,
   departure,
   destination,
 }: {
   markers?: LocationInfo[];
+  selectedIndex?: number;
+  setSelectedIndex: React.Dispatch<React.SetStateAction<number | undefined>>;
   departure?: LocationInfo;
   destination?: LocationInfo;
 }) {
+  const mapRef = useRef<MapView>(null);
+
+  // 마커가 선택되었을 때, 해당 마커로 맵을 이동
+  useEffect(() => {
+    if (markers.length > 0 && selectedIndex !== undefined && markers[selectedIndex]) {
+      const selectedMarker = markers[selectedIndex];
+      mapRef.current?.animateToRegion(
+        {
+          latitude: selectedMarker.x,
+          longitude: selectedMarker.y,
+          latitudeDelta: 0.003,
+          longitudeDelta: 0.003,
+        },
+        1000,
+      );
+    }
+  }, [markers, selectedIndex]);
+
   return (
-    <Map provider={PROVIDER_GOOGLE} showsUserLocation={true}>
+    <Map
+      ref={mapRef}
+      provider={PROVIDER_GOOGLE}
+      initialRegion={{
+        latitude: 37.868897,
+        longitude: 127.744994,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      }}
+      showsUserLocation={true}
+      showsMyLocationButton={false}
+    >
       {markers.map((loc, index) => (
         <Marker
           key={index}
@@ -21,8 +57,10 @@ export default function MapWithMarker({
             latitude: loc.x,
             longitude: loc.y,
           }}
+          pinColor={Colors.side}
           title={loc.name}
-          description={""}
+          description={loc.roadAddressName}
+          onPress={() => setSelectedIndex(index)}
         />
       ))}
       {departure && (
@@ -32,7 +70,7 @@ export default function MapWithMarker({
             longitude: departure.y,
           }}
           title={departure.name}
-          pinColor="blue"
+          pinColor={Colors.side}
           description={"출발지"}
         />
       )}
@@ -43,7 +81,7 @@ export default function MapWithMarker({
             longitude: destination.y,
           }}
           title={destination.name}
-          pinColor="red"
+          pinColor={Colors.main}
           description={"도착지"}
         />
       )}

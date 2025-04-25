@@ -18,6 +18,7 @@ const MAPPING = {
   "person.3": "people",
   checkmark: "check",
   "plus.circle": "add-circle-outline",
+  "mappin.and.ellipse": "place",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

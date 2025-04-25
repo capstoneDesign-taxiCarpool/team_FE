@@ -1,130 +1,70 @@
-import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Image } from "react-native";
+import React, { useState } from "react";
 import styled from "styled-components/native";
 
-import VerticalRoad from "@/assets/images/vertical_road.png";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
+import SearchRouteBar from "@/entities/carpool/components/search_route_bar";
+import SearchSpotBar from "@/entities/carpool/components/search_spot_bar";
+import { LocationInfo } from "@/entities/carpool/types";
 import CircleButton from "@/entities/common/components/button_circle";
-import { IconSymbol } from "@/entities/common/components/Icon_symbol";
-import { Colors } from "@/entities/common/util/style_var";
 
 export default function FindTrack() {
   const router = useRouter();
 
-  const [location, setLocation] = useState<Location.LocationObjectCoords>({
-    latitude: 37.868897,
-    longitude: 127.744994,
-    altitude: 0,
-    accuracy: 0,
-    altitudeAccuracy: 0,
-    heading: 0,
-    speed: 0,
-  });
-  useEffect(() => {
-    fetchLocation();
-  }, []);
-  const fetchLocation = async () => {
-    try {
-      // 위치 권한 요청
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        return;
-      }
+  // 현재 출발지, 도착지
+  const [startLocation, setStartLocation] = useState<LocationInfo | undefined>();
+  const [endLocation, setEndLocation] = useState<LocationInfo | undefined>();
 
-      // 현재 위치 가져오기
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation.coords);
-    } catch (error) {
-      console.error("위치를 가져오는데 실패했습니다:", error);
-    }
-  };
+  // 검색 중인 장소들 정보(출발지/도착지, 검색된 장소들, 검색된 장소들 중 선택된 인덱스)
+  const [searchingLocationType, setSearchingLocationType] = useState<"start" | "end" | null>(null);
+  const [searchedLocation, setSearchedLocation] = useState<LocationInfo[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
 
   return (
     <Container>
-      {/* 상단 위치 표시줄 */}
-      <LocationBar>
-        <Image source={VerticalRoad} />
-        <ColContainer>
-          <LocationContent>
-            <LocationText>강원대 정문</LocationText>
-          </LocationContent>
-          <SwapBtn onPress={fetchLocation}>
-            <IconSymbol name="arrow.2.circlepath.circle" size={24} color={Colors.black} />
-          </SwapBtn>
-          <LocationContent>
-            <LocationText>현재 위치</LocationText>
-          </LocationContent>
-        </ColContainer>
-      </LocationBar>
+      {searchingLocationType === null ? (
+        <SearchRouteBar
+          startLocation={startLocation}
+          endLocation={endLocation}
+          setSearchingLocationType={setSearchingLocationType}
+        />
+      ) : (
+        <SearchSpotBar
+          location={searchingLocationType === "start" ? startLocation : endLocation}
+          setLocation={searchingLocationType === "start" ? setStartLocation : setEndLocation}
+          searchedLocation={searchedLocation}
+          setSearchedLocation={setSearchedLocation}
+          selectedIndex={selectedIndex}
+          setSelectedIndex={setSelectedIndex}
+          quitSearch={() => setSearchingLocationType(null)}
+        />
+      )}
 
       <MapWithMarker
-        markers={[
-          {
-            name: "(테스트) 현재 위치",
-            x: location.latitude,
-            y: location.longitude,
-          },
-        ]}
+        markers={searchedLocation}
+        selectedIndex={selectedIndex}
+        setSelectedIndex={setSelectedIndex}
+        departure={startLocation}
+        destination={endLocation}
       />
 
-      <CompleteBtnContainer>
-        <CircleButton
-          icon="checkmark"
-          onPress={() => {
-            //TODO 검색한 경로 저장
-            router.back();
-          }}
-        />
-      </CompleteBtnContainer>
+      {searchingLocationType === null && (
+        <CompleteBtnContainer>
+          <CircleButton
+            icon="checkmark"
+            onPress={() => {
+              //TODO 검색한 경로 저장
+              router.back();
+            }}
+          />
+        </CompleteBtnContainer>
+      )}
     </Container>
   );
 }
 
 const Container = styled.View({
   flex: 1,
-});
-
-// 위치 표시줄 스타일
-const LocationBar = styled.View({
-  position: "absolute",
-  top: 20,
-  left: 20,
-  right: 20,
-  zIndex: 10,
-  backgroundColor: "white",
-  borderRadius: 16,
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 2,
-  },
-  shadowRadius: 4,
-  elevation: 5,
-  flexDirection: "row",
-  gap: 10,
-});
-const ColContainer = styled.View({
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-  alignItems: "center",
-});
-
-const SwapBtn = styled.TouchableOpacity({
-  width: "fit-content",
-});
-
-const LocationContent = styled.View({
-  paddingHorizontal: 20,
-  paddingVertical: 15,
-});
-
-const LocationText = styled.Text({
-  fontSize: 16,
-  textAlign: "center",
-  fontWeight: "bold",
 });
 
 // 완료 버튼

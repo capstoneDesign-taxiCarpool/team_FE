@@ -14,10 +14,12 @@ import { ColContainer, FloadContainer, RowContainer } from "./containers";
 export default function SearchRouteBar({
   startLocation,
   endLocation,
+  swap,
   setSearchingLocationType,
 }: {
   startLocation?: LocationInfo;
   endLocation?: LocationInfo;
+  swap: () => void;
   setSearchingLocationType: React.Dispatch<React.SetStateAction<"start" | "end" | null>>;
 }) {
   return (
@@ -29,7 +31,7 @@ export default function SearchRouteBar({
             <LocationText onPress={() => setSearchingLocationType("start")}>
               <Text>{startLocation?.name ?? "출발지"}</Text>
             </LocationText>
-            <SwapBtn>
+            <SwapBtn onPress={swap}>
               <IconSymbol name="arrow.2.circlepath.circle" size={24} color={Colors.black} />
             </SwapBtn>
             <LocationText onPress={() => setSearchingLocationType("end")}>

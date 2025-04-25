@@ -7,10 +7,10 @@ interface setState {
 }
 
 const usePartyStore = create<Party & setState>((set) => ({
-  partyId: null,
-  when2go: null,
-  departure: null,
-  destination: null,
+  partyId: undefined,
+  when2go: undefined,
+  departure: undefined,
+  destination: undefined,
   maxMembers: 1,
   curMembers: 1,
   comment: "",

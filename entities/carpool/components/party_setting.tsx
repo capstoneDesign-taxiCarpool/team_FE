@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 
 import VerticalRoad from "@/assets/images/vertical_road.png";
 import { RowContainer } from "@/entities/carpool/components/containers";
+import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 
@@ -12,6 +13,8 @@ import Label from "@/entities/common/components/label";
  */
 export default function PartySetting() {
   const router = useRouter();
+  const departure = usePartyStore((state) => state.departure);
+  const destination = usePartyStore((state) => state.destination);
 
   return (
     <Container>
@@ -23,11 +26,11 @@ export default function PartySetting() {
         <Image source={VerticalRoad} />
         <Container>
           <TouchableHighlight onPress={() => router.push("/carpool/find_track")}>
-            <Text>출발지</Text>
+            <Text>{departure?.name ?? "출발지"}</Text>
           </TouchableHighlight>
           <IconSymbol name="arrow.2.circlepath.circle" size={24} color="#000" />
           <TouchableHighlight onPress={() => router.push("/carpool/find_track")}>
-            <Text>도착지</Text>
+            <Text>{destination?.name ?? "도착지"}</Text>
           </TouchableHighlight>
         </Container>
       </RowContainer>

@@ -15,7 +15,7 @@ export default function MapWithMarker({
 }: {
   markers?: LocationInfo[];
   selectedIndex?: number;
-  setSelectedIndex: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setSelectedIndex?: React.Dispatch<React.SetStateAction<number | undefined>>;
   departure?: LocationInfo;
   destination?: LocationInfo;
 }) {
@@ -60,7 +60,11 @@ export default function MapWithMarker({
           pinColor={Colors.side}
           title={loc.name}
           description={loc.roadAddressName}
-          onPress={() => setSelectedIndex(index)}
+          onPress={() => {
+            if (setSelectedIndex) {
+              setSelectedIndex(index);
+            }
+          }}
         />
       ))}
       {departure && (

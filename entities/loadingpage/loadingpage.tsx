@@ -1,14 +1,29 @@
-import React from "react";
-import { ActivityIndicator } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, Dimensions, Image } from "react-native";
 import styled from "styled-components/native";
 
-import { Colors, FontSizes } from "../common/util/style_var";
+import loadingImage from "../../assets/images/loading.png";
+
+const screenWidth = Dimensions.get("window").width;
 
 export default function LoadingScreen() {
+  const imageOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(imageOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [imageOpacity]);
+
   return (
     <Container>
-      <Loader size="large" color={Colors.main ?? "#00AAFF"} />
-      <Message>로딩페이지 테스트</Message>
+      <AnimatedImage source={loadingImage} style={{ opacity: imageOpacity }} resizeMode="contain" />
     </Container>
   );
 }
@@ -20,10 +35,8 @@ const Container = styled.View({
   backgroundColor: "#ffffff",
 });
 
-const Loader = styled(ActivityIndicator)({});
-
-const Message = styled.Text({
-  marginTop: 16,
-  fontSize: FontSizes.medium ?? 16,
-  color: "#333333",
+const AnimatedImage = styled(Animated.createAnimatedComponent(Image))({
+  width: screenWidth,
+  height: screenWidth * 2,
+  marginBottom: 20,
 });

@@ -1,29 +1,29 @@
-import React from 'react';
-import styled from 'styled-components/native';
+import React from "react";
+import { ActivityIndicator } from "react-native";
+import styled from "styled-components/native";
 
-const LoadingScreen = () => {
+import { Colors, FontSizes } from "../common/util/style_var";
+
+export default function LoadingScreen() {
   return (
     <Container>
-      <Loader size="large" color="#00AAFF" />
+      <Loader size="large" color={Colors.main ?? "#00AAFF"} />
       <Message>잠시만 기다려 주세요...</Message>
     </Container>
   );
-};
+}
 
-export default LoadingScreen;
+const Container = styled.View({
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "#ffffff",
+});
 
-// 👇 styled-components 정의
-const Container = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  background-color: #ffffff;
-`;
+const Loader = styled(ActivityIndicator)({});
 
-const Loader = styled.ActivityIndicator``;
-
-const Message = styled.Text`
-  margin-top: 16px;
-  font-size: 16px;
-  color: #333333;
-`;
+const Message = styled.Text({
+  marginTop: 16,
+  fontSize: FontSizes.medium ?? 16,
+  color: "#333333",
+});

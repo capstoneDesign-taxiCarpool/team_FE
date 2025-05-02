@@ -8,7 +8,7 @@ export default function LoadingScreen() {
   return (
     <Container>
       <Loader size="large" color={Colors.main ?? "#00AAFF"} />
-      <Message>잠시만 기다려 주세요...</Message>
+      <Message>로딩페이지 테스트</Message>
     </Container>
   );
 }

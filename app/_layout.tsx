@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 
-import LoadingScreen from "../entities/loadingpage/loadingpage";
+import LoadingScreen from "./loadingpage";
 
 const queryClient = new QueryClient();
 

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Dimensions, Image } from "react-native";
 import styled from "styled-components/native";
 
-import loadingImage from "../../assets/images/loading.png";
+import loadingImage from "../assets/images/loading.png";
 
 const screenWidth = Dimensions.get("window").width;
 

@@ -8,12 +8,7 @@ module.exports = {
   ],
   plugins: ["prettier", "react-hooks", "react-refresh", "simple-import-sort"],
   rules: {
-    "prettier/prettier": [
-      "error",
-      {
-        endOfLine: "auto",
-      },
-    ],
+    "prettier/prettier": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
@@ -44,5 +39,12 @@ module.exports = {
     ],
     // Include react-hooks and js recommended rules
     ...require("eslint-plugin-react-hooks").configs.recommended.rules,
+  },
+  settings: {
+    "import/resolver": {
+      typescript: {
+        project: "./tsconfig.json",
+      },
+    },
   },
 };

@@ -81,8 +81,6 @@ export default function ChatPage() {
   );
 }
 
-// ✅ 스타일 정의
-
 const Container = styled(KeyboardAvoidingView)({
   flex: 1,
   backgroundColor: "#f2f2f2",
@@ -192,6 +190,7 @@ const SendText = styled.Text({
 
 // ✅ WebSocket 또는 API로 받은 메시지를 처리하는 핸들러 예시
 /*
+
 onReceiveMessage(data) {
   if (data.type === "join") {
     setMessages((prev) => [

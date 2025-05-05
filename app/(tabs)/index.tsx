@@ -16,7 +16,7 @@ export default function HomeScreen() {
       </ScheduleBox>
 
       <PartyBox source={partyMakeImage}>
-        <OverlayTouchable onPress={() => router.push("/partymake")}>
+        <OverlayTouchable onPress={() => router.push("../chatpage")}>
           <BoxText>카풀 모집하기</BoxText>
         </OverlayTouchable>
       </PartyBox>

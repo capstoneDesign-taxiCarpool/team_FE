@@ -9,6 +9,7 @@ import { RowContainer } from "@/entities/carpool/components/containers";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
+import datetimeFormat from "@/entities/common/util/datetime_format";
 
 /**
  * @returns 출발 시간 + 출발경로 입력
@@ -24,7 +25,6 @@ export default function PartySetting() {
   const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
     setMode(null);
     setPartyState({ when2go: Number(selectedDate ?? new Date()) });
-    console.log("selectedDate", new Date(selectedDate ?? 0));
   };
 
   return (
@@ -33,14 +33,17 @@ export default function PartySetting() {
         <DateTimePicker
           value={when2go ? new Date(when2go) : new Date()}
           mode={mode}
-          is24Hour={true}
           onChange={onChange}
         />
       )}
       <RowContainer>
         <Label title="출발 시간" />
-        <DateTimePickerBtn onPress={() => setMode("date")}>날짜</DateTimePickerBtn>
-        <DateTimePickerBtn onPress={() => setMode("time")}>시간</DateTimePickerBtn>
+        <DateTimePickerBtn onPress={() => setMode("date")}>
+          <Text>{datetimeFormat(when2go, "date")}</Text>
+        </DateTimePickerBtn>
+        <DateTimePickerBtn onPress={() => setMode("time")}>
+          <Text>{datetimeFormat(when2go, "time")}</Text>
+        </DateTimePickerBtn>
       </RowContainer>
       <RowContainer>
         <Image source={VerticalRoad} />

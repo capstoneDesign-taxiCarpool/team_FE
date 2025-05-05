@@ -1,7 +1,9 @@
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
-import { IconSymbol } from "../../common/components/Icon_symbol";
+import { IconSymbol } from "@/entities/common/components/Icon_symbol";
+import datetimeFormat from "@/entities/common/util/datetime_format";
+
 import { Party } from "../types";
 
 type Buttons = {
@@ -27,7 +29,7 @@ export default function PartyCard({
       </Path>
       <Instructor>
         <IconSymbol name="clock" />
-        <Text>{when2go}</Text>
+        <Text>{`${datetimeFormat(when2go, "date")} / ${datetimeFormat(when2go, "time")}`}</Text>
       </Instructor>
       <Instructor>
         <IconSymbol name="person.3" />

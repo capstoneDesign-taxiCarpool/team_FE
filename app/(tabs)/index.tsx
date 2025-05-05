@@ -16,13 +16,13 @@ export default function HomeScreen() {
       </ScheduleBox>
 
       <PartyBox source={partyMakeImage}>
-        <OverlayTouchable onPress={() => router.push("/partymake")}>
+        <OverlayTouchable onPress={() => router.push("/carpool/recruit")}>
           <BoxText>카풀 모집하기</BoxText>
         </OverlayTouchable>
       </PartyBox>
 
       <PartyBox source={partyJoinImage}>
-        <OverlayTouchable onPress={() => router.push("/partyjoin")}>
+        <OverlayTouchable onPress={() => router.push("/carpool/join")}>
           <BoxText>카풀 참여하기</BoxText>
         </OverlayTouchable>
       </PartyBox>

@@ -1,26 +1,45 @@
-import { TextInput } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { Text, TextInput } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import PartyCardList from "@/entities/carpool/components/party_card_list";
 import PartySetting from "@/entities/carpool/components/party_setting";
+import usePartyStore from "@/entities/carpool/store/usePartyStore";
+import { LocationInfo, Party } from "@/entities/carpool/types";
 import Label from "@/entities/common/components/label";
+import { fetchInstance } from "@/entities/common/util/axios_instance";
+
+const getPartyListUrl = (
+  when2go?: number,
+  departure?: LocationInfo,
+  destination?: LocationInfo,
+) => {
+  const when2goStr = when2go ? `when2go=${when2go}&` : "";
+  const departureStr = departure ? `departure=${departure.name}&` : "";
+  const destinationStr = destination ? `destination=${destination.name}&` : "";
+  return `/api/party/custom?${when2goStr}${departureStr}${destinationStr}page=0&size=10`;
+};
 
 export default function Join() {
-  return (
-    <Container>
-      <PartySetting />
-      <ColContainer>
-        <RowContainer>
-          <Label title="동승자" />
-          <TextInput placeholder="없음" />
-        </RowContainer>
-      </ColContainer>
-      <PartyCardList
-        partys={[
+  const when2go = usePartyStore((state) => state.when2go);
+  const departure = usePartyStore((state) => state.departure);
+  const destination = usePartyStore((state) => state.destination);
+  const setPartyState = usePartyStore((state) => state.setPartyState);
+  const { isPending, data: partys } = useQuery<Party[]>({
+    queryKey: [when2go, departure, destination],
+    queryFn: async () => {
+      try {
+        const res = await fetchInstance().get(getPartyListUrl(when2go, departure, destination));
+        return res.data;
+      } catch (err) {
+        console.log(err);
+        // TODO: 에러 처리
+        return [];
+        return [
           {
             partyId: 1,
-            when2go: 1234567890,
+            when2go: 1746411122462,
             departure: {
               name: "출발지",
               x: 0,
@@ -52,8 +71,28 @@ export default function Join() {
             curMembers: 2,
             options: [],
           },
-        ]}
-      />
+        ];
+      }
+    },
+  });
+
+  return (
+    <Container>
+      <PartySetting />
+      <ColContainer>
+        <RowContainer>
+          <Label title="동승자" />
+          <TextInput placeholder="없음" keyboardType="numeric" />
+        </RowContainer>
+      </ColContainer>
+      {isPending ? (
+        <Text>Loading...</Text>
+      ) : (
+        <PartyCardList
+          partys={partys ?? []}
+          setSearchedPartyState={() => setPartyState({ when2go: when2go })}
+        />
+      )}
     </Container>
   );
 }

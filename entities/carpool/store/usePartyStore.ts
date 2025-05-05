@@ -11,7 +11,7 @@ const usePartyStore = create<Party & setState>((set) => ({
   when2go: undefined,
   departure: undefined,
   destination: undefined,
-  maxMembers: 1,
+  maxMembers: 4,
   curMembers: 1,
   comment: "",
   options: [],

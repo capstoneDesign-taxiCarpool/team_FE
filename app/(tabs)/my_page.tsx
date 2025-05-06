@@ -1,72 +1,251 @@
-import { Link, useRouter } from "expo-router";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import styled from "styled-components/native";
 
 import { authCode as authCodeStorage } from "@/entities/common/util/storage";
 
-import defaultProfile from "../../assets/images/default-profile.png"; // 기본 프로필 아이콘
+import defaultProfile from "../../assets/images/default-profile.png";
 
 export default function MyPage() {
   const router = useRouter();
-  const [authCode, setAuthCode] = useState<string>("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [nickname, setNickname] = useState("홍길동");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [savedAmount, setSavedAmount] = useState<number>(0);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
-    authCodeStorage.get().then((code) => setAuthCode(code ?? ""));
+    authCodeStorage.get().then((code) => {
+      if (code) {
+        setIsLoggedIn(true);
+
+        // API에서 아낀 금액 불러오기
+        fetch("https://your-api.com/user/savings")
+          .then((res) => res.json())
+          .then((data) => setSavedAmount(data.amount ?? 0))
+          .catch(() => setSavedAmount(0));
+
+        // API에서 프로필 이미지 불러오기 (예시)
+        fetch("https://your-api.com/user/profile")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.profileImage) setProfileImage(data.profileImage);
+          })
+          .catch(() => {});
+      }
+    });
   }, []);
 
-  const isLoggedIn = !!authCode;
+  const handleLoginToggle = () => {
+    if (isLoggedIn) {
+      setIsLoggedIn(false);
+      setSavedAmount(0);
+    } else {
+      authCodeStorage.set("dummy");
+      setIsLoggedIn(true);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const uri = result.assets[0].uri;
+      setProfileImage(uri);
+
+      // 서버에 업로드 예시
+      const formData = new FormData();
+      formData.append("profileImage", {
+        uri,
+        name: "profile.jpg",
+        type: "image/jpeg",
+      } as unknown as {
+        uri: string;
+        name: string;
+        type: string;
+      });
+
+      await fetch("https://your-api.com/user/profile", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    }
+  };
 
   return (
     <Container>
-      <ProfileImage source={defaultProfile} />
+      <Inner>
+        <TouchableOpacity onPress={pickImage}>
+          <ProfileImage source={profileImage ? { uri: profileImage } : defaultProfile} />
+        </TouchableOpacity>
 
-      {isLoggedIn ? (
-        <>
-          <TextBox>어서오세요, {authCode} 님</TextBox>
-          {/* 로그인 상태일 때 다른 내용 추가 가능 */}
-        </>
-      ) : (
-        <>
-          <LoginGuideButton onPress={() => router.push("/login")}>
+        {isLoggedIn ? (
+          <>
+            <NicknameTouchable onPress={() => setIsEditing(true)}>
+              {isEditing ? (
+                <NicknameInput
+                  value={nickname}
+                  onChangeText={setNickname}
+                  onBlur={() => setIsEditing(false)}
+                  autoFocus
+                />
+              ) : (
+                <NicknameText>{nickname}님, 반가워요!</NicknameText>
+              )}
+            </NicknameTouchable>
+
+            <Row>
+              <Ionicons name="wallet" size={20} color="#4a90e2" />
+              <InfoText>지금까지 {savedAmount?.toLocaleString() ?? "0"}원 아꼈어요!</InfoText>
+            </Row>
+
+            <SettingButton onPress={() => router.push("/notification-settings")}>
+              <CenteredRow>
+                <Feather name="bell" size={18} color="#4a90e2" />
+                <ButtonText>앱 푸시 알람 설정하기 &gt;</ButtonText>
+              </CenteredRow>
+            </SettingButton>
+
+            <DeleteButton onPress={() => alert("계정 삭제하기 기능")}>
+              <DeleteText>계정 삭제하기</DeleteText>
+            </DeleteButton>
+          </>
+        ) : (
+          <LoginGuideButton onPress={() => router.push("/signup")}>
             <LoginGuideText>로그인 후 이용해주세요 &gt;</LoginGuideText>
           </LoginGuideButton>
-        </>
-      )}
+        )}
+      </Inner>
+
+      <FloatingButton onPress={handleLoginToggle}>
+        <FloatingButtonText>{isLoggedIn ? "로그아웃" : "로그인"}</FloatingButtonText>
+      </FloatingButton>
     </Container>
   );
 }
 
-// ✅ 스타일
+// ✅ 스타일 정의
 
-const Container = styled(View)`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  background-color: #ffffff;
-`;
+const Container = styled(View)({
+  flex: 1,
+  backgroundColor: "#ffffff",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  paddingTop: 80,
+});
 
-const ProfileImage = styled(Image)`
-  width: 100px;
-  height: 100px;
-  border-radius: 50px;
-  margin-bottom: 20px;
-`;
+const Inner = styled(View)({
+  alignItems: "center",
+  width: "100%",
+  paddingHorizontal: 20,
+});
 
-const LoginGuideButton = styled(TouchableOpacity)`
-  background-color: #4a90e2;
-  padding: 12px 24px;
-  border-radius: 25px;
-`;
+const ProfileImage = styled(Image)({
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  marginBottom: 16,
+});
 
-const LoginGuideText = styled(Text)`
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-`;
+const NicknameTouchable = styled(TouchableOpacity)({
+  marginBottom: 20,
+});
 
-const TextBox = styled(Text)`
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-`;
+const NicknameText = styled(Text)({
+  fontSize: 18,
+  fontWeight: "bold",
+  color: "#333",
+  borderBottomWidth: 1,
+  borderBottomColor: "#ccc",
+  paddingBottom: 4,
+});
+
+const NicknameInput = styled(TextInput)({
+  fontSize: 18,
+  fontWeight: "bold",
+  color: "#333",
+  borderBottomWidth: 1,
+  borderBottomColor: "#aaa",
+  paddingVertical: 4,
+  width: 200,
+  textAlign: "center",
+});
+
+const Row = styled(View)({
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 20,
+});
+
+const InfoText = styled(Text)({
+  fontSize: 16,
+  color: "#4a4a4a",
+  marginLeft: 8,
+});
+
+const SettingButton = styled(TouchableOpacity)({
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  backgroundColor: "#e8f4ff",
+  borderRadius: 10,
+  marginBottom: 20,
+});
+
+const CenteredRow = styled(View)({
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+});
+
+const ButtonText = styled(Text)({
+  fontSize: 15,
+  color: "#4a90e2",
+  marginLeft: 6,
+});
+
+const DeleteButton = styled(TouchableOpacity)({});
+
+const DeleteText = styled(Text)({
+  fontSize: 14,
+  color: "#e74c3c",
+  fontWeight: "bold",
+});
+
+const LoginGuideButton = styled(TouchableOpacity)({
+  backgroundColor: "#4a90e2",
+  paddingVertical: 12,
+  paddingHorizontal: 24,
+  borderRadius: 25,
+});
+
+const LoginGuideText = styled(Text)({
+  color: "white",
+  fontSize: 16,
+  fontWeight: "bold",
+});
+
+const FloatingButton = styled(TouchableOpacity)({
+  position: "absolute",
+  bottom: 30,
+  right: 30,
+  backgroundColor: "#4a90e2",
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 30,
+  elevation: 5,
+});
+
+const FloatingButtonText = styled(Text)({
+  color: "#fff",
+  fontSize: 14,
+  fontWeight: "bold",
+});

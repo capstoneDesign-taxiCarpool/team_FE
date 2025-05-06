@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { FlatList, Image, KeyboardAvoidingView, Platform, TextInput } from "react-native";
+import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
 import styled from "styled-components/native";
 
-// 🔽 프로필 이미지 import
 import defaultProfile from "../assets/images/default-profile.png";
 
-// 🔽 메시지 타입 정의
 interface Message {
   id: string;
   text: string;
@@ -190,7 +188,6 @@ const SendText = styled.Text({
 
 // ✅ WebSocket 또는 API로 받은 메시지를 처리하는 핸들러 예시
 /*
-
 onReceiveMessage(data) {
   if (data.type === "join") {
     setMessages((prev) => [

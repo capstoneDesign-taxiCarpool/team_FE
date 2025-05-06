@@ -35,20 +35,19 @@ export default function Join() {
       } catch (err) {
         console.log(err);
         // TODO: 에러 처리
-        return [];
         return [
           {
             partyId: 1,
             when2go: 1746411122462,
             departure: {
-              name: "출발지",
-              x: 0,
-              y: 0,
+              name: "출발지!",
+              x: 37.868897,
+              y: 127.744994,
             },
             destination: {
               name: "도착지",
-              x: 0,
-              y: 0,
+              x: 37.8757750717447,
+              y: 127.745011033429,
             },
             maxMembers: 4,
             curMembers: 2,

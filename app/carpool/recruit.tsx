@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import PartySetting from "@/entities/carpool/components/party_setting";
+import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
@@ -11,6 +12,7 @@ import { Colors } from "@/entities/common/util/style_var";
 
 export default function Recruit() {
   const router = useRouter();
+  const setPartyState = usePartyStore((state) => state.setPartyState);
 
   return (
     <Container>
@@ -47,6 +49,7 @@ export default function Recruit() {
       <CircleButton
         icon="checkmark"
         onPress={() => {
+          setPartyState({ partyId: undefined });
           router.push("/carpool/recheck");
         }}
       />

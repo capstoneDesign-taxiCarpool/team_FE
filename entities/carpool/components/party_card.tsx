@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import datetimeFormat from "@/entities/common/util/datetime_format";
 
+import { formatOptions } from "../format_options";
 import { Party } from "../types";
 
 type Buttons = {
@@ -20,6 +21,7 @@ export default function PartyCard({
   comment = "",
   buttons,
 }: Omit<Party, "partyId"> & Buttons) {
+  console.log(options);
   return (
     <Container>
       <Path>
@@ -38,7 +40,7 @@ export default function PartyCard({
         </Text>
       </Instructor>
       <Instructor>
-        <Text>{options.length > 0 ? `#${options[0]}` : ""}</Text>
+        <Text>{formatOptions(options)}</Text>
       </Instructor>
       <Text>{comment}</Text>
       {buttons}

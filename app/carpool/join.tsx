@@ -51,7 +51,12 @@ export default function Join() {
             },
             maxMembers: 4,
             curMembers: 2,
-            options: ["NO_TALKING", "SAME_SEX"],
+            options: {
+              sameGenderOnly: true,
+              costShareBeforeDropOff: false,
+              quietMode: true,
+              destinationChangeIn5Minutes: false,
+            },
           },
           {
             partyId: 2,
@@ -68,7 +73,12 @@ export default function Join() {
             },
             maxMembers: 4,
             curMembers: 2,
-            options: [],
+            options: {
+              sameGenderOnly: false,
+              costShareBeforeDropOff: false,
+              quietMode: false,
+              destinationChangeIn5Minutes: false,
+            },
           },
         ];
       }

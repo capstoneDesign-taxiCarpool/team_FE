@@ -6,7 +6,12 @@ export interface Party {
   maxMembers: number;
   curMembers: number;
   comment?: string;
-  options: ("NO_TALKING" | "SAME_SEX" | "PAY_IN_TAXI")[];
+  options: {
+    sameGenderOnly: boolean;
+    costShareBeforeDropOff: boolean;
+    quietMode: boolean;
+    destinationChangeIn5Minutes: boolean;
+  };
 }
 
 export interface LocationInfo {

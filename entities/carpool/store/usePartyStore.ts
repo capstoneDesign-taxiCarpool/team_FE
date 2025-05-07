@@ -15,7 +15,12 @@ const usePartyStore = create<Party & storeThings>((set) => ({
   maxMembers: 4,
   curMembers: 1,
   comment: "",
-  options: [],
+  options: {
+    sameGenderOnly: false,
+    costShareBeforeDropOff: false,
+    quietMode: false,
+    destinationChangeIn5Minutes: false,
+  },
   setPartyState: (newState) => set(() => ({ ...newState })),
   isHandOveredData: false,
 }));

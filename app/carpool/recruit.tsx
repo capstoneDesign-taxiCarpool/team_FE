@@ -6,6 +6,7 @@ import styled from "styled-components/native";
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import PartySetting from "@/entities/carpool/components/party_setting";
+import { formatOptions } from "@/entities/carpool/format_options";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
@@ -18,6 +19,7 @@ export default function Recruit() {
 
   const maxMembers = usePartyStore((state) => state.maxMembers);
   const comment = usePartyStore((state) => state.comment);
+  const options = usePartyStore((state) => state.options);
   const setPartyState = usePartyStore((state) => state.setPartyState);
 
   return (
@@ -37,9 +39,7 @@ export default function Recruit() {
         title="추가 옵션"
         children={
           <RowContainer>
-            {["조용히", "내리고 정산"].map((v, i) => (
-              <Text key={i}>{v}</Text>
-            ))}
+            <Text>{formatOptions(options)}</Text>
             <OptionButton onPress={() => setModalVisible(true)}>
               <Text>추가하기</Text>
               <IconSymbol name="plus.circle" color={Colors.main} />

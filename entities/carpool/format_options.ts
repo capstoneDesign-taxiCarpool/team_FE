@@ -1,11 +1,34 @@
 import { Party } from "./types";
 
+export const optionsList: {
+  name: keyof Party["options"];
+  ko: string;
+}[] = [
+  {
+    name: "sameGenderOnly",
+    ko: "동성만",
+  },
+  {
+    name: "costShareBeforeDropOff",
+    ko: "내리기전N빵",
+  },
+  {
+    name: "quietMode",
+    ko: "조용히",
+  },
+  {
+    name: "destinationChangeIn5Minutes",
+    ko: "5분이내거리변경허용",
+  },
+];
+
 export const formatOptions = (options: Party["options"]) => {
-  const result =
-    (options.sameGenderOnly ? "#동성만 " : "") +
-    (options.costShareBeforeDropOff ? "#내리기전N빵 " : "") +
-    (options.quietMode ? "#조용히 " : "") +
-    (options.destinationChangeIn5Minutes ? "#5분이내거리변경허용" : "");
+  let result = "";
+  for (const option of optionsList) {
+    if (options[option.name]) {
+      result += `#${option.ko} `;
+    }
+  }
   if (result === "") return " - ";
   else return result;
 };

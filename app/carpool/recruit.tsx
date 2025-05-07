@@ -1,12 +1,13 @@
+import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Text, TextInput } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import PartySetting from "@/entities/carpool/components/party_setting";
-import { formatOptions } from "@/entities/carpool/format_options";
+import { formatOptions, optionsList } from "@/entities/carpool/format_options";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
@@ -49,6 +50,16 @@ export default function Recruit() {
       />
       <CustomModal modalVisible={modalVisible} setModalVisible={setModalVisible}>
         <Text>추가 옵션 선택</Text>
+        {optionsList.map((option) => (
+          <View>
+            <Checkbox
+              key={option.name}
+              value={options[option.name]}
+              onValueChange={(v) => setPartyState({ options: { ...options, [option.name]: v } })}
+            />
+            <Text>{option.ko}</Text>
+          </View>
+        ))}
       </CustomModal>
       <ExtraSetting
         title="comment"

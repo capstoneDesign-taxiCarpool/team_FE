@@ -9,13 +9,7 @@ import usePartyStore from "../store/usePartyStore";
 import { Party } from "../types";
 import PartyCard from "./party_card";
 
-export default function PartyCardList({
-  partys,
-  setSearchedPartyState,
-}: {
-  partys: Party[];
-  setSearchedPartyState: () => void;
-}) {
+export default function PartyCardList({ partys }: { partys: Party[] }) {
   const router = useRouter();
   const setPartyState = usePartyStore((state) => state.setPartyState);
 
@@ -28,11 +22,12 @@ export default function PartyCardList({
       maxMembers: party.maxMembers,
       curMembers: party.curMembers,
       options: party.options,
+      comment: party.comment,
     });
     router.push("/carpool/recheck");
   };
   const route2recruit = () => {
-    setSearchedPartyState();
+    setPartyState({ partyId: undefined, isHandOveredData: true });
     router.push("/carpool/recruit");
   };
 

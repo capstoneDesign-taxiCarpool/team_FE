@@ -25,7 +25,7 @@ export default function Join() {
   const when2go = usePartyStore((state) => state.when2go);
   const departure = usePartyStore((state) => state.departure);
   const destination = usePartyStore((state) => state.destination);
-  const setPartyState = usePartyStore((state) => state.setPartyState);
+
   const { isPending, data: partys } = useQuery<Party[]>({
     queryKey: [when2go, departure, destination],
     queryFn: async () => {
@@ -84,14 +84,7 @@ export default function Join() {
           <TextInput placeholder="없음" keyboardType="numeric" />
         </RowContainer>
       </ColContainer>
-      {isPending ? (
-        <Text>Loading...</Text>
-      ) : (
-        <PartyCardList
-          partys={partys ?? []}
-          setSearchedPartyState={() => setPartyState({ when2go: when2go })}
-        />
-      )}
+      {isPending ? <Text>Loading...</Text> : <PartyCardList partys={partys ?? []} />}
     </Container>
   );
 }

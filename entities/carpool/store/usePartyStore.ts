@@ -2,11 +2,12 @@ import { create } from "zustand";
 
 import { Party } from "../types";
 
-interface setState {
-  setPartyState: (newState: Partial<Party>) => void;
+interface storeThings {
+  setPartyState: (newState: Partial<Party | Pick<storeThings, "isHandOveredData">>) => void;
+  isHandOveredData: boolean;
 }
 
-const usePartyStore = create<Party & setState>((set) => ({
+const usePartyStore = create<Party & storeThings>((set) => ({
   partyId: undefined,
   when2go: undefined,
   departure: undefined,
@@ -15,7 +16,8 @@ const usePartyStore = create<Party & setState>((set) => ({
   curMembers: 1,
   comment: "",
   options: [],
-  setPartyState: (newState: Partial<Party>) => set(() => ({ ...newState })),
+  setPartyState: (newState) => set(() => ({ ...newState })),
+  isHandOveredData: false,
 }));
 
 export default usePartyStore;

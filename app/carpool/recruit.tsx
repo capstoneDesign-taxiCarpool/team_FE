@@ -1,8 +1,10 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Text, TextInput } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
+import CustomModal from "@/entities/carpool/components/custom_modal";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
@@ -12,6 +14,10 @@ import { Colors } from "@/entities/common/util/style_var";
 
 export default function Recruit() {
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const maxMembers = usePartyStore((state) => state.maxMembers);
+  const comment = usePartyStore((state) => state.comment);
   const setPartyState = usePartyStore((state) => state.setPartyState);
 
   return (
@@ -19,8 +25,12 @@ export default function Recruit() {
       <PartySetting />
       <ColContainer>
         <RowContainer>
-          <Label title="모집 인원" />
-          <TextInput keyboardType="numeric" value={"3"} />
+          <Label title="최대 참여 인원" />
+          <TextInput
+            keyboardType="numeric"
+            value={String(maxMembers)}
+            onChangeText={(v) => setPartyState({ maxMembers: Number(v) })}
+          />
         </RowContainer>
       </ColContainer>
       <ExtraSetting
@@ -30,19 +40,24 @@ export default function Recruit() {
             {["조용히", "내리고 정산"].map((v, i) => (
               <Text key={i}>{v}</Text>
             ))}
-            <OptionButton>
+            <OptionButton onPress={() => setModalVisible(true)}>
               <Text>추가하기</Text>
               <IconSymbol name="plus.circle" color={Colors.main} />
             </OptionButton>
           </RowContainer>
         }
       />
+      <CustomModal modalVisible={modalVisible} setModalVisible={setModalVisible}>
+        <Text>추가 옵션 선택</Text>
+      </CustomModal>
       <ExtraSetting
         title="comment"
         children={
           <TextInput
             placeholder={`추가적인 안내사항,
 하고 싶은 말(20자 이내)`}
+            value={comment}
+            onChangeText={(v) => setPartyState({ comment: v })}
           />
         }
       />

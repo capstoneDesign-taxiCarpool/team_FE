@@ -39,6 +39,7 @@ export default function Recheck() {
             title={partyId ? "참여하기" : "생성하기"}
             icon={partyId ? "bubble.left.fill" : "plus.circle"}
             onPress={() => setModalVisible(true)}
+            isToRight={true}
           />
         }
       />

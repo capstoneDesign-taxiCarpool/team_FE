@@ -30,12 +30,10 @@ export default function Signup() {
       </View>
       <VertifyEmail emailCode={emailCode} setEmailCode={setEmailCode} />
       <PersonalInfo sex={sex} setSex={setSex} nickname={nickname} setNickname={setNickname} />
-      <SubmitButton>
-        <CircleButton
-          icon="magnifyingglass.circle"
-          onPress={() => handleSignup(emailCode, nickname, sex)}
-        />
-      </SubmitButton>
+      <CircleButton
+        icon="magnifyingglass.circle"
+        onPress={() => handleSignup(emailCode, nickname, sex)}
+      />
     </Container>
   );
 }
@@ -52,9 +50,4 @@ const NoticeText = styled.Text({
   fontSize: FontSizes.medium,
   textAlign: "center",
   width: "100%",
-});
-
-const SubmitButton = styled.View({
-  display: "flex",
-  alignItems: "center",
 });

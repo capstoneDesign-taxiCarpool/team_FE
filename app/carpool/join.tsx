@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Text, TextInput } from "react-native";
+import { Text } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
@@ -8,7 +8,9 @@ import PartySetting from "@/entities/carpool/components/party_setting";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { LocationInfo, Party } from "@/entities/carpool/types";
 import Label from "@/entities/common/components/label";
+import { InShadow } from "@/entities/common/components/shadows";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
+import { FontSizes } from "@/entities/common/util/style_var";
 
 const getPartyListUrl = (
   when2go?: number,
@@ -80,6 +82,28 @@ export default function Join() {
               destinationChangeIn5Minutes: false,
             },
           },
+          {
+            partyId: 3,
+            when2go: 1234567890,
+            departure: {
+              name: "출발지2",
+              x: 0,
+              y: 0,
+            },
+            destination: {
+              name: "도착지2",
+              x: 0,
+              y: 0,
+            },
+            maxMembers: 4,
+            curMembers: 2,
+            options: {
+              sameGenderOnly: false,
+              costShareBeforeDropOff: false,
+              quietMode: false,
+              destinationChangeIn5Minutes: false,
+            },
+          },
         ];
       }
     },
@@ -91,7 +115,9 @@ export default function Join() {
       <ColContainer>
         <RowContainer>
           <Label title="동승자" />
-          <TextInput placeholder="없음" keyboardType="numeric" />
+          <InShadow flexGrow={1}>
+            <StyledTextInput placeholder="없음" keyboardType="numeric" />
+          </InShadow>
         </RowContainer>
       </ColContainer>
       {isPending ? <Text>Loading...</Text> : <PartyCardList partys={partys ?? []} />}
@@ -103,4 +129,12 @@ const Container = styled.View({
   display: "flex",
   flexDirection: "column",
   gap: "35px",
+  padding: 20,
+  flex: 1,
+});
+
+const StyledTextInput = styled.TextInput({
+  padding: "6px 12px",
+  fontSize: FontSizes.medium,
+  margin: "auto",
 });

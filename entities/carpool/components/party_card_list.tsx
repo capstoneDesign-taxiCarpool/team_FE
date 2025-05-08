@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { Image, Text, View } from "react-native";
+import styled from "styled-components/native";
 
 import sadFace from "@/assets/images/sad_face.svg";
 import BasicButton from "@/entities/common/components/button_basic";
@@ -44,7 +45,7 @@ export default function PartyCardList({ partys }: { partys: Party[] }) {
   }
 
   return (
-    <View>
+    <Container>
       {partys.map((v) => {
         return (
           <PartyCard
@@ -60,12 +61,16 @@ export default function PartyCardList({ partys }: { partys: Party[] }) {
                 title="자세히"
                 icon="magnifyingglass.circle"
                 onPress={() => route2recheck(v)}
-                isToRight
+                isToRight={true}
               />
             }
           />
         );
       })}
-    </View>
+    </Container>
   );
 }
+
+const Container = styled.ScrollView({
+  flex: 1,
+});

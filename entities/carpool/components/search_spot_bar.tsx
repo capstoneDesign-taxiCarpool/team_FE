@@ -123,13 +123,18 @@ export default function SearchSpotBar({
         <LocationInfoCards>
           <ColContainer>
             {searchedLocation.map((v, i) => (
-              <LocationInfoCard key={i} onPress={() => setSelectedIndex(i)}>
+              <LocationInfoCard
+                key={i}
+                onPress={() => setSelectedIndex(i)}
+                isSelectedIndex={selectedIndex === i}
+              >
                 <LocationName>{v.name}</LocationName>
                 <Text>{v.roadAddressName}</Text>
                 {selectedIndex === i && (
                   <BasicButton
                     icon="mappin.and.ellipse"
                     title="포인트로 설정"
+                    isToRight={true}
                     onPress={() => {
                       setLocation(searchedLocation[i]);
                       setSearchedLocation([]);
@@ -161,10 +166,11 @@ const LocationSearch = styled.TextInput({
 const LocationInfoCards = styled.ScrollView({
   maxHeight: "250px",
 });
-const LocationInfoCard = styled.Pressable({
-  padding: 5,
+const LocationInfoCard = styled.Pressable<{ isSelectedIndex: boolean }>((props) => ({
+  padding: 10,
   width: "100%",
-});
+  ...(props.isSelectedIndex && { backgroundColor: "rgba(0, 0, 0, 0.1)", borderRadius: 8 }),
+}));
 const LocationName = styled.Text({
   fontSize: FontSizes.large,
 });

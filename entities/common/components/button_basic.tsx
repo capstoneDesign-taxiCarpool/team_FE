@@ -3,6 +3,7 @@ import styled from "styled-components/native";
 
 import { Colors, FontSizes } from "../util/style_var";
 import { IconSymbol, IconSymbolName } from "./Icon_symbol";
+import { OutShadow } from "./shadows";
 
 type Props = {
   title: string;
@@ -20,14 +21,28 @@ export default function BasicButton({
   isToRight = false,
 }: Props) {
   return (
-    <TouchableHighlight onPress={onPress} disabled={disabled}>
-      <StyledButton disabled={disabled}>
-        <Title>{title}</Title>
-        <IconSymbol name={icon} size={24} color={Colors.white} />
-      </StyledButton>
-    </TouchableHighlight>
+    <Container isToRight={isToRight}>
+      <OutShadow>
+        <TouchableHighlight onPress={onPress} disabled={disabled}>
+          <StyledButton disabled={disabled}>
+            <Title>{title}</Title>
+            <IconSymbol name={icon} size={24} color={Colors.white} />
+          </StyledButton>
+        </TouchableHighlight>
+      </OutShadow>
+    </Container>
   );
 }
+
+const Container = styled.View<{ isToRight: boolean }>((props) =>
+  props.isToRight
+    ? {
+        display: "flex",
+        alignItems: "flex-end",
+        width: "100%",
+      }
+    : {},
+);
 
 const StyledButton = styled.View<{ disabled: boolean }>((props) => ({
   display: "flex",

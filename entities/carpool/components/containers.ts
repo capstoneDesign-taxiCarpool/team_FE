@@ -28,6 +28,7 @@ export const ColContainer = styled.View<{ gap?: number }>((props) => ({
 export const RowContainer = styled.View<{ gap?: number }>((props) => ({
   display: "flex",
   flexDirection: "row",
+  justifyContent: "center",
   alignItems: "center",
   gap: props.gap ?? 10,
 }));

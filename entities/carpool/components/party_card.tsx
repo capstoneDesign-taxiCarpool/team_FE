@@ -1,8 +1,8 @@
-import { Text } from "react-native";
 import styled from "styled-components/native";
 
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import datetimeFormat from "@/entities/common/util/datetime_format";
+import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import { formatOptions } from "../format_options";
 import { Party } from "../types";
@@ -25,24 +25,26 @@ export default function PartyCard({
   return (
     <Container>
       <Path>
-        <Text>{departure?.name}</Text>
-        <IconSymbol name="arrow.right" />
-        <Text>{destination?.name}</Text>
+        <MediumText color={Colors.main}>{departure?.name}</MediumText>
+        <IconSymbol name="arrow.right" color={Colors.main} />
+        <MediumText color={Colors.main}>{destination?.name}</MediumText>
       </Path>
-      <Instructor>
-        <IconSymbol name="clock" />
-        <Text>{`${datetimeFormat(when2go, "date")} / ${datetimeFormat(when2go, "time")}`}</Text>
-      </Instructor>
-      <Instructor>
-        <IconSymbol name="person.3" />
-        <Text>
-          {curMembers} / {maxMembers}
-        </Text>
-      </Instructor>
-      <Instructor>
-        <Text>{formatOptions(options)}</Text>
-      </Instructor>
-      <Text>{comment}</Text>
+      <Instructors>
+        <Instructor>
+          <IconSymbol name="clock" />
+          <MediumText>{`${datetimeFormat(when2go, "date")} / ${datetimeFormat(when2go, "time")}`}</MediumText>
+        </Instructor>
+        <Instructor>
+          <IconSymbol name="person.3" />
+          <MediumText>
+            {curMembers} / {maxMembers}
+          </MediumText>
+        </Instructor>
+        <Instructor>
+          <MediumText color={Colors.darkGray}>{formatOptions(options)}</MediumText>
+        </Instructor>
+        {comment && <MediumText>{comment}</MediumText>}
+      </Instructors>
       {buttons}
     </Container>
   );
@@ -50,11 +52,20 @@ export default function PartyCard({
 
 const Container = styled.View({
   marginTop: "10px",
+  backgroundColor: "rgba(255, 255, 255, 0.5)",
+  padding: 20,
+  borderRadius: 22,
 });
 const Path = styled.View({
   display: "flex",
   flexDirection: "row",
+  alignItems: "center",
   gap: "10px",
+});
+
+const Instructors = styled.View({
+  marginVertical: 10,
+  marginHorizontal: 5,
 });
 const Instructor = styled.View({
   display: "flex",
@@ -62,3 +73,8 @@ const Instructor = styled.View({
   alignItems: "center",
   gap: "10px",
 });
+
+const MediumText = styled.Text<{ color?: string }>((props) => ({
+  fontSize: FontSizes.medium,
+  color: props.color ?? Colors.black,
+}));

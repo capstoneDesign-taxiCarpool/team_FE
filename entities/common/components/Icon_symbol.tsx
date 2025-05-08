@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SymbolWeight } from "expo-symbols";
 import React from "react";
 import { OpaqueColorValue, StyleProp, ViewStyle } from "react-native";
+import styled from "styled-components/native";
 
 // SF Symbols -> Material Icons
 const MAPPING = {
@@ -44,5 +45,9 @@ export function IconSymbol({
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} />;
+  return <StyledMaterialIcons color={color} size={size} name={MAPPING[name] || "help-outline"} />;
 }
+
+const StyledMaterialIcons = styled(MaterialIcons)({
+  textAlign: "center",
+});

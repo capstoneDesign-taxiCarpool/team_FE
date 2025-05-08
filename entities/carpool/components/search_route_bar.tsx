@@ -1,10 +1,11 @@
-import { Image, Text } from "react-native";
+import { Image } from "react-native";
 import styled from "styled-components/native";
 
 import VerticalRoad from "@/assets/images/vertical_road.png";
 import { LocationInfo } from "@/entities/carpool/types";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
-import { Colors } from "@/entities/common/util/style_var";
+import { OutShadow } from "@/entities/common/components/shadows";
+import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import { ColContainer, FloadContainer, RowContainer } from "./containers";
 
@@ -27,17 +28,21 @@ export default function SearchRouteBar({
       <FloadContainer attachTop={true}>
         <RowContainer>
           <Image source={VerticalRoad} />
-          <ColContainer>
-            <LocationText onPress={() => setSearchingLocationType("start")}>
-              <Text>{startLocation?.name ?? "출발지"}</Text>
-            </LocationText>
+          <ColContainer2>
+            <OutShadow>
+              <LocationText onPress={() => setSearchingLocationType("start")}>
+                <MediumText>{startLocation?.name ?? "-"}</MediumText>
+              </LocationText>
+            </OutShadow>
             <SwapBtn onPress={swap}>
               <IconSymbol name="arrow.2.circlepath.circle" size={24} color={Colors.black} />
             </SwapBtn>
-            <LocationText onPress={() => setSearchingLocationType("end")}>
-              <Text>{endLocation?.name ?? "도착지"}</Text>
-            </LocationText>
-          </ColContainer>
+            <OutShadow>
+              <LocationText onPress={() => setSearchingLocationType("end")}>
+                <MediumText>{endLocation?.name ?? "-"}</MediumText>
+              </LocationText>
+            </OutShadow>
+          </ColContainer2>
         </RowContainer>
       </FloadContainer>
     </Container>
@@ -49,10 +54,22 @@ const Container = styled.View({
   width: "100%",
   height: "100%",
 });
+
+const ColContainer2 = styled(ColContainer)({
+  flexGrow: 1,
+  alignItems: "normal",
+});
+
 const SwapBtn = styled.TouchableOpacity({
   width: "fit-content",
 });
 const LocationText = styled.TouchableHighlight({
   textAlign: "center",
   fontWeight: "bold",
+});
+
+const MediumText = styled.Text({
+  fontSize: FontSizes.medium,
+  textAlign: "center",
+  padding: 6,
 });

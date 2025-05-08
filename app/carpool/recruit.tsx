@@ -12,7 +12,8 @@ import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
-import { Colors } from "@/entities/common/util/style_var";
+import { InShadow, OutShadow } from "@/entities/common/components/shadows";
+import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 export default function Recruit() {
   const router = useRouter();
@@ -29,11 +30,13 @@ export default function Recruit() {
       <ColContainer>
         <RowContainer>
           <Label title="최대 참여 인원" />
-          <TextInput
-            keyboardType="numeric"
-            value={String(maxMembers)}
-            onChangeText={(v) => setPartyState({ maxMembers: Number(v) })}
-          />
+          <InShadow flexGrow={1}>
+            <StyledTextInput
+              keyboardType="numeric"
+              value={String(maxMembers)}
+              onChangeText={(v) => setPartyState({ maxMembers: Number(v) })}
+            />
+          </InShadow>
         </RowContainer>
       </ColContainer>
       <ExtraSetting
@@ -87,6 +90,13 @@ const Container = styled.View({
   display: "flex",
   flexDirection: "column",
   gap: "35px",
+  margin: 20,
+});
+
+const StyledTextInput = styled.TextInput({
+  padding: "6px 12px",
+  fontSize: FontSizes.medium,
+  margin: "auto",
 });
 
 const OptionButton = styled.Pressable({
@@ -102,14 +112,22 @@ const OptionButton = styled.Pressable({
 
 const ExtraSetting = ({ title, children }: { title: string; children: React.ReactNode }) => {
   return (
-    <ExtraSettingContainer>
-      <Text>{title}</Text>
+    <OutShadow padding={10} borderRadius={24}>
+      <ExtraSettingTitle>{title}</ExtraSettingTitle>
+      <Line />
       {children}
-    </ExtraSettingContainer>
+    </OutShadow>
   );
 };
-
-const ExtraSettingContainer = styled.View({
-  padding: "10px",
-  borderRadius: "24px",
+const ExtraSettingTitle = styled.Text({
+  textAlign: "center",
+  fontSize: FontSizes.medium,
+  fontWeight: "bold",
+  color: Colors.side,
+});
+const Line = styled.View({
+  width: "100%",
+  height: 1,
+  border: `0.6px solid ${Colors.side}`,
+  marginVertical: 10,
 });

@@ -27,8 +27,8 @@ export default function MapWithMarker({
       const selectedMarker = markers[selectedIndex];
       mapRef.current?.animateToRegion(
         {
-          latitude: selectedMarker.x,
-          longitude: selectedMarker.y,
+          latitude: selectedMarker.y,
+          longitude: selectedMarker.x,
           latitudeDelta: 0.003,
           longitudeDelta: 0.003,
         },
@@ -54,8 +54,8 @@ export default function MapWithMarker({
         <Marker
           key={index}
           coordinate={{
-            latitude: loc.x,
-            longitude: loc.y,
+            latitude: loc.y,
+            longitude: loc.x,
           }}
           pinColor={Colors.side}
           title={loc.name}
@@ -67,11 +67,12 @@ export default function MapWithMarker({
           }}
         />
       ))}
+
       {departure && (
         <Marker
           coordinate={{
-            latitude: departure.x,
-            longitude: departure.y,
+            latitude: departure.y,
+            longitude: departure.x,
           }}
           title={departure.name}
           pinColor={Colors.side}
@@ -81,8 +82,8 @@ export default function MapWithMarker({
       {destination && (
         <Marker
           coordinate={{
-            latitude: destination.x,
-            longitude: destination.y,
+            latitude: destination.y,
+            longitude: destination.x,
           }}
           title={destination.name}
           pinColor={Colors.main}

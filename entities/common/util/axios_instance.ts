@@ -14,7 +14,7 @@ const initInstance = (config: AxiosRequestConfig) => {
   return instance;
 };
 
-export const BASE_URL = "http://knu-carpool.store";
+export const BASE_URL = "https://knu-carpool.store";
 /**
  * @param config 추가 헤더 config
  * @returns

@@ -36,28 +36,26 @@ const searchLocation = debounce(
     setSearchResult: React.Dispatch<React.SetStateAction<LocationInfo[]>>,
   ) => {
     fetchInstance()
-      .get(`/search?query=${text}&x=${lat}&y=${long}`)
+      .get(`/api/map/search?keyword=${text}&x=${long}&y=${lat}`)
       .then((res) => {
-        if (res.status === 200) {
-          setSearchResult(res.data.places);
-        }
+        // TODO x, y 값을 Number로 변환 코드 삭제
+        const places = res.data.places.map(
+          (place: {
+            name: string;
+            roadAddressName?: string;
+            x: string | number;
+            y: string | number;
+          }) => ({
+            ...place,
+            x: Number(place.x),
+            y: Number(place.y),
+          }),
+        );
+
+        setSearchResult(places);
       })
       .catch(() => {
         // TODO: 에러 처리
-        setSearchResult([
-          {
-            name: "테스트 장소",
-            roadAddressName: "테스트 도로명 주소",
-            x: 37.868897,
-            y: 127.744994,
-          },
-          {
-            name: "테스트 장소2",
-            roadAddressName: "테스트 도로명 주소2",
-            x: 37.8757750717447,
-            y: 127.745011033429,
-          },
-        ]);
       });
   },
   500,

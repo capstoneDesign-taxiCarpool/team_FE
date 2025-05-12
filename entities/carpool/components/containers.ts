@@ -18,17 +18,17 @@ export const FloadContainer = styled.View<{ attachTop: boolean }>((props) => ({
   padding: 20,
 }));
 
-export const ColContainer = styled.View<{ gap?: number }>((props) => ({
+export const ColContainer = styled.View<{ gap?: number; alignItems?: string }>((props) => ({
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: props.alignItems ?? "center",
   gap: props.gap ?? 10,
 }));
 
-export const RowContainer = styled.View<{ gap?: number }>((props) => ({
+export const RowContainer = styled.View<{ gap?: number; justifyContent?: string }>((props) => ({
   display: "flex",
   flexDirection: "row",
-  justifyContent: "center",
+  justifyContent: props.justifyContent ?? "center",
   alignItems: "center",
   gap: props.gap ?? 10,
 }));

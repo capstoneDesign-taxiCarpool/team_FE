@@ -1,13 +1,17 @@
 import { Modal } from "react-native";
 import styled from "styled-components/native";
 
+import { Colors, FontSizes } from "@/entities/common/util/style_var";
+
 export default function CustomModal({
   modalVisible,
   setModalVisible,
+  title,
   children,
 }: {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
+  title?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -20,7 +24,10 @@ export default function CustomModal({
       }}
     >
       <ModalBack onPress={() => setModalVisible(false)}>
-        <ModalContainer>{children}</ModalContainer>
+        <ModalContainer>
+          {title && <ModalTitle>{title}</ModalTitle>}
+          {children}
+        </ModalContainer>
       </ModalBack>
     </Modal>
   );
@@ -35,4 +42,14 @@ const ModalContainer = styled.View({
   backgroundColor: "#fff",
   borderRadius: 10,
   padding: 20,
+});
+const ModalTitle = styled.Text({
+  fontSize: FontSizes.small,
+  fontWeight: "bold",
+  paddingBottom: 5,
+  marginBottom: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: "#ccc",
+  color: Colors.main,
+  textAlign: "center",
 });

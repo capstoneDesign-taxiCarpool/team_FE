@@ -1,14 +1,16 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
+import { RowContainer } from "@/entities/carpool/components/containers";
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
 import PartyCard from "@/entities/carpool/components/party_card";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import BasicButton from "@/entities/common/components/button_basic";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
+import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 export default function Recheck() {
   const router = useRouter();
@@ -44,11 +46,14 @@ export default function Recheck() {
         }
       />
       <MapWithMarker departure={departure} destination={destination} />
-      <CustomModal modalVisible={modalVisible} setModalVisible={setModalVisible}>
-        <View>
-          <Text>카풀{partyId ? "에 참여" : "을 생성"}할까요?</Text>
+      <CustomModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        title={`카풀${partyId ? "에 참여" : "을 생성"}할까요?`}
+      >
+        <RowContainer>
           <Pressable onPress={() => setModalVisible(false)}>
-            <Text>취소</Text>
+            <ModalBtnText color={Colors.side}>취소</ModalBtnText>
           </Pressable>
           <Pressable
             onPress={() => {
@@ -86,9 +91,9 @@ export default function Recheck() {
               }
             }}
           >
-            <Text>{partyId ? "참여하기" : "생성하기"}</Text>
+            <ModalBtnText>{partyId ? "참여하기" : "생성하기"}</ModalBtnText>
           </Pressable>
-        </View>
+        </RowContainer>
       </CustomModal>
     </Container>
   );
@@ -97,3 +102,8 @@ export default function Recheck() {
 const Container = styled.View({
   flex: 1,
 });
+const ModalBtnText = styled.Text<{ color?: string }>((props) => ({
+  color: props.color || Colors.black,
+  padding: "5px 10px",
+  fontSize: FontSizes.medium,
+}));

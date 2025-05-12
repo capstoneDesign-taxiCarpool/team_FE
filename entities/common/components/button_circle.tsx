@@ -1,4 +1,4 @@
-import { TouchableHighlight } from "react-native";
+import { TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 
 import { Colors } from "../util/style_var";
@@ -13,11 +13,11 @@ type Props = {
 export default function CircleButton({ icon, onPress }: Props) {
   return (
     <Container>
-      <TouchableHighlight onPress={onPress}>
+      <TouchableOpacity onPress={onPress}>
         <OutShadow color={Colors.side} borderRadius={60} padding={20}>
           <IconSymbol name={icon} size={24} color={Colors.white} />
         </OutShadow>
-      </TouchableHighlight>
+      </TouchableOpacity>
     </Container>
   );
 }

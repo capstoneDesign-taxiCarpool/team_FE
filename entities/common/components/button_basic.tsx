@@ -1,4 +1,4 @@
-import { TouchableHighlight } from "react-native";
+import { TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 
 import { Colors, FontSizes } from "../util/style_var";
@@ -23,12 +23,12 @@ export default function BasicButton({
   return (
     <Container isToRight={isToRight}>
       <OutShadow>
-        <TouchableHighlight onPress={onPress} disabled={disabled}>
+        <TouchableOpacity onPress={onPress} disabled={disabled}>
           <StyledButton disabled={disabled}>
             <Title>{title}</Title>
             <IconSymbol name={icon} size={24} color={Colors.white} />
           </StyledButton>
-        </TouchableHighlight>
+        </TouchableOpacity>
       </OutShadow>
     </Container>
   );

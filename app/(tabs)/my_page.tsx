@@ -1,8 +1,7 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import styled from "styled-components/native";
 
 import { authCode as authCodeStorage } from "@/entities/common/util/storage";
@@ -15,26 +14,16 @@ export default function MyPage() {
   const [nickname, setNickname] = useState("홍길동");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [savedAmount, setSavedAmount] = useState<number>(0);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     authCodeStorage.get().then((code) => {
       if (code) {
         setIsLoggedIn(true);
 
-        // API에서 아낀 금액 불러오기
         fetch("https://your-api.com/user/savings")
           .then((res) => res.json())
           .then((data) => setSavedAmount(data.amount ?? 0))
           .catch(() => setSavedAmount(0));
-
-        // API에서 프로필 이미지 불러오기 (예시)
-        fetch("https://your-api.com/user/profile")
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.profileImage) setProfileImage(data.profileImage);
-          })
-          .catch(() => {});
       }
     });
   }, []);
@@ -49,44 +38,10 @@ export default function MyPage() {
     }
   };
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const uri = result.assets[0].uri;
-      setProfileImage(uri);
-
-      // 서버에 업로드 예시
-      const formData = new FormData();
-      formData.append("profileImage", {
-        uri,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      } as unknown as {
-        uri: string;
-        name: string;
-        type: string;
-      });
-
-      await fetch("https://your-api.com/user/profile", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-    }
-  };
-
   return (
     <Container>
       <Inner>
-        <TouchableOpacity onPress={pickImage}>
-          <ProfileImage source={profileImage ? { uri: profileImage } : defaultProfile} />
-        </TouchableOpacity>
+        <ProfileImage source={defaultProfile} />
 
         {isLoggedIn ? (
           <>

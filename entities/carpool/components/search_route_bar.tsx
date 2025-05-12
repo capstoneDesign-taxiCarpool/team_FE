@@ -63,7 +63,7 @@ const ColContainer2 = styled(ColContainer)({
 const SwapBtn = styled.TouchableOpacity({
   width: "fit-content",
 });
-const LocationText = styled.TouchableHighlight({
+const LocationText = styled.TouchableOpacity({
   textAlign: "center",
   fontWeight: "bold",
 });

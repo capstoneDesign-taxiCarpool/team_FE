@@ -2,6 +2,7 @@ import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/dat
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, TouchableOpacity } from "react-native";
+import { Colors } from "react-native/Libraries/NewAppScreen";
 import styled from "styled-components/native";
 
 import VerticalRoad from "@/assets/images/vertical_road.png";
@@ -36,6 +37,7 @@ export default function PartySetting() {
           value={when2go ? new Date(when2go) : new Date()}
           mode={mode}
           onChange={onChange}
+          accentColor={Colors.main}
         />
       )}
       <RowContainer>

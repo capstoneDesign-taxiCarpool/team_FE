@@ -1,7 +1,7 @@
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Text } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
@@ -51,23 +51,28 @@ export default function Recruit() {
           </RowContainer>
         }
       />
-      <CustomModal modalVisible={modalVisible} setModalVisible={setModalVisible}>
-        <Text>추가 옵션 선택</Text>
-        {optionsList.map((option) => (
-          <View>
-            <Checkbox
-              key={option.name}
-              value={options[option.name]}
-              onValueChange={(v) => setPartyState({ options: { ...options, [option.name]: v } })}
-            />
-            <Text>{option.ko}</Text>
-          </View>
-        ))}
+      <CustomModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        title="추가 옵션 선택"
+      >
+        <ColContainer gap={5} alignItems="start">
+          {optionsList.map((option) => (
+            <RowContainer key={option.name} justifyContent="start">
+              <Checkbox
+                color={Colors.main}
+                value={options[option.name]}
+                onValueChange={(v) => setPartyState({ options: { ...options, [option.name]: v } })}
+              />
+              <MediumText>{option.ko}</MediumText>
+            </RowContainer>
+          ))}
+        </ColContainer>
       </CustomModal>
       <ExtraSetting
         title="comment"
         children={
-          <TextInput
+          <StyledTextInput
             placeholder={`추가적인 안내사항,
 하고 싶은 말(20자 이내)`}
             value={comment}
@@ -97,6 +102,11 @@ const StyledTextInput = styled.TextInput({
   padding: "6px 12px",
   fontSize: FontSizes.medium,
   margin: "auto",
+  textAlign: "center",
+});
+const MediumText = styled.Text({
+  fontSize: FontSizes.medium,
+  color: Colors.black,
 });
 
 const OptionButton = styled.Pressable({

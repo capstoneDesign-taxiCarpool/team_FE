@@ -9,12 +9,25 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "edu.kangwon.taxiCarpool",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "googleMapsApiKey": "process.env.GOOGLE_MAPS_API_KEY_IOS"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "edu.kangwon.taxiCarpool",
+      "config": {
+        "googleMaps": {
+          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+        }
       }
     },
     "web": {
@@ -39,10 +52,45 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow taxiCarpool to access your Face ID biometric data."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "강원대카풀에서 위치정보를 사용하도록 허용하시겠습니까?"
+        }
+      ],
+      [
+        "@react-native-community/datetimepicker",
+        {
+          "android": {
+            "datePicker": {
+              "colorAccent": {
+                "light": "#253393",
+                "dark": "#253393"
+              },
+              "colorControlActivated": {
+                "light": "#253393",
+                "dark": "#253393"
+              }
+            },
+            "timePicker": {
+              "headerBackground": { "light": "#253393", "dark": "#253393" },
+              "numbersSelectorColor": { "light": "#253393", "dark": "#253393" }
+            }
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3bd552b3-08c6-438d-9ca0-5b83fe8b97fc"
+      }
     }
   }
 }

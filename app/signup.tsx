@@ -3,7 +3,6 @@ import { View } from "react-native";
 import styled from "styled-components/native";
 
 import CircleButton from "@/entities/common/components/button_circle";
-import InnerShadow from "@/entities/common/components/inner_shadow";
 import { authCode } from "@/entities/common/util/storage";
 import { FontSizes } from "@/entities/common/util/style_var";
 import PersonalInfo from "@/entities/signup/personal_info";
@@ -24,40 +23,31 @@ export default function Signup() {
   return (
     <Container>
       <View>
-        <InnerShadow />
         <NoticeText>
-          {`강원대학교 학생을 위한 카풀 서비스 입니다.
-        강원대 학생 메일을 적고, 
-        “인증코드 보내기” 버튼을 눌러주세요`}
+          {`강원대학교 학생을 위한 카풀 서비스,
+          --- 입니다.`}
         </NoticeText>
       </View>
       <VertifyEmail emailCode={emailCode} setEmailCode={setEmailCode} />
       <PersonalInfo sex={sex} setSex={setSex} nickname={nickname} setNickname={setNickname} />
-      <SubmitButton>
-        <CircleButton
-          icon="magnifyingglass.circle"
-          onPress={() => handleSignup(emailCode, nickname, sex)}
-        />
-      </SubmitButton>
+      <CircleButton
+        icon="magnifyingglass.circle"
+        onPress={() => handleSignup(emailCode, nickname, sex)}
+      />
     </Container>
   );
 }
 
 const Container = styled.View({
-  padding: "1rem",
+  padding: "0 20px",
   display: "flex",
   flexDirection: "column",
-  gap: "3rem",
+  gap: "40px",
 });
 
 const NoticeText = styled.Text({
-  padding: "1rem",
+  padding: "20px",
   fontSize: FontSizes.medium,
   textAlign: "center",
   width: "100%",
-});
-
-const SubmitButton = styled.View({
-  display: "flex",
-  alignItems: "center",
 });

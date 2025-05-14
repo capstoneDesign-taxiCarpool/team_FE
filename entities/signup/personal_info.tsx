@@ -53,7 +53,7 @@ export default function PersonalInfo({
 const Container = styled.View({
   display: "flex",
   flexDirection: "column",
-  gap: "0.7rem",
+  gap: "10px",
 });
 const Input = styled.TextInput({
   fontSize: FontSizes.medium,
@@ -64,7 +64,10 @@ const SelectText = styled.Text<{ active: boolean }>((props) =>
   props.active
     ? {
         fontWeight: "bold",
+        fontSize: FontSizes.medium,
         color: Colors.main,
       }
-    : {},
+    : {
+        fontSize: FontSizes.medium,
+      },
 );

@@ -2,6 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SymbolWeight } from "expo-symbols";
 import React from "react";
 import { OpaqueColorValue, StyleProp, ViewStyle } from "react-native";
+import styled from "styled-components/native";
 
 // SF Symbols -> Material Icons
 const MAPPING = {
@@ -11,8 +12,14 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   "bubble.left.fill": "chat",
   "person.circle": "account-circle",
-  "paperplane.circle": "send",
   "magnifyingglass.circle": "search",
+  "arrow.2.circlepath.circle": "swap-vert",
+  "arrow.right": "arrow-forward",
+  clock: "access-time",
+  "person.3": "people",
+  checkmark: "check",
+  "plus.circle": "add-circle-outline",
+  "mappin.and.ellipse": "place",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],
@@ -30,13 +37,17 @@ export type IconSymbolName = keyof typeof MAPPING;
 export function IconSymbol({
   name,
   size = 24,
-  color,
+  color = "#2C2C2C",
 }: {
   name: IconSymbolName;
   size?: number;
-  color: string | OpaqueColorValue;
+  color?: string | OpaqueColorValue;
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} />;
+  return <StyledMaterialIcons color={color} size={size} name={MAPPING[name] || "help-outline"} />;
 }
+
+const StyledMaterialIcons = styled(MaterialIcons)({
+  textAlign: "center",
+});

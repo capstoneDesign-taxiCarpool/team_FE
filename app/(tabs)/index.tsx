@@ -18,7 +18,7 @@ export default function HomeScreen() {
       </ScheduleBox>
 
       <PartyBox source={partyMakeImage}>
-        <OverlayTouchable onPress={() => router.push("../chatpage")}>
+        <OverlayTouchable onPress={() => router.push("/carpool/recruit")}>
           <IconContainer>
             <Feather name="plus" size={30} color="#333333" />
           </IconContainer>
@@ -28,7 +28,7 @@ export default function HomeScreen() {
       </PartyBox>
 
       <PartyBox source={partyJoinImage}>
-        <OverlayTouchable onPress={() => router.push("/partyjoin")}>
+        <OverlayTouchable onPress={() => router.push("/carpool/join")}>
           <IconContainer>
             <Ionicons name="search" size={30} color="#333333" />
           </IconContainer>

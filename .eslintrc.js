@@ -8,7 +8,12 @@ module.exports = {
   ],
   plugins: ["prettier", "react-hooks", "react-refresh", "simple-import-sort"],
   rules: {
-    "prettier/prettier": "error",
+    "prettier/prettier": [
+      "error",
+      {
+        endOfLine: "auto",
+      },
+    ],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],

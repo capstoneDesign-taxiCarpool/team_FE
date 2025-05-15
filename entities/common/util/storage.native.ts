@@ -17,3 +17,4 @@ const initStorage = <T extends keyof StorageKey>(key: T) => {
 };
 
 export const authCode = initStorage("authCode");
+export const refreshCode = initStorage("refreshCode");

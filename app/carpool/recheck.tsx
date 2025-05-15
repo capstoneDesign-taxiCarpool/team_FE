@@ -3,12 +3,12 @@ import { useState } from "react";
 import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
-import { RowContainer } from "@/entities/carpool/components/containers";
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
 import PartyCard from "@/entities/carpool/components/party_card";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import BasicButton from "@/entities/common/components/button_basic";
+import { RowContainer } from "@/entities/common/components/containers";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 

@@ -1,5 +1,6 @@
 export interface StorageKey {
   authCode?: string | null;
+  refreshCode?: string | null;
 }
 
 /**
@@ -22,3 +23,4 @@ const initStorage = <T extends keyof StorageKey>(key: T) => {
 };
 
 export const authCode = initStorage("authCode");
+export const refreshCode = initStorage("refreshCode");

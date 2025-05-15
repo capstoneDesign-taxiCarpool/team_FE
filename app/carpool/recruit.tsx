@@ -4,12 +4,12 @@ import { useState } from "react";
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
-import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import { formatOptions, optionsList } from "@/entities/carpool/format_options";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
+import { ColContainer, RowContainer } from "@/entities/common/components/containers";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 import { InShadow, OutShadow } from "@/entities/common/components/shadows";

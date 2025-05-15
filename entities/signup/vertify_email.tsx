@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { TextInput } from "react-native";
+import { useState } from "react";
+import { Alert } from "react-native";
 import styled from "styled-components/native";
 
 import BasicButton from "@/entities/common/components/button_basic";
@@ -12,11 +12,11 @@ import InputContainer from "./input_container";
  * 이메일을 입력받고, 서버에 인증코드 전송 요청
  */
 const handleSendCode = (email: string, setCheckState: (v: number) => void) => {
-  setCheckState(1);
   fetchInstance()
-    .post("/이메일 인증코드 전송 API", { email })
-    .catch((err) => {
-      //TODO 서버 에러가 난 경우, 유저에게 알림
+    .post("/api/email/send", { email: email + "@kangwon.ac.kr" })
+    .then(() => setCheckState(1))
+    .catch(() => {
+      Alert.alert("이메일 전송 실패", "이메일을 다시 확인해주세요");
     });
 };
 /**
@@ -38,11 +38,10 @@ const vertifyCode = (
   }
 
   fetchInstance()
-    .post("/이메일 인증코드 확인 API", { email, code: v })
+    .post("/api/email/verify", { email: email + "@kangwon.ac.kr", code: v })
     .then(() => setCheckState(3))
     .catch((err) => {
-      //TODO 서버 에러가 난 경우, 유저에게 알림
-      setCheckState(3);
+      setCheckState(2);
     });
 };
 
@@ -50,22 +49,21 @@ const vertifyCode = (
  * @returns (회원가입 페이지) 이메일 입력 및 인증 필드
  */
 export default function VertifyEmail({
-  emailCode,
-  setEmailCode,
+  email,
+  setEmail,
 }: {
-  emailCode: string;
-  setEmailCode: (emailCode: string) => void;
+  email: string;
+  setEmail: (email: string) => void;
 }) {
-  const emailInputRef = useRef<TextInput | null>(null);
-  const [email, setEmail] = useState<string>("");
+  const [emailCode, setEmailCode] = useState<string>("");
   // 이메일 인증 단계 상태 | 0: 코드 전송 전, 1: 코드 전송 완료, 2: 인증 코드 틀림, 3: 인증 코드 맞음
   const [checkState, setCheckState] = useState<number>(0);
 
   return (
     <Container>
       <AlignRight>
-        <InputContainer title="강원대 메일" handleClick={() => emailInputRef.current?.focus()}>
-          <Input ref={emailInputRef} value={email} onChangeText={setEmail} />
+        <InputContainer title="강원대 메일">
+          <Input value={email} onChangeText={setEmail} />
           <MailText>@kangwon.ac.kr</MailText>
         </InputContainer>
         <BasicButton
@@ -100,12 +98,12 @@ const Container = styled.View({
   gap: "20px",
 });
 
-// TODO typescript가 ref를 인식하지 못해 임시방편함. 원인파악 필요
-const Input = styled.TextInput<{ ref: React.MutableRefObject<TextInput | null> }>({
+const Input = styled.TextInput({
   fontSize: FontSizes.medium,
   maxWidth: "6rem",
   border: "none",
   textAlign: "right",
+  flexGrow: 1,
 });
 const MailText = styled.Text({
   color: Colors.main,

@@ -2,20 +2,25 @@ import { useEffect } from "react";
 import { Pressable, Text } from "react-native";
 import styled from "styled-components/native";
 
+import { ColContainer } from "@/entities/common/components/containers";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import InputContainer from "./input_container";
 
 /**
- * @returns (회원가입 페이지) 닉네임, 성별 입력 필드
+ * @returns (회원가입 페이지) 비밀번호, 닉네임, 성별 입력 필드
  */
 export default function PersonalInfo({
+  password,
+  setPassword,
   sex,
   setSex,
   nickname,
   setNickname,
 }: {
+  password: string;
+  setPassword: (v: string) => void;
   sex: number;
   setSex: (v: number) => void;
   nickname: string;
@@ -34,6 +39,25 @@ export default function PersonalInfo({
 
   return (
     <Container>
+      <ColContainer alignItems="flex-end" gap={7}>
+        <InputContainer title="비밀번호">
+          <Input
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoCapitalize="none"
+            placeholder="비밀번호를 입력하세요"
+          />
+        </InputContainer>
+        <PasswordCheckText>
+          {password.length > 8 &&
+          password.length <= 20 &&
+          password.match(/[a-zA-Z]/) &&
+          password.match(/\d/)
+            ? "✅ 사용가능한 비밀번호입니다."
+            : "❌ 비밀번호는 영문과 숫자를 포함한 8~20자여야 합니다."}
+        </PasswordCheckText>
+      </ColContainer>
       <InputContainer title="닉네임">
         <Input value={nickname} onChangeText={setNickname} />
       </InputContainer>
@@ -59,7 +83,13 @@ const Input = styled.TextInput({
   fontSize: FontSizes.medium,
   textAlign: "center",
   border: "none",
+  flexGrow: 1,
 });
+
+const PasswordCheckText = styled.Text({
+  fontSize: FontSizes.small,
+});
+
 const SelectText = styled.Text<{ active: boolean }>((props) =>
   props.active
     ? {

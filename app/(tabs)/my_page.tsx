@@ -75,7 +75,7 @@ export default function MyPage() {
             </DeleteButton>
           </>
         ) : (
-          <LoginGuideButton onPress={() => router.push("/signup")}>
+          <LoginGuideButton onPress={() => router.push("/signin")}>
             <LoginGuideText>로그인 후 이용해주세요 &gt;</LoginGuideText>
           </LoginGuideButton>
         )}

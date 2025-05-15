@@ -9,7 +9,7 @@ import BasicButton from "@/entities/common/components/button_basic";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { FontSizes } from "@/entities/common/util/style_var.native";
 
-import { ColContainer, FloadContainer } from "./containers";
+import { ColContainer, FloadContainer } from "../../common/components/containers";
 
 const fetchCurLocation = async (
   setCurLocation: React.Dispatch<React.SetStateAction<Location.LocationObjectCoords>>,

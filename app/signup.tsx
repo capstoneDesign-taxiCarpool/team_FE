@@ -1,40 +1,84 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { View } from "react-native";
+import { Alert, KeyboardAvoidingView, ScrollView, View } from "react-native";
 import styled from "styled-components/native";
 
 import CircleButton from "@/entities/common/components/button_circle";
-import { authCode } from "@/entities/common/util/storage";
+import { fetchInstance } from "@/entities/common/util/axios_instance";
+import { authCode, refreshCode } from "@/entities/common/util/storage";
 import { FontSizes } from "@/entities/common/util/style_var";
 import PersonalInfo from "@/entities/signup/personal_info";
 import VertifyEmail from "@/entities/signup/vertify_email";
 
-const handleSignup = (emailCode: string, nickname: string, sex: number) => {
-  console.log(
-    `이메일 코드: ${emailCode} 닉네임: ${nickname}, 성별: ${sex === 0 ? "남성" : "여성"}`,
-  );
-  authCode.set(emailCode);
+const handleSignup = (
+  emailCode: string,
+  password: string,
+  nickname: string,
+  sex: number,
+  onSuccess: () => void,
+) => {
+  fetchInstance()
+    .post("/api/auth/signup", {
+      email: emailCode + "@kangwon.ac.kr",
+      password,
+      nickname,
+      gender: sex,
+    })
+    .then(() => {
+      fetchInstance()
+        .post("/api/auth/login", {
+          email: emailCode + "@kangwon.ac.kr",
+          password,
+        })
+        .then((res) => {
+          authCode.set(res.data.accessToken);
+          refreshCode.set(res.data.refreshToken);
+          onSuccess();
+        });
+    })
+    .catch((err) => {
+      if (err.response.status === 404) Alert.alert("회원가입 실패", "이메일 인증을 먼저 해주세요.");
+      else
+        Alert.alert(
+          "회원가입 실패",
+          Object.values(err.response.data.errors).join("\n") ?? "서버 오류",
+        );
+    });
 };
 
 export default function Signup() {
-  const [emailCode, setEmailCode] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [nickname, setNickname] = useState<string>("");
   const [sex, setSex] = useState<number>(0);
+  const router = useRouter();
 
   return (
-    <Container>
-      <View>
-        <NoticeText>
-          {`강원대학교 학생을 위한 카풀 서비스,
+    <KeyboardAvoidingView behavior="padding">
+      <ScrollView>
+        <Container>
+          <View>
+            <NoticeText>
+              {`강원대학교 학생을 위한 카풀 서비스,
           --- 입니다.`}
-        </NoticeText>
-      </View>
-      <VertifyEmail emailCode={emailCode} setEmailCode={setEmailCode} />
-      <PersonalInfo sex={sex} setSex={setSex} nickname={nickname} setNickname={setNickname} />
-      <CircleButton
-        icon="magnifyingglass.circle"
-        onPress={() => handleSignup(emailCode, nickname, sex)}
-      />
-    </Container>
+            </NoticeText>
+          </View>
+          <VertifyEmail email={email} setEmail={setEmail} />
+          <PersonalInfo
+            password={password}
+            setPassword={setPassword}
+            sex={sex}
+            setSex={setSex}
+            nickname={nickname}
+            setNickname={setNickname}
+          />
+          <CircleButton
+            icon="checkmark"
+            onPress={() => handleSignup(email, password, nickname, sex, () => router.push("/"))}
+          />
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

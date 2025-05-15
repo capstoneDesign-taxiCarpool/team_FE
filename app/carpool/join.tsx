@@ -2,11 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
-import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import PartyCardList from "@/entities/carpool/components/party_card_list";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { LocationInfo, Party } from "@/entities/carpool/types";
+import { ColContainer, RowContainer } from "@/entities/common/components/containers";
 import Label from "@/entities/common/components/label";
 import { InShadow } from "@/entities/common/components/shadows";
 import { fetchInstance } from "@/entities/common/util/axios_instance";

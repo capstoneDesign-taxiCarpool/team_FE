@@ -6,8 +6,8 @@ import { Colors } from "react-native/Libraries/NewAppScreen";
 import styled from "styled-components/native";
 
 import VerticalRoad from "@/assets/images/vertical_road.png";
-import { ColContainer, RowContainer } from "@/entities/carpool/components/containers";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
+import { ColContainer, RowContainer } from "@/entities/common/components/containers";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 import { OutShadow } from "@/entities/common/components/shadows";

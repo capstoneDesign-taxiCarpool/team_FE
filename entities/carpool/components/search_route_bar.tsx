@@ -7,7 +7,7 @@ import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import { OutShadow } from "@/entities/common/components/shadows";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
-import { ColContainer, FloadContainer, RowContainer } from "./containers";
+import { ColContainer, FloadContainer, RowContainer } from "../../common/components/containers";
 
 /**
  * @returns 출발지, 도착지 검색창

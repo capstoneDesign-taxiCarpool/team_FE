@@ -6,23 +6,28 @@ import sadFace from "@/assets/images/sad_face.svg";
 import BasicButton from "@/entities/common/components/button_basic";
 import CircleButton from "@/entities/common/components/button_circle";
 
+import PartyCard from "../../common/components/party_card";
 import usePartyStore from "../store/usePartyStore";
-import { Party } from "../types";
-import PartyCard from "./party_card";
+import { PartyResponse } from "../types";
 
-export default function PartyCardList({ partys }: { partys: Party[] }) {
+export default function PartyCardList({ partys }: { partys: PartyResponse[] }) {
   const router = useRouter();
   const setPartyState = usePartyStore((state) => state.setPartyState);
 
-  const route2recheck = (party: Party) => {
+  const route2recheck = (party: PartyResponse) => {
     setPartyState({
-      partyId: party.partyId,
-      when2go: party.when2go,
-      departure: party.departure,
-      destination: party.destination,
-      maxMembers: party.maxMembers,
-      curMembers: party.curMembers,
-      options: party.options,
+      partyId: party.id,
+      when2go: party.startDateTime,
+      departure: party.startPlace,
+      destination: party.endPlace,
+      maxMembers: party.maxParticipantCount,
+      curMembers: party.currentParticipantCount,
+      options: {
+        sameGenderOnly: party.sameGenderOnly,
+        costShareBeforeDropOff: party.costShareBeforeDropOff,
+        quietMode: party.quietMode,
+        destinationChangeIn5Minutes: party.destinationChangeIn5Minutes,
+      },
       comment: party.comment,
     });
     router.push("/carpool/recheck");
@@ -49,13 +54,18 @@ export default function PartyCardList({ partys }: { partys: Party[] }) {
       {partys.map((v) => {
         return (
           <PartyCard
-            key={v.partyId}
-            when2go={v.when2go}
-            departure={v.departure}
-            destination={v.destination}
-            maxMembers={v.maxMembers}
-            curMembers={v.curMembers}
-            options={v.options}
+            key={v.id}
+            when2go={v.startDateTime}
+            departure={v.startPlace}
+            destination={v.endPlace}
+            maxMembers={v.maxParticipantCount}
+            curMembers={v.currentParticipantCount}
+            options={{
+              sameGenderOnly: v.sameGenderOnly,
+              costShareBeforeDropOff: v.costShareBeforeDropOff,
+              quietMode: v.quietMode,
+              destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+            }}
             buttons={
               <BasicButton
                 title="자세히"
@@ -73,4 +83,7 @@ export default function PartyCardList({ partys }: { partys: Party[] }) {
 
 const Container = styled.ScrollView({
   flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
 });

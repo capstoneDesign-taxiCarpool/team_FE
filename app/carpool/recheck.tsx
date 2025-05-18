@@ -5,10 +5,10 @@ import styled from "styled-components/native";
 
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
-import PartyCard from "@/entities/carpool/components/party_card";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import BasicButton from "@/entities/common/components/button_basic";
 import { RowContainer } from "@/entities/common/components/containers";
+import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
@@ -68,14 +68,18 @@ export default function Recheck() {
                     router.push("/(tabs)/chat_list");
                   });
               } else {
-                fetchInstance()
+                fetchInstance(true)
                   .post("/api/party", {
-                    when2go,
-                    departure,
-                    destination,
-                    maxMembers,
-                    curMembers,
-                    options,
+                    sameGenderOnly: options.sameGenderOnly,
+                    costShareBeforeDropOff: options.costShareBeforeDropOff,
+                    quietMode: options.quietMode,
+                    destinationChangeIn5Minutes: options.destinationChangeIn5Minutes,
+                    startDateTime: new Date(when2go ?? 0).toLocaleDateString("ko-KR"),
+                    maxParticipantCount: maxMembers,
+                    currentParticipantCount: curMembers,
+                    startPlace: departure,
+                    endPlace: destination,
+                    comment,
                   })
                   .then((res) => {
                     setPartyState({
@@ -85,8 +89,6 @@ export default function Recheck() {
                   })
                   .catch((err) => {
                     // TODO 에러 처리
-                    console.error(err);
-                    router.push("/(tabs)/chat_list");
                   });
               }
             }}

@@ -1,7 +1,7 @@
 import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Text } from "react-native";
+import { KeyboardAvoidingView, ScrollView, Text } from "react-native";
 import styled from "styled-components/native";
 
 import CustomModal from "@/entities/carpool/components/custom_modal";
@@ -25,69 +25,75 @@ export default function Recruit() {
   const setPartyState = usePartyStore((state) => state.setPartyState);
 
   return (
-    <Container>
-      <PartySetting />
-      <ColContainer>
-        <RowContainer>
-          <Label title="최대 참여 인원" />
-          <InShadow flexGrow={1}>
-            <StyledTextInput
-              keyboardType="numeric"
-              value={String(maxMembers)}
-              onChangeText={(v) => setPartyState({ maxMembers: Number(v) })}
-            />
-          </InShadow>
-        </RowContainer>
-      </ColContainer>
-      <ExtraSetting
-        title="추가 옵션"
-        children={
-          <RowContainer>
-            <Text>{formatOptions(options)}</Text>
-            <OptionButton onPress={() => setModalVisible(true)}>
-              <Text>추가하기</Text>
-              <IconSymbol name="plus.circle" color={Colors.main} />
-            </OptionButton>
-          </RowContainer>
-        }
-      />
-      <CustomModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        title="추가 옵션 선택"
-      >
-        <ColContainer gap={5} alignItems="start">
-          {optionsList.map((option) => (
-            <RowContainer key={option.name} justifyContent="start">
-              <Checkbox
-                color={Colors.main}
-                value={options[option.name]}
-                onValueChange={(v) => setPartyState({ options: { ...options, [option.name]: v } })}
-              />
-              <MediumText>{option.ko}</MediumText>
+    <KeyboardAvoidingView behavior="padding">
+      <ScrollView>
+        <Container>
+          <PartySetting />
+          <ColContainer>
+            <RowContainer>
+              <Label title="최대 참여 인원" />
+              <InShadow flexGrow={1}>
+                <StyledTextInput
+                  keyboardType="numeric"
+                  value={String(maxMembers)}
+                  onChangeText={(v) => setPartyState({ maxMembers: Number(v) })}
+                />
+              </InShadow>
             </RowContainer>
-          ))}
-        </ColContainer>
-      </CustomModal>
-      <ExtraSetting
-        title="comment"
-        children={
-          <StyledTextInput
-            placeholder={`추가적인 안내사항,
-하고 싶은 말(20자 이내)`}
-            value={comment}
-            onChangeText={(v) => setPartyState({ comment: v })}
+          </ColContainer>
+          <ExtraSetting
+            title="추가 옵션"
+            children={
+              <RowContainer>
+                <Text>{formatOptions(options)}</Text>
+                <OptionButton onPress={() => setModalVisible(true)}>
+                  <Text>추가하기</Text>
+                  <IconSymbol name="plus.circle" color={Colors.main} />
+                </OptionButton>
+              </RowContainer>
+            }
           />
-        }
-      />
-      <CircleButton
-        icon="checkmark"
-        onPress={() => {
-          setPartyState({ partyId: undefined });
-          router.push("/carpool/recheck");
-        }}
-      />
-    </Container>
+          <CustomModal
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            title="추가 옵션 선택"
+          >
+            <ColContainer gap={5} alignItems="start">
+              {optionsList.map((option) => (
+                <RowContainer key={option.name} justifyContent="start">
+                  <Checkbox
+                    color={Colors.main}
+                    value={options[option.name]}
+                    onValueChange={(v) =>
+                      setPartyState({ options: { ...options, [option.name]: v } })
+                    }
+                  />
+                  <MediumText>{option.ko}</MediumText>
+                </RowContainer>
+              ))}
+            </ColContainer>
+          </CustomModal>
+          <ExtraSetting
+            title="comment"
+            children={
+              <StyledTextInput
+                placeholder={`추가적인 안내사항,
+하고 싶은 말(20자 이내)`}
+                value={comment}
+                onChangeText={(v) => setPartyState({ comment: v })}
+              />
+            }
+          />
+          <CircleButton
+            icon="checkmark"
+            onPress={() => {
+              setPartyState({ partyId: undefined });
+              router.push("/carpool/recheck");
+            }}
+          />
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -103,6 +109,7 @@ const StyledTextInput = styled.TextInput({
   fontSize: FontSizes.medium,
   margin: "auto",
   textAlign: "center",
+  width: "100%",
 });
 const MediumText = styled.Text({
   fontSize: FontSizes.medium,

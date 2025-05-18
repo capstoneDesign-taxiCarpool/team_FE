@@ -38,21 +38,7 @@ const searchLocation = debounce(
     fetchInstance()
       .get(`/api/map/search?keyword=${text}&x=${long}&y=${lat}`)
       .then((res) => {
-        // TODO x, y 값을 Number로 변환 코드 삭제
-        const places = res.data.places.map(
-          (place: {
-            name: string;
-            roadAddressName?: string;
-            x: string | number;
-            y: string | number;
-          }) => ({
-            ...place,
-            x: Number(place.x),
-            y: Number(place.y),
-          }),
-        );
-
-        setSearchResult(places);
+        setSearchResult(res.data.places);
       })
       .catch(() => {
         // TODO: 에러 처리

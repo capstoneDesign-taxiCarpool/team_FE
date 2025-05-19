@@ -1,7 +1,8 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import React from "react";
+import * as SecureStore from "expo-secure-store";
+import React, { useEffect, useState } from "react";
 import { ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
@@ -10,30 +11,97 @@ import { fetchInstance } from "@/entities/common/util/axios_instance";
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
 
+type Party = {
+  id: number;
+  startPlace: { name: string };
+  endPlace: { name: string };
+  startDateTime: string;
+};
+
+// ✅ API 요청 함수
 const getMySchedule = async () => {
-  const res = await fetchInstance(true).get("/api/members/me/party");
-  return res.data; // { departure: string, destination: string, when2go: "HH:mm" }
+  try {
+    const res = await fetchInstance(true).get("https://knu-carpool.store/api/party/my-parties");
+    const now = new Date();
+
+    const sorted = res.data
+      .map((party: Party) => ({
+        id: party.id,
+        departure: party.startPlace.name,
+        destination: party.endPlace.name,
+        startDateTime: new Date(party.startDateTime),
+      }))
+      .filter((p) => p.startDateTime > now)
+      .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
+
+    return sorted[0] || null;
+  } catch (error) {
+    console.error("❌ getMySchedule 에러:", error);
+    return null;
+  }
 };
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await SecureStore.getItemAsync("authToken");
+      console.log("🔐 SecureStore token:", token);
+      setIsLoggedIn(!!token);
+    };
+    checkToken();
+  }, []);
 
   const { data: schedule, isPending } = useQuery({
     queryKey: ["mySchedule"],
     queryFn: getMySchedule,
+    enabled: isLoggedIn === true,
   });
+
+  const formatTime = (date: Date) => {
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    return `${hour}:${minute}`;
+  };
+
+  const formatDateLabel = (date: Date) => {
+    const today = new Date();
+    const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
+
+    return isToday
+      ? "오늘"
+      : `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  const handleSchedulePress = () => {
+    if (isLoggedIn === false) {
+      router.push("/signin");
+    } else if (schedule) {
+      router.push(`/infocarpool/${schedule.id}`);
+    }
+  };
 
   return (
     <Container>
-      <ScheduleBox onPress={() => router.push("/schedule")}>
-        {isPending || !schedule ? (
+      <ScheduleBox onPress={handleSchedulePress} activeOpacity={isLoggedIn && !schedule ? 1 : 0.7}>
+        {isLoggedIn === null || isPending ? (
+          <BoxText>불러오는 중...</BoxText>
+        ) : !isLoggedIn || !schedule ? (
           <BoxText>현재 예정된 카풀이 없습니다</BoxText>
         ) : (
           <>
             <BoxText>
               {schedule.departure} &gt; {schedule.destination}
             </BoxText>
-            <BoxText>{schedule.when2go}에 예정되어 있습니다.</BoxText>
+            <BoxText>
+              {formatDateLabel(new Date(schedule.startDateTime))}{" "}
+              {formatTime(new Date(schedule.startDateTime))}에 예정되어 있습니다.
+            </BoxText>
           </>
         )}
       </ScheduleBox>
@@ -43,8 +111,8 @@ export default function HomeScreen() {
           <IconContainer>
             <Feather name="plus" size={30} color="#333333" />
           </IconContainer>
-          <BoxText>카풀 모집하기</BoxText>
-          <BoxSmallText>직접 카풀방을 만들어보세요!</BoxSmallText>
+          <BoxText>카풀 생성하기</BoxText>
+          <BoxSmallText>직접 카풀을 만들어보세요!</BoxSmallText>
         </OverlayTouchable>
       </PartyBox>
 
@@ -54,14 +122,12 @@ export default function HomeScreen() {
             <Ionicons name="search" size={30} color="#333333" />
           </IconContainer>
           <BoxText>카풀 참여하기</BoxText>
-          <BoxSmallText>다른 카풀방에 참여 해보세요!</BoxSmallText>
+          <BoxSmallText>다른 카풀에 참여 해보세요!</BoxSmallText>
         </OverlayTouchable>
       </PartyBox>
     </Container>
   );
 }
-
-// 스타일 컴포넌트 생략 (기존 동일)
 
 const Container = styled.View({
   flex: 1,
@@ -70,14 +136,6 @@ const Container = styled.View({
   padding: 16,
 });
 
-// Schedule 버튼
-{
-  /*필요 api
-  현재 소속 파티방 정보
-  출발지 : string,
-  도착지 : string,
-  출발시간 : hh:mm*/
-}
 const ScheduleBox = styled.TouchableOpacity({
   width: 400,
   height: 80,
@@ -116,9 +174,11 @@ const BoxText = styled.Text({
   fontSize: 18,
   fontWeight: "bold",
   color: "#333333",
+  textAlign: "center",
 });
 
 const BoxSmallText = styled.Text({
   fontSize: 12,
   color: "#333333",
+  textAlign: "center",
 });

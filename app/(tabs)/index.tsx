@@ -1,20 +1,41 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
+import { fetchInstance } from "@/entities/common/util/axios_instance";
+
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
+
+const getMySchedule = async () => {
+  const res = await fetchInstance(true).get("/api/members/me/party");
+  return res.data; // { departure: string, destination: string, when2go: "HH:mm" }
+};
 
 export default function HomeScreen() {
   const router = useRouter();
 
+  const { data: schedule, isPending } = useQuery({
+    queryKey: ["mySchedule"],
+    queryFn: getMySchedule,
+  });
+
   return (
     <Container>
       <ScheduleBox onPress={() => router.push("/schedule")}>
-        <BoxText>남춘천 &gt; 강원대 카풀이</BoxText>
-        <BoxText> 16:00에 예정되어 있습니다.</BoxText>
+        {isPending || !schedule ? (
+          <BoxText>현재 예정된 카풀이 없습니다</BoxText>
+        ) : (
+          <>
+            <BoxText>
+              {schedule.departure} &gt; {schedule.destination}
+            </BoxText>
+            <BoxText>{schedule.when2go}에 예정되어 있습니다.</BoxText>
+          </>
+        )}
       </ScheduleBox>
 
       <PartyBox source={partyMakeImage}>
@@ -39,6 +60,8 @@ export default function HomeScreen() {
     </Container>
   );
 }
+
+// 스타일 컴포넌트 생략 (기존 동일)
 
 const Container = styled.View({
   flex: 1,

@@ -1,16 +1,79 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable } from "react-native";
+import { Alert, Pressable } from "react-native";
 import styled from "styled-components/native";
 
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
+import { Party } from "@/entities/carpool/types";
 import BasicButton from "@/entities/common/components/button_basic";
 import { RowContainer } from "@/entities/common/components/containers";
 import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
+
+const joinParty = async (partyId: number, onSuccess: () => void) =>
+  fetchInstance(true)
+    .post(`/api/party/${partyId}/join?`)
+    .then(onSuccess)
+    .catch((err) => {
+      Alert.alert("카풀 참여 실패", err.response.data.message ?? "서버 오류");
+    });
+
+const formatDate = (date: number) =>
+  new Date(
+    new Date(date).getTime() + new Date(date).getTimezoneOffset() * 60000 + 32400000,
+  ).toISOString();
+interface CreateParty extends Omit<Party, "partyId"> {
+  setPartyState: (state: Partial<Party>) => void;
+  onSuccess: () => void;
+}
+const createParty = async ({
+  when2go,
+  departure,
+  destination,
+  maxMembers,
+  curMembers,
+  options,
+  comment,
+  setPartyState,
+  onSuccess,
+}: CreateParty) => {
+  if (!when2go || !departure || !destination) {
+    Alert.alert(
+      "카풀 생성 실패",
+      `${when2go ? "" : "출발시간 "} ${departure ? "" : "출발지 "} ${destination ? "" : "도착지 "}를 입력해주세요`,
+    );
+    return;
+  }
+
+  fetchInstance(true)
+    .post("/api/party", {
+      sameGenderOnly: options.sameGenderOnly,
+      costShareBeforeDropOff: options.costShareBeforeDropOff,
+      quietMode: options.quietMode,
+      destinationChangeIn5Minutes: options.destinationChangeIn5Minutes,
+      startDateTime: formatDate(when2go),
+      maxParticipantCount: maxMembers,
+      currentParticipantCount: curMembers,
+      startPlace: departure,
+      endPlace: destination,
+      comment,
+    })
+    .then((res) => {
+      setPartyState({
+        partyId: res.data.id,
+      });
+      onSuccess();
+    })
+    .catch((err) => {
+      Alert.alert(
+        "카풀 생성 실패",
+        Object.values(err.response.data.errors).join("\n") ?? "서버 오류",
+      );
+    });
+};
 
 export default function Recheck() {
   const router = useRouter();
@@ -56,40 +119,23 @@ export default function Recheck() {
             <ModalBtnText color={Colors.side}>취소</ModalBtnText>
           </Pressable>
           <Pressable
+            aria-label={`카풀${partyId ? " 참여" : " 생성"} 버튼`}
             onPress={() => {
               setModalVisible(!modalVisible);
               if (partyId) {
-                fetchInstance()
-                  .post(`/api/party/${partyId}/join?`)
-                  .then(() => router.push("/(tabs)/chat_list"))
-                  .catch((err) => {
-                    // TODO 에러 처리 + 서버 데이터 리패치
-                    console.error(err);
-                    router.push("/(tabs)/chat_list");
-                  });
+                joinParty(partyId, () => router.push("/(tabs)/chat_list"));
               } else {
-                fetchInstance(true)
-                  .post("/api/party", {
-                    sameGenderOnly: options.sameGenderOnly,
-                    costShareBeforeDropOff: options.costShareBeforeDropOff,
-                    quietMode: options.quietMode,
-                    destinationChangeIn5Minutes: options.destinationChangeIn5Minutes,
-                    startDateTime: new Date(when2go ?? 0).toLocaleDateString("ko-KR"),
-                    maxParticipantCount: maxMembers,
-                    currentParticipantCount: curMembers,
-                    startPlace: departure,
-                    endPlace: destination,
-                    comment,
-                  })
-                  .then((res) => {
-                    setPartyState({
-                      partyId: res.data.id,
-                    });
-                    router.push("/(tabs)/chat_list");
-                  })
-                  .catch((err) => {
-                    // TODO 에러 처리
-                  });
+                createParty({
+                  when2go,
+                  departure,
+                  destination,
+                  maxMembers,
+                  curMembers,
+                  options,
+                  comment,
+                  setPartyState,
+                  onSuccess: () => router.push("/(tabs)/chat_list"),
+                });
               }
             }}
           >

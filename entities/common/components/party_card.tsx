@@ -27,7 +27,7 @@ export default function PartyCard({
   }
 
   return (
-    <OutShadow>
+    <OutShadow borderRadius={22}>
       <Container>
         <Path>
           <MediumText color={Colors.main}>{departure?.name}</MediumText>

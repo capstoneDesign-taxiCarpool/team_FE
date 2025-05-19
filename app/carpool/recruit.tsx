@@ -7,6 +7,7 @@ import styled from "styled-components/native";
 import CustomModal from "@/entities/carpool/components/custom_modal";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import { formatOptions, optionsList } from "@/entities/carpool/format_options";
+import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import CircleButton from "@/entities/common/components/button_circle";
 import { ColContainer, RowContainer } from "@/entities/common/components/containers";
@@ -19,6 +20,8 @@ export default function Recruit() {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [when2go, setWhen2go] = useState<number | undefined>(undefined);
+  const { departure, destination } = useStartEndPoint();
   const maxMembers = usePartyStore((state) => state.maxMembers);
   const comment = usePartyStore((state) => state.comment);
   const options = usePartyStore((state) => state.options);
@@ -28,7 +31,12 @@ export default function Recruit() {
     <KeyboardAvoidingView behavior="padding">
       <ScrollView>
         <Container>
-          <PartySetting />
+          <PartySetting
+            when2go={when2go}
+            setWhen2go={setWhen2go}
+            departure={departure}
+            destination={destination}
+          />
           <ColContainer>
             <RowContainer>
               <Label title="최대 참여 인원" />
@@ -87,7 +95,7 @@ export default function Recruit() {
           <CircleButton
             icon="checkmark"
             onPress={() => {
-              setPartyState({ partyId: undefined });
+              setPartyState({ partyId: undefined, when2go, departure, destination });
               router.push("/carpool/recheck");
             }}
           />

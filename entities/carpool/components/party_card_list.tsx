@@ -51,38 +51,43 @@ export default function PartyCardList({ partys }: { partys: PartyResponse[] }) {
 
   return (
     <Container>
-      {partys.map((v) => {
-        return (
-          <PartyCard
-            key={v.id}
-            when2go={v.startDateTime}
-            departure={v.startPlace}
-            destination={v.endPlace}
-            maxMembers={v.maxParticipantCount}
-            curMembers={v.currentParticipantCount}
-            options={{
-              sameGenderOnly: v.sameGenderOnly,
-              costShareBeforeDropOff: v.costShareBeforeDropOff,
-              quietMode: v.quietMode,
-              destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-            }}
-            buttons={
-              <BasicButton
-                title="자세히"
-                icon="magnifyingglass.circle"
-                onPress={() => route2recheck(v)}
-                isToRight={true}
-              />
-            }
-          />
-        );
-      })}
+      <PartyCardListContainer>
+        {partys.map((v) => {
+          return (
+            <PartyCard
+              key={v.id}
+              when2go={v.startDateTime}
+              departure={v.startPlace}
+              destination={v.endPlace}
+              maxMembers={v.maxParticipantCount}
+              curMembers={v.currentParticipantCount}
+              options={{
+                sameGenderOnly: v.sameGenderOnly,
+                costShareBeforeDropOff: v.costShareBeforeDropOff,
+                quietMode: v.quietMode,
+                destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+              }}
+              buttons={
+                <BasicButton
+                  title="자세히"
+                  icon="magnifyingglass.circle"
+                  onPress={() => route2recheck(v)}
+                  isToRight={true}
+                />
+              }
+            />
+          );
+        })}
+      </PartyCardListContainer>
     </Container>
   );
 }
 
-const Container = styled.ScrollView({
+const Container = styled.View({
   flex: 1,
+});
+
+const PartyCardListContainer = styled.View({
   display: "flex",
   flexDirection: "column",
   gap: 10,

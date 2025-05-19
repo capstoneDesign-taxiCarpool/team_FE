@@ -5,6 +5,7 @@ import styled from "styled-components/native";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
 import SearchRouteBar from "@/entities/carpool/components/search_route_bar";
 import SearchSpotBar from "@/entities/carpool/components/search_spot_bar";
+import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { LocationInfo } from "@/entities/carpool/types";
 import CircleButton from "@/entities/common/components/button_circle";
@@ -12,12 +13,12 @@ import CircleButton from "@/entities/common/components/button_circle";
 export default function FindTrack() {
   const router = useRouter();
   const setPartyState = usePartyStore((state) => state.setPartyState);
-  const departure = usePartyStore((state) => state.departure);
-  const destination = usePartyStore((state) => state.destination);
-
-  // 현재 출발지, 도착지
-  const [startLocation, setStartLocation] = useState<LocationInfo | undefined>(departure);
-  const [endLocation, setEndLocation] = useState<LocationInfo | undefined>(destination);
+  const {
+    departure: startLocation,
+    setDeparture: setStartLocation,
+    destination: endLocation,
+    setDestination: setEndLocation,
+  } = useStartEndPoint();
 
   // 검색 중인 장소들 정보(출발지/도착지, 검색된 장소들, 검색된 장소들 중 선택된 인덱스)
   const [searchingLocationType, setSearchingLocationType] = useState<"start" | "end" | null>(null);
@@ -64,6 +65,7 @@ export default function FindTrack() {
               setPartyState({
                 departure: startLocation,
                 destination: endLocation,
+                isHandOveredData: true,
               });
               router.back();
             }}

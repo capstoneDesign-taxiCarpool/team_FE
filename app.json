@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "taxiCarpool",
-    "slug": "taxiCarpool",
+    "slug": "taxicarpool",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -28,7 +28,11 @@
         "googleMaps": {
           "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -74,8 +78,14 @@
               }
             },
             "timePicker": {
-              "headerBackground": { "light": "#253393", "dark": "#253393" },
-              "numbersSelectorColor": { "light": "#253393", "dark": "#253393" }
+              "headerBackground": {
+                "light": "#253393",
+                "dark": "#253393"
+              },
+              "numbersSelectorColor": {
+                "light": "#253393",
+                "dark": "#253393"
+              }
             }
           }
         }
@@ -89,8 +99,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "3bd552b3-08c6-438d-9ca0-5b83fe8b97fc"
+        "projectId": "9143019c-02df-4669-abfc-23e168211542"
       }
-    }
+    },
+    "owner": "knu-carpool"
   }
 }

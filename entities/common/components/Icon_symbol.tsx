@@ -22,6 +22,7 @@ const MAPPING = {
   "mappin.and.ellipse": "place",
   calendar: "event",
   gearshape: "settings",
+  trash: "delete",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

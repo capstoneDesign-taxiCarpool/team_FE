@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Animated, ScrollView, Text } from "react-native";
 import styled from "styled-components/native";
@@ -72,7 +73,7 @@ const HighlightedCard = ({
       style={{
         borderColor,
         borderWidth: 2,
-        borderRadius: 30,
+        borderRadius: 22,
       }}
     >
       {children}
@@ -81,14 +82,17 @@ const HighlightedCard = ({
 };
 
 export default function ChatList() {
+  const router = useRouter();
+
   const { isLoading, data: chatRooms } = useQuery<PartyResponse[]>({
-    queryKey: ["chatList"],
+    queryKey: ["parties", "my"],
     queryFn: fetchChatList,
   });
   const partyId = usePartyStore((state) => state.partyId);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const groupedChatRooms = chatRooms ? groupByDate(chatRooms) : {};
+  const setPartyStore = usePartyStore((state) => state.setPartyState);
 
   useEffect(() => {
     // 현재 페이지로 이동했을 때 partyId에 해당하는 카드로 스크롤
@@ -137,7 +141,25 @@ export default function ChatList() {
                       <BasicButton
                         icon="gearshape"
                         title="설정 변경"
-                        onPress={() => {}}
+                        onPress={() => {
+                          setPartyStore({
+                            partyId: v.id,
+                            when2go: new Date(v.startDateTime).getTime(),
+                            departure: v.startPlace,
+                            destination: v.endPlace,
+                            maxMembers: v.maxParticipantCount,
+                            curMembers: v.currentParticipantCount,
+                            comment: v.comment,
+                            options: {
+                              sameGenderOnly: v.sameGenderOnly,
+                              costShareBeforeDropOff: v.costShareBeforeDropOff,
+                              quietMode: v.quietMode,
+                              destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                            },
+                            isHandOveredData: true,
+                          });
+                          router.push("/carpool/edit");
+                        }}
                         color={Colors.main}
                       />
                       <BasicButton icon="bubble.left.fill" title="채팅" onPress={() => {}} />

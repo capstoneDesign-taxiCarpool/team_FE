@@ -26,7 +26,7 @@ export default function PartySetting({
   destination,
 }: {
   when2go?: number;
-  setWhen2go: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setWhen2go: (when2go: number) => void;
   departure?: LocationInfo;
   destination?: LocationInfo;
 }) {

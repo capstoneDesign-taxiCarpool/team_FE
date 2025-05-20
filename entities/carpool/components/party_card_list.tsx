@@ -83,8 +83,10 @@ export default function PartyCardList({ partys }: { partys: PartyResponse[] }) {
   );
 }
 
-const Container = styled.View({
+const Container = styled.ScrollView({
   flex: 1,
+  marginHorizontal: -20,
+  paddingHorizontal: 20,
 });
 
 const PartyCardListContainer = styled.View({

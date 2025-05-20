@@ -38,7 +38,7 @@ export default function Join() {
   const { departure, destination } = useStartEndPoint();
 
   const { isPending, data: partys } = useQuery<PartyResponse[]>({
-    queryKey: [when2go, departure, destination],
+    queryKey: ["parties", when2go, departure, destination],
     queryFn: () =>
       fetchInstance()
         .get(getPartyListUrl(when2go, departure, destination))
@@ -48,6 +48,8 @@ export default function Join() {
 
   return (
     <Container>
+      <Header>{`카풀
+참여하기`}</Header>
       <PartySetting
         when2go={when2go}
         setWhen2go={setWhen2go}
@@ -58,6 +60,12 @@ export default function Join() {
     </Container>
   );
 }
+
+const Header = styled.Text({
+  fontSize: 36,
+  fontWeight: "bold",
+  marginBottom: 5,
+});
 
 const Container = styled.View({
   display: "flex",

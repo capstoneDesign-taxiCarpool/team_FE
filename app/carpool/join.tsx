@@ -8,11 +8,7 @@ import PartySetting from "@/entities/carpool/components/party_setting";
 import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
 import { LocationInfo, PartyResponse } from "@/entities/carpool/types";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
-
-const formatDate = (date: number) =>
-  new Date(
-    new Date(date).getTime() + new Date(date).getTimezoneOffset() * 60000 + 32400000,
-  ).toISOString();
+import { getISOString } from "@/entities/common/util/datetime_format";
 
 const getPartyListUrl = (
   when2go?: number,
@@ -23,7 +19,7 @@ const getPartyListUrl = (
     // 출발시간, 출발지, 도착지 중 하나이하로 선택한 경우
     return `/api/party?page=0&size=1000000&`;
 
-  const when2goStr = when2go ? `userDepartureTime=${formatDate(when2go)}&` : "";
+  const when2goStr = when2go ? `userDepartureTime=${getISOString(when2go)}&` : "";
   const departureStr = departure
     ? `userDepartureLat=${departure.y}&userDepartureLng=${departure.x}&`
     : "";

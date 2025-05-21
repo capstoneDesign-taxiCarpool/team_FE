@@ -37,7 +37,7 @@ export default function PartySetting({
 
   const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
     setMode(null);
-    setWhen2go(Number(selectedDate ?? new Date()));
+    setWhen2go((selectedDate ?? new Date()).getTime());
   };
   const route2FindTrack = () => {
     setPartyState({ departure, destination, isHandOveredData: true });
@@ -50,6 +50,7 @@ export default function PartySetting({
         <DateTimePicker
           value={when2go ? new Date(when2go) : new Date()}
           mode={mode}
+          locale="ko-KR"
           onChange={onChange}
           accentColor={Colors.main}
         />

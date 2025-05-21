@@ -23,6 +23,7 @@ export default function RootLayout() {
         <Stack.Screen name="signup" options={{ title: "회원가입" }} />
         <Stack.Screen name="signin" options={{ title: "로그인" }} />
         <Stack.Screen name="carpool/join" options={{ headerShown: false }} />
+        <Stack.Screen name="carpool/edit" options={{ headerShown: false }} />
         <Stack.Screen name="carpool/recruit" options={{ headerShown: false }} />
         <Stack.Screen name="carpool/recheck" options={{ headerShown: false }} />
         <Stack.Screen name="carpool/find_track" options={{ headerShown: false }} />

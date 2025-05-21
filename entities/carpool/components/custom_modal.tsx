@@ -1,4 +1,4 @@
-import { Modal } from "react-native";
+import { Modal, Pressable } from "react-native";
 import styled from "styled-components/native";
 
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
@@ -8,11 +8,13 @@ export default function CustomModal({
   setModalVisible,
   title,
   children,
+  showCompleteBtn = false,
 }: {
   modalVisible: boolean;
   setModalVisible: (visible: boolean) => void;
   title?: string;
   children: React.ReactNode;
+  showCompleteBtn?: boolean;
 }) {
   return (
     <Modal
@@ -24,9 +26,14 @@ export default function CustomModal({
       }}
     >
       <ModalBack onPress={() => setModalVisible(false)}>
-        <ModalContainer>
+        <ModalContainer onPress={(e) => e.stopPropagation()}>
           {title && <ModalTitle>{title}</ModalTitle>}
           {children}
+          {showCompleteBtn && (
+            <Pressable onPress={() => setModalVisible(false)}>
+              <CompleteBtnText>완료</CompleteBtnText>
+            </Pressable>
+          )}
         </ModalContainer>
       </ModalBack>
     </Modal>
@@ -38,8 +45,11 @@ const ModalBack = styled.Pressable({
   alignItems: "center",
   backgroundColor: "rgba(0, 0, 0, 0.5)",
 });
-const ModalContainer = styled.View({
-  backgroundColor: "#fff",
+const ModalContainer = styled.Pressable({
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  backgroundColor: "rgba(255, 255, 255, 0.9)",
   borderRadius: 10,
   padding: 20,
 });
@@ -52,4 +62,13 @@ const ModalTitle = styled.Text({
   borderBottomColor: "#ccc",
   color: Colors.main,
   textAlign: "center",
+  alignSelf: "stretch",
+});
+
+const CompleteBtnText = styled.Text({
+  fontSize: FontSizes.medium,
+  fontWeight: "bold",
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+  color: Colors.main,
 });

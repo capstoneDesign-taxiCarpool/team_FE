@@ -43,6 +43,9 @@ export default function PartySetting({
     setPartyState({ departure, destination, isHandOveredData: true });
     router.push("/carpool/find_track");
   };
+  const swap = () => {
+    setPartyState({ departure: destination, destination: departure, isHandOveredData: true });
+  };
 
   return (
     <Container>
@@ -76,7 +79,9 @@ export default function PartySetting({
               <MediumText>{departure?.name ?? "-"}</MediumText>
             </TouchableOpacity>
           </OutShadow>
-          <IconSymbol name="arrow.2.circlepath.circle" size={24} color="#000" />
+          <SwapBtn onPress={swap}>
+            <IconSymbol name="arrow.2.circlepath.circle" size={24} color={Colors.black} />
+          </SwapBtn>
           <OutShadow>
             <TouchableOpacity onPress={route2FindTrack}>
               <MediumText>{destination?.name ?? "-"}</MediumText>
@@ -98,6 +103,9 @@ const ColContainer2 = styled(ColContainer)({
   alignItems: "normal",
 });
 
+const SwapBtn = styled.TouchableOpacity({
+  width: "fit-content",
+});
 const MediumText = styled.Text({
   fontSize: FontSizes.medium,
   textAlign: "center",

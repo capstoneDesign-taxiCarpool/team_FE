@@ -14,6 +14,20 @@ export interface Party {
   };
 }
 
+export interface PartyResponse {
+  id: number;
+  sameGenderOnly: boolean;
+  costShareBeforeDropOff: boolean;
+  quietMode: boolean;
+  destinationChangeIn5Minutes: boolean;
+  startDateTime: number;
+  comment: string;
+  currentParticipantCount: number;
+  maxParticipantCount: number;
+  startPlace: LocationInfo;
+  endPlace: LocationInfo;
+}
+
 export interface LocationInfo {
   name: string;
   roadAddressName?: string;

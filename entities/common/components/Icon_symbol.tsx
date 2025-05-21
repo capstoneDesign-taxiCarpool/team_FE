@@ -20,6 +20,9 @@ const MAPPING = {
   checkmark: "check",
   "plus.circle": "add-circle-outline",
   "mappin.and.ellipse": "place",
+  calendar: "event",
+  gearshape: "settings",
+  trash: "delete",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

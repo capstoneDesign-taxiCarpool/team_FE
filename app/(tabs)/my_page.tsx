@@ -1,11 +1,11 @@
 import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import { Alert, Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
+import { authCode } from "@/entities/common/util/storage"; // ✅ 수정 추가
 
 import defaultProfile from "../../assets/images/default-profile.png";
 
@@ -25,20 +25,30 @@ export default function MyPage() {
   const [savedAmount, setSavedAmount] = useState<number>(0);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const checkTokenAndFetchUser = async () => {
+      const token = await authCode.get(); // ✅ 수정
+      console.log("👤 마이페이지 토큰:", token);
+
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      setIsLoggedIn(true);
+
       try {
-        const profileRes = await fetchInstance(true).get("https://knu-carpool.store/api/member/me");
-        const nickname = profileRes.data.nickname ?? "닉네임 없음";
+        const profileRes = await fetchInstance(true).get("/api/member/me");
+        const nickname = profileRes.data?.nickname ?? "닉네임 없음";
         setNickname(nickname);
         setInitialNickname(nickname);
-        setIsLoggedIn(true);
       } catch (error) {
-        console.error("로그인 확인 또는 데이터 불러오기 실패", error);
+        console.error("❌ 사용자 정보 불러오기 실패:", error);
         setIsLoggedIn(false);
+        Alert.alert("⚠️ 오류", "회원 정보를 불러오지 못했습니다.");
       }
     };
 
-    fetchUser();
+    checkTokenAndFetchUser();
   }, []);
 
   const handleUpdate = async () => {
@@ -56,10 +66,7 @@ export default function MyPage() {
         payload.newPassword = password;
       }
 
-      const res = await fetchInstance(true).patch(
-        "https://knu-carpool.store/api/member/me",
-        payload,
-      );
+      const res = await fetchInstance(true).patch("/api/member/me", payload);
       setNickname(res.data.nickname ?? nickname);
       setInitialNickname(res.data.nickname ?? nickname);
       Alert.alert("✅ 수정 완료", "회원 정보가 수정되었습니다.");
@@ -80,8 +87,8 @@ export default function MyPage() {
         style: "destructive",
         onPress: async () => {
           try {
-            await fetchInstance(true).delete("https://knu-carpool.store/api/member/me");
-            await SecureStore.deleteItemAsync("authToken");
+            await fetchInstance(true).delete("/api/member/me");
+            await authCode.set(null); // ✅ 수정
             setIsLoggedIn(false);
           } catch (error) {
             Alert.alert("삭제 실패", "계정 삭제에 실패했습니다.");
@@ -92,9 +99,23 @@ export default function MyPage() {
     ]);
   };
 
-  const handleLogout = async () => {
-    await SecureStore.deleteItemAsync("authToken");
-    setIsLoggedIn(false);
+  const handleLogout = () => {
+    Alert.alert("로그아웃", "정말 로그아웃 하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "확인",
+        onPress: async () => {
+          try {
+            await authCode.set(null); // ✅ 수정
+            console.log("✅ 로그아웃 완료 - 토큰 삭제됨");
+            setIsLoggedIn(false);
+            Alert.alert("로그아웃 완료", "정상적으로 로그아웃되었습니다.");
+          } catch (error) {
+            console.error("❌ 로그아웃 실패:", error);
+          }
+        },
+      },
+    ]);
   };
 
   if (isLoggedIn === null) {
@@ -171,6 +192,8 @@ export default function MyPage() {
     </Container>
   );
 }
+
+// 스타일은 그대로 사용
 
 const Container = styled(View)({
   flex: 1,

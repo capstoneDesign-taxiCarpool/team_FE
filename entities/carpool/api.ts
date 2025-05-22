@@ -1,6 +1,7 @@
 import { Alert } from "react-native";
 
 import { fetchInstance } from "../common/util/axios_instance";
+import { getISOString } from "../common/util/datetime_format";
 import { Party } from "./types";
 
 export const joinParty = async (partyId: number, onSuccess: () => void) =>
@@ -21,11 +22,6 @@ export const deleteParty = (partyId: number, onSuccess: () => void) =>
     .catch((err) => {
       Alert.alert("카풀 삭제 실패", err.response.data.message ?? "서버 오류");
     });
-
-const formatDate = (date: number) =>
-  new Date(
-    new Date(date).getTime() + new Date(date).getTimezoneOffset() * 60000 + 32400000,
-  ).toISOString();
 
 interface MakePartyProps extends Omit<Party, "partyId"> {
   mode: "create" | "edit";
@@ -62,7 +58,7 @@ const makeParty = async ({
         costShareBeforeDropOff: options.costShareBeforeDropOff,
         quietMode: options.quietMode,
         destinationChangeIn5Minutes: options.destinationChangeIn5Minutes,
-        startDateTime: formatDate(when2go),
+        startDateTime: getISOString(when2go),
         maxParticipantCount: maxMembers,
         currentParticipantCount: curMembers,
         startPlace: departure,

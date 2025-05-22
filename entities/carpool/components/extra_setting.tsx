@@ -13,6 +13,11 @@ import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import usePartyStore from "../store/usePartyStore";
 
+const changeMaxMembers = (v: string, setState: (state: number) => void) => {
+  const num = Number(v);
+  setState(num > 4 ? 4 : num);
+};
+
 /**
  * 최대 참여 인원 수, 추가 옵션, 코맨트 입력
  */
@@ -31,7 +36,7 @@ export default function ExtraSetting() {
           <StyledTextInput
             keyboardType="numeric"
             value={String(maxMembers)}
-            onChangeText={(v) => setPartyState({ maxMembers: Number(v) })}
+            onChangeText={(v) => changeMaxMembers(v, (v) => setPartyState({ maxMembers: v }))}
           />
         </InShadow>
       </RowContainer>
@@ -51,8 +56,9 @@ export default function ExtraSetting() {
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         title="추가 옵션 선택"
+        showCompleteBtn={true}
       >
-        <ColContainer gap={5} alignItems="start">
+        <ColContainer gap={10} alignItems="start">
           {optionsList.map((option) => (
             <RowContainer key={option.name} justifyContent="start">
               <Checkbox
@@ -60,7 +66,13 @@ export default function ExtraSetting() {
                 value={options[option.name]}
                 onValueChange={(v) => setPartyState({ options: { ...options, [option.name]: v } })}
               />
-              <MediumText>{option.ko}</MediumText>
+              <CheckBoxLable
+                onPress={() =>
+                  setPartyState({ options: { ...options, [option.name]: !options[option.name] } })
+                }
+              >
+                <Text>{option.ko}</Text>
+              </CheckBoxLable>
             </RowContainer>
           ))}
         </ColContainer>
@@ -87,9 +99,11 @@ const StyledTextInput = styled.TextInput({
   textAlign: "center",
   width: "100%",
 });
-const MediumText = styled.Text({
+const CheckBoxLable = styled.Pressable({
   fontSize: FontSizes.medium,
   color: Colors.black,
+  flexGrow: 1,
+  height: "100%",
 });
 
 const OptionButton = styled.Pressable({

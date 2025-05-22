@@ -19,4 +19,9 @@ const datetimeFormat = (date: number | undefined, dateType: "date" | "time") => 
     });
 };
 
+export const getISOString = (date: number | undefined) => {
+  if (!date) return "";
+  return new Date((date ?? 0) + 3240 * 10000).toISOString();
+};
+
 export default datetimeFormat;

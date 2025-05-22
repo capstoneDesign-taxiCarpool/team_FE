@@ -1,4 +1,10 @@
-import { differenceInDays, differenceInHours, differenceInMinutes, format } from "date-fns";
+import {
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+  format,
+} from "date-fns";
 import styled from "styled-components/native";
 
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
@@ -44,7 +50,9 @@ export default function PartyCard({
             } / ${format(new Date(when2go), "HH:mm")} / ${
               differenceInDays(new Date(when2go), new Date()) > 0
                 ? `${differenceInDays(new Date(when2go), new Date())}일 후`
-                : `${differenceInHours(new Date(when2go), new Date())}시간 ${differenceInMinutes(new Date(when2go), new Date()) % 60}분 후`
+                : differenceInSeconds(new Date(when2go), new Date()) < 0
+                  ? "종료됨"
+                  : `${differenceInHours(new Date(when2go), new Date())}시간 ${differenceInMinutes(new Date(when2go), new Date()) % 60}분 후`
             }`}</MediumText>
           </Instructor>
           <Instructor>

@@ -15,10 +15,11 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
-        "googleMapsApiKey": "process.env.GOOGLE_MAPS_API_KEY_IOS"
+        "googleMapsApiKey": "x"
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -26,7 +27,7 @@
       "package": "edu.kangwon.taxiCarpool",
       "config": {
         "googleMaps": {
-          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+          "apiKey": "x"
         }
       },
       "permissions": [

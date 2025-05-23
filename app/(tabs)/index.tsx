@@ -1,9 +1,11 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
+import { getApp } from "@react-native-firebase/app";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { ImageBackground } from "react-native";
+import { ImageBackground, Text } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -85,9 +87,21 @@ export default function HomeScreen() {
       router.push(`/infocarpool/${schedule.id}`);
     }
   };
+  const firebaseApp = getApp();
+  const analytics = getAnalytics(firebaseApp);
 
   return (
     <Container>
+      <ScheduleBox
+        onPress={async () => {
+          logEvent(analytics, "test_event", {
+            screen: "Home",
+            purpose: "Test event",
+          });
+        }}
+      >
+        <Text>LogTest</Text>
+      </ScheduleBox>
       <ScheduleBox onPress={handleSchedulePress} activeOpacity={isLoggedIn && !schedule ? 1 : 0.7}>
         {isLoggedIn === null || isPending ? (
           <BoxText>불러오는 중...</BoxText>

@@ -17,11 +17,24 @@ const handleSignin = (email: string, password: string, onSuccess: () => void) =>
       password,
     })
     .then((res) => {
-      authCode.set(res.data.token);
-      refreshCode.set(res.data.refreshToken);
+      console.log("🎯 로그인 응답 전체:", res.data); // 응답 구조 확인
+
+      if (!res.data.token || !res.data.refreshToken) {
+        console.warn("⚠️ 응답에 토큰이 없습니다. 응답 구조 확인 필요");
+        return;
+      }
+
+      authCode.set(res.data.token).then(() => {
+        console.log("✅ accessToken 저장됨:", res.data.token);
+      });
+      refreshCode.set(res.data.refreshToken).then(() => {
+        console.log("✅ refreshToken 저장됨:", res.data.refreshToken);
+      });
+
       onSuccess();
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error("❌ 로그인 실패:", err.response?.data || err.message);
       Alert.alert("로그인 실패", "이메일 또는 비밀번호를 확인해주세요.");
     });
 };

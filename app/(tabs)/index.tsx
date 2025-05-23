@@ -1,14 +1,14 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
-import { getApp } from "@react-native-firebase/app";
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
+import { format, isAfter, isToday, parseISO } from "date-fns";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
-import React, { useEffect, useState } from "react";
-import { ImageBackground, Text } from "react-native";
+import React, { useCallback, useState } from "react";
+import { ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
+import { authCode } from "@/entities/common/util/storage";
 
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
@@ -20,102 +20,79 @@ type Party = {
   startDateTime: string;
 };
 
-// ✅ API 요청 함수
 const getMySchedule = async () => {
-  try {
-    const res = await fetchInstance(true).get("https://knu-carpool.store/api/party/my-parties");
-    const now = new Date();
+  const token = await authCode.get();
+  console.log("🏠 토큰 체크:", token);
+  if (!token) return null;
 
-    const sorted = res.data
-      .map((party: Party) => ({
-        id: party.id,
-        departure: party.startPlace.name,
-        destination: party.endPlace.name,
-        startDateTime: new Date(party.startDateTime),
-      }))
-      .filter((p) => p.startDateTime > now)
-      .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
+  const res = await fetchInstance(true).get("/api/party/my-parties");
+  const now = new Date();
 
-    return sorted[0] || null;
-  } catch (error) {
-    console.error("❌ getMySchedule 에러:", error);
-    return null;
-  }
+  const sorted = res.data
+    .map((party: Party) => ({
+      id: party.id,
+      departure: party.startPlace.name,
+      destination: party.endPlace.name,
+      startDateTime: parseISO(party.startDateTime),
+    }))
+    .filter((p) => isAfter(p.startDateTime, now))
+    .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
+
+  return sorted[0] || null;
 };
 
 export default function HomeScreen() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [authChanged, setAuthChanged] = useState(0);
 
-  useEffect(() => {
-    const checkToken = async () => {
-      const token = await SecureStore.getItemAsync("authToken");
-      console.log("🔐 SecureStore token:", token);
-      setIsLoggedIn(!!token);
-    };
-    checkToken();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const checkToken = async () => {
+        const token = await authCode.get();
+        console.log("📌 Home 진입 - 현재 토큰:", token);
+        setIsLoggedIn(!!token);
+        setAuthChanged((prev) => prev + 1);
+      };
+      checkToken();
+    }, []),
+  );
 
   const { data: schedule, isPending } = useQuery({
-    queryKey: ["mySchedule"],
+    queryKey: ["mySchedule", authChanged],
     queryFn: getMySchedule,
-    enabled: isLoggedIn === true,
+    enabled: isLoggedIn !== null,
   });
 
-  const formatTime = (date: Date) => {
-    const hour = String(date.getHours()).padStart(2, "0");
-    const minute = String(date.getMinutes()).padStart(2, "0");
-    return `${hour}:${minute}`;
-  };
-
-  const formatDateLabel = (date: Date) => {
-    const today = new Date();
-    const isToday =
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate();
-
-    return isToday
-      ? "오늘"
-      : `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const formatScheduleDateTime = (date: Date) => {
+    const dateLabel = isToday(date) ? "오늘" : format(date, "MM-dd");
+    const timeLabel = format(date, "HH:mm");
+    return `${dateLabel} ${timeLabel}에 예정되어 있습니다.`;
   };
 
   const handleSchedulePress = () => {
-    if (isLoggedIn === false) {
+    if (!isLoggedIn) {
       router.push("/signin");
     } else if (schedule) {
-      router.push(`/infocarpool/${schedule.id}`);
+      router.push("/chat_list");
     }
   };
-  const firebaseApp = getApp();
-  const analytics = getAnalytics(firebaseApp);
 
   return (
     <Container>
-      <ScheduleBox
-        onPress={async () => {
-          logEvent(analytics, "test_event", {
-            screen: "Home",
-            purpose: "Test event",
-          });
-        }}
-      >
-        <Text>LogTest</Text>
-      </ScheduleBox>
-      <ScheduleBox onPress={handleSchedulePress} activeOpacity={isLoggedIn && !schedule ? 1 : 0.7}>
-        {isLoggedIn === null || isPending ? (
+      <ScheduleBox onPress={handleSchedulePress}>
+        {isLoggedIn === null || (isLoggedIn && isPending) ? (
           <BoxText>불러오는 중...</BoxText>
-        ) : !isLoggedIn || !schedule ? (
-          <BoxText>현재 예정된 카풀이 없습니다</BoxText>
+        ) : !isLoggedIn ? (
+          <BoxText>로그인 후 이용해 주세요!</BoxText>
+        ) : !schedule ? (
+          <BoxText>현재 카풀 일정이 없습니다!</BoxText>
         ) : (
           <>
             <BoxText>
               {schedule.departure} &gt; {schedule.destination}
             </BoxText>
-            <BoxText>
-              {formatDateLabel(new Date(schedule.startDateTime))}{" "}
-              {formatTime(new Date(schedule.startDateTime))}에 예정되어 있습니다.
-            </BoxText>
+            <BoxText>{formatScheduleDateTime(schedule.startDateTime)}</BoxText>
           </>
         )}
       </ScheduleBox>
@@ -161,9 +138,7 @@ const ScheduleBox = styled.TouchableOpacity({
 });
 
 const PartyBox = styled(ImageBackground).attrs({
-  imageStyle: {
-    borderRadius: 40,
-  },
+  imageStyle: { borderRadius: 40 },
 })({
   width: 400,
   height: 200,
@@ -180,9 +155,7 @@ const OverlayTouchable = styled.TouchableOpacity({
   alignItems: "center",
 });
 
-const IconContainer = styled.View({
-  marginBottom: 4,
-});
+const IconContainer = styled.View({ marginBottom: 4 });
 
 const BoxText = styled.Text({
   fontSize: 18,

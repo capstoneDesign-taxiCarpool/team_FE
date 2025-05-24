@@ -95,12 +95,11 @@ export default function ChatList() {
   const setPartyStore = usePartyStore((state) => state.setPartyState);
 
   useEffect(() => {
-    // 현재 페이지로 이동했을 때 partyId에 해당하는 카드로 스크롤
     if (chatRooms && partyId) {
       const targetIndex = chatRooms.findIndex((party) => party.id === partyId);
       if (targetIndex !== -1 && scrollViewRef.current) {
         scrollViewRef.current.scrollTo({
-          y: targetIndex * 180, // 각 카드의 높이 대략 160px
+          y: targetIndex * 180,
           animated: true,
         });
       }
@@ -162,7 +161,17 @@ export default function ChatList() {
                         }}
                         color={Colors.main}
                       />
-                      <BasicButton icon="bubble.left.fill" title="채팅" onPress={() => {}} />
+                      <BasicButton
+                        icon="bubble.left.fill"
+                        title="채팅"
+                        onPress={() => {
+                          setPartyStore({ partyId: v.id });
+                          router.push({
+                            pathname: "/chatpage",
+                            params: { roomId: v.id },
+                          });
+                        }}
+                      />
                     </RowContainer>
                   }
                 />

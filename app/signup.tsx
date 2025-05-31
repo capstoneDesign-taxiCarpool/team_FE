@@ -11,7 +11,7 @@ import PersonalInfo from "@/entities/signup/personal_info";
 import VertifyEmail from "@/entities/signup/vertify_email";
 
 const handleSignup = (
-  emailCode: string,
+  email: string,
   password: string,
   nickname: string,
   sex: number,
@@ -19,7 +19,7 @@ const handleSignup = (
 ) => {
   fetchInstance()
     .post("/api/auth/signup", {
-      email: emailCode + "@kangwon.ac.kr",
+      email: email.trim() + "@kangwon.ac.kr",
       password,
       nickname,
       gender: sex,
@@ -27,12 +27,13 @@ const handleSignup = (
     .then(() => {
       fetchInstance()
         .post("/api/auth/login", {
-          email: emailCode + "@kangwon.ac.kr",
+          email: email.trim() + "@kangwon.ac.kr",
           password,
         })
         .then((res) => {
           authCode.set(res.data.accessToken);
           refreshCode.set(res.data.refreshToken);
+          Alert.alert("회원가입 성공");
           onSuccess();
         });
     })

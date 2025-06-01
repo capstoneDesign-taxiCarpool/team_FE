@@ -27,7 +27,7 @@
       "package": "edu.kangwon.taxiCarpool",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAAvsPcUTRw8iIHzHHfRmtmg-0UbYDU76k"
+          "apiKey": "x"
         }
       },
       "permissions": [
@@ -42,6 +42,7 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-firebase/crashlytics",
       [
         "expo-splash-screen",
         {

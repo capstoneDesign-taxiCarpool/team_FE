@@ -1,3 +1,4 @@
+import { getCrashlytics, recordError } from "@react-native-firebase/crashlytics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, ScrollView, View } from "react-native";
@@ -16,9 +17,10 @@ const handleSignup = (
   nickname: string,
   sex: number,
   onSuccess: () => void,
+  crashlytics: ReturnType<typeof getCrashlytics>,
 ) => {
   fetchInstance()
-    .post("/api/auth/signup", {
+    .post("", {
       email: email.trim() + "@kangwon.ac.kr",
       password,
       nickname,
@@ -38,6 +40,7 @@ const handleSignup = (
         });
     })
     .catch((err) => {
+      recordError(crashlytics, err, "signup fail");
       if (err.response.status === 404) Alert.alert("회원가입 실패", "이메일 인증을 먼저 해주세요.");
       else
         Alert.alert(
@@ -53,6 +56,8 @@ export default function Signup() {
   const [nickname, setNickname] = useState<string>("");
   const [sex, setSex] = useState<number>(0);
   const router = useRouter();
+
+  const crashlytics = getCrashlytics();
 
   return (
     <KeyboardAvoidingView behavior="padding">
@@ -75,7 +80,9 @@ export default function Signup() {
           />
           <CircleButton
             icon="checkmark"
-            onPress={() => handleSignup(email, password, nickname, sex, () => router.push("/"))}
+            onPress={() =>
+              handleSignup(email, password, nickname, sex, () => router.push("/"), crashlytics)
+            }
           />
         </Container>
       </ScrollView>

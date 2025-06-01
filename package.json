@@ -24,6 +24,7 @@
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-firebase/analytics": "^22.2.0",
     "@react-native-firebase/app": "^22.2.0",
+    "@react-native-firebase/crashlytics": "^22.2.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@stomp/stompjs": "^7.1.1",

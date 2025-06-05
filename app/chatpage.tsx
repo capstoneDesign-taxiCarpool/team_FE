@@ -1,6 +1,19 @@
-import React, { useState } from "react";
-import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
+import { Client, IMessage } from "@stomp/stompjs";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import styled from "styled-components/native";
+
+import { authCode } from "@/entities/common/util/storage";
 
 import defaultProfile from "../assets/images/default-profile.png";
 
@@ -12,24 +25,101 @@ interface Message {
   senderName?: string;
 }
 
-export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "sys1", text: "홍길동님이 입장하셨습니다.", type: "system" },
-    { id: "1", text: "안녕하세요!", isMe: false, senderName: "홍길동", type: "message" },
-    { id: "2", text: "반갑습니다~", isMe: true, senderName: "나", type: "message" },
-  ]);
-  const [inputText, setInputText] = useState("");
+interface IncomingMessagePayload {
+  id: number;
+  content: string;
+  senderId: string;
+  senderNickname: string;
+  createdAt: string;
+}
 
-  const sendMessage = () => {
-    if (inputText.trim() === "") return;
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: inputText,
-      isMe: true,
-      senderName: "나",
+export default function ChatPage() {
+  const { roomId } = useLocalSearchParams();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState("");
+  const stompClient = useRef<Client | null>(null);
+  const myId = "myUserId"; // TODO: 실제 사용자 ID로 대체
+
+  useEffect(() => {
+    let client: Client;
+
+    const connectSocket = async () => {
+      const token = await authCode.get();
+      console.log("\uD83D\uDCAC 전달받은 roomId:", roomId);
+      console.log("\uD83D\uDD10 토큰:", token);
+      console.log("\uD83C\uDF10 WebSocket 연결 시도 중...");
+
+      client = new Client({
+        brokerURL: "wss://knu-carpool.store/chat/websocket",
+        reconnectDelay: 5000,
+        heartbeatIncoming: 10000,
+        heartbeatOutgoing: 10000,
+        connectHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+        onConnect: () => {
+          console.log("✅ STOMP CONNECT 성공 (서버와 핸드셰이크 완료)");
+          console.log(`📡 SUBSCRIBE 시도: /sub/party/${roomId}`);
+
+          client.subscribe(
+            `/sub/party/${roomId}`,
+            (msg: IMessage) => {
+              console.log("📥 수신된 메시지:", msg.body);
+              const data: IncomingMessagePayload = JSON.parse(msg.body);
+              handleIncomingMessage(data);
+            },
+            {
+              Authorization: `Bearer ${token}`, // SUBSCRIBE에도 필요
+            },
+          );
+
+          console.log(`📡 SUBSCRIBE 성공: /sub/party/${roomId}`);
+        },
+        onWebSocketError: (error) => {
+          console.error("🚨 WebSocket 연결 실패:", error);
+        },
+        onStompError: (frame) => {
+          console.error("❌ STOMP 오류 발생:", frame.headers["message"], frame.body);
+        },
+        onDisconnect: () => {
+          console.log("🔌 STOMP 연결 종료됨");
+        },
+      });
+
+      client.activate();
+      stompClient.current = client;
+    };
+
+    connectSocket();
+
+    return () => {
+      console.log("🔌 컴포넌트 언마운트: STOMP 연결 해제");
+      client?.deactivate();
+    };
+  }, [roomId]);
+
+  const handleIncomingMessage = (data: IncomingMessagePayload) => {
+    const message: Message = {
+      id: data.id.toString(),
+      text: data.content,
+      isMe: data.senderId === myId,
+      senderName: data.senderNickname,
       type: "message",
     };
-    setMessages([...messages, newMessage]);
+    setMessages((prev) => [...prev, message]);
+  };
+
+  const sendMessage = async () => {
+    if (!inputText.trim() || !stompClient.current?.connected) return;
+
+    const payload = { content: inputText };
+    console.log("📤 메시지 전송 시도:", payload);
+
+    stompClient.current.publish({
+      destination: `/pub/party/${roomId}/message`,
+      body: JSON.stringify(payload),
+    });
+
     setInputText("");
   };
 
@@ -45,7 +135,6 @@ export default function ChatPage() {
     return (
       <MessageRow isMe={item.isMe}>
         {!item.isMe && <ProfileImage source={defaultProfile} />}
-
         <MessageColumn isMe={item.isMe}>
           {!item.isMe && <SenderName>{item.senderName}</SenderName>}
           <MessageBubble isMe={item.isMe!}>
@@ -64,7 +153,6 @@ export default function ChatPage() {
         renderItem={renderMessage}
         contentContainerStyle={{ paddingVertical: 16 }}
       />
-
       <InputContainer>
         <StyledInput
           value={inputText}
@@ -84,7 +172,6 @@ const Container = styled(KeyboardAvoidingView)({
   backgroundColor: "#f2f2f2",
   padding: 16,
 });
-
 const MessageRow = styled.View<{ isMe?: boolean }>((props) => ({
   flexDirection: "row",
   alignItems: "flex-start",
@@ -92,25 +179,17 @@ const MessageRow = styled.View<{ isMe?: boolean }>((props) => ({
   marginBottom: 12,
   marginRight: props.isMe ? 5 : 0,
 }));
-
 const ProfileImage = styled(Image)({
   width: 55,
   height: 55,
   borderRadius: 22,
   marginHorizontal: 8,
 });
-
 const MessageColumn = styled.View<{ isMe?: boolean }>((props) => ({
   alignItems: props.isMe ? "flex-end" : "flex-start",
   maxWidth: "75%",
 }));
-
-const SenderName = styled.Text({
-  fontSize: 12,
-  color: "#888",
-  marginBottom: 4,
-});
-
+const SenderName = styled.Text({ fontSize: 12, color: "#888", marginBottom: 4 });
 const MessageBubble = styled.View<{ isMe: boolean }>((props) => ({
   backgroundColor: props.isMe ? "#aee1f9" : "#ffffff",
   paddingVertical: 10,
@@ -120,23 +199,9 @@ const MessageBubble = styled.View<{ isMe: boolean }>((props) => ({
   borderTopLeftRadius: props.isMe ? 16 : 0,
   borderTopRightRadius: props.isMe ? 0 : 16,
 }));
-
-const MessageText = styled.Text({
-  fontSize: 16,
-  color: "#333333",
-});
-
-const SystemMessageContainer = styled.View({
-  alignItems: "center",
-  marginBottom: 12,
-});
-
-const SystemText = styled.Text({
-  fontSize: 14,
-  color: "#888",
-  fontStyle: "italic",
-});
-
+const MessageText = styled.Text({ fontSize: 16, color: "#333333" });
+const SystemMessageContainer = styled.View({ alignItems: "center", marginBottom: 12 });
+const SystemText = styled.Text({ fontSize: 14, color: "#888", fontStyle: "italic" });
 const InputContainer = styled.View({
   flexDirection: "row",
   alignItems: "center",
@@ -146,7 +211,6 @@ const InputContainer = styled.View({
   borderTopColor: "#ddd",
   borderRadius: 30,
 });
-
 const StyledInput = styled.TextInput({
   flex: 1,
   height: 40,
@@ -156,7 +220,6 @@ const StyledInput = styled.TextInput({
   paddingHorizontal: 12,
   backgroundColor: "#fff",
 });
-
 const SendButton = styled.TouchableOpacity({
   paddingVertical: 8,
   paddingHorizontal: 12,
@@ -164,80 +227,4 @@ const SendButton = styled.TouchableOpacity({
   backgroundColor: "#50c878",
   borderRadius: 20,
 });
-
-const SendText = styled.Text({
-  color: "white",
-  fontWeight: "bold",
-});
-
-// ✅ 앞으로 연동할 API를 기준으로 사용할 변수 및 처리 구조
-
-/**
- * 📌 API 응답 형태 예시 (WebSocket or REST 기반 예상)
- * {
- *   id: string;
- *   text: string;
- *   senderName: string;
- *   senderId: string;
- *   timestamp: string;
- *   type: "message" | "system" | "join" | "leave";
- * }
- *
- * ➤ type에 따라 메시지 렌더링 방식이 달라짐
- */
-
-// ✅ WebSocket 또는 API로 받은 메시지를 처리하는 핸들러 예시
-/*
-onReceiveMessage(data) {
-  if (data.type === "join") {
-    setMessages((prev) => [
-      ...prev,
-      { id: `join-${data.senderId}`, text: `${data.senderName}님이 입장하셨습니다.`, type: "system" }
-    ]);
-  } else if (data.type === "leave") {
-    setMessages((prev) => [
-      ...prev,
-      { id: `leave-${data.senderId}`, text: `${data.senderName}님이 퇴장하셨습니다.`, type: "system" }
-    ]);
-  } else if (data.type === "message") {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: data.id,
-        text: data.text,
-        isMe: data.senderId === myId, // 현재 사용자의 ID와 비교
-        senderName: data.senderName,
-        type: "message",
-      }
-    ]);
-  }
-}
-*/
-
-// ✅ 메시지 전송 시 서버로 보낼 데이터 구조
-/*
-{
-  text: inputText,
-  senderId: myId,
-  senderName: "나",
-  type: "message"
-}
-*/
-
-// ✅ 입장 처리 시 서버에 전송할 데이터 구조 예시
-/*
-{
-  type: "join",
-  senderId: myId,
-  senderName: "나"
-}
-*/
-
-// ✅ 퇴장 처리 시 서버에 전송할 데이터 구조 예시
-/*
-{
-  type: "leave",
-  senderId: myId,
-  senderName: "나"
-}
-*/
+const SendText = styled.Text({ color: "white", fontWeight: "bold" });

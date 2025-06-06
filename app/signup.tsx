@@ -33,7 +33,7 @@ const handleSignup = (
           password,
         })
         .then((res) => {
-          authCode.set(res.data.accessToken);
+          authCode.set(res.data.token);
           refreshCode.set(res.data.refreshToken);
           Alert.alert("회원가입 성공");
           onSuccess();

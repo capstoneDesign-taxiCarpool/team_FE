@@ -1,5 +1,4 @@
-import { Client, IMessage } from "@stomp/stompjs";
-import { decode as atob } from "base-64";
+import { Client, IMessage, Versions } from "@stomp/stompjs";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
@@ -26,27 +25,46 @@ interface IncomingMessagePayload {
   createdAt: string;
 }
 
-interface DecodedJwt {
-  sub: string;
-  [key: string]: unknown;
-}
-
-const parseJwt = (token: string): DecodedJwt | null => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(base64));
-  } catch {
-    return null;
-  }
-};
-
 export default function ChatPage() {
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const stompClient = useRef<Client | null>(null);
   const myInfo = useRef<{ id: string; nickname: string }>({ id: "", nickname: "" });
+  const client = new Client({
+    brokerURL: "wss://knu-carpool.store/chat",
+    // connectHeaders: {
+    //   Authorization: `Bearer ${token}`,
+    // },
+    reconnectDelay: 5000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
+    forceBinaryWSFrames: true,
+    debug: (str: string) => console.log("📡 [DEBUG]", str),
+    onConnect: () => {
+      console.log("✅ STOMP CONNECT 성공");
+      client.subscribe(`/sub/party/${roomId}`, (msg: IMessage) => {
+        try {
+          const data: IncomingMessagePayload = JSON.parse(msg.body);
+          handleIncomingMessage(data);
+        } catch (err) {
+          console.error("❌ 메시지 파싱 실패:", err);
+        }
+      });
+    },
+    onStompError: (frame) => {
+      console.error("❌ STOMP 오류:", frame.headers["message"], frame.body);
+    },
+    onWebSocketError: (evt) => {
+      console.error("❗ WebSocket 에러:", evt.message);
+    },
+    onWebSocketClose: () => {
+      console.warn("🔌 WebSocket 연결 종료됨");
+    },
+    onDisconnect: () => {
+      console.log("🛑 STOMP 연결 해제");
+    },
+  });
 
   useEffect(() => {
     const connectSocket = async () => {
@@ -56,54 +74,12 @@ export default function ChatPage() {
         return;
       }
 
-      const decoded = parseJwt(token);
-      if (!decoded || !decoded.sub) {
-        console.error("❌ 토큰 디코딩 실패");
-        return;
-      }
-
-      myInfo.current.id = decoded.sub;
-
       try {
         const res = await fetchInstance(true).get<{ nickname: string }>("/api/member/me");
         myInfo.current.nickname = res.data.nickname;
       } catch (error) {
         console.error("❌ 사용자 정보 조회 실패:", error);
       }
-
-      const client = new Client({
-        webSocketFactory: () => new WebSocket("wss://knu-carpool.store/chat"),
-        // connectHeaders: {
-        //   Authorization: `Bearer ${token}`,
-        // },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 10000,
-        heartbeatOutgoing: 10000,
-        debug: (str: string) => console.log("📡 [DEBUG]", str),
-        onConnect: () => {
-          console.log("✅ STOMP CONNECT 성공");
-          client.subscribe(`/sub/party/${roomId}`, (msg: IMessage) => {
-            try {
-              const data: IncomingMessagePayload = JSON.parse(msg.body);
-              handleIncomingMessage(data);
-            } catch (err) {
-              console.error("❌ 메시지 파싱 실패:", err);
-            }
-          });
-        },
-        onStompError: (frame) => {
-          console.error("❌ STOMP 오류:", frame.headers["message"], frame.body);
-        },
-        onWebSocketError: (evt) => {
-          console.error("❗ WebSocket 에러:", evt.message);
-        },
-        onWebSocketClose: () => {
-          console.warn("🔌 WebSocket 연결 종료됨");
-        },
-        onDisconnect: () => {
-          console.log("🛑 STOMP 연결 해제");
-        },
-      });
 
       client.activate();
       stompClient.current = client;
@@ -115,7 +91,7 @@ export default function ChatPage() {
       console.log("🔻 언마운트 시 연결 종료");
       stompClient.current?.deactivate();
     };
-  }, [roomId]);
+  }, []);
 
   const handleIncomingMessage = (data: IncomingMessagePayload) => {
     const message: Message = {

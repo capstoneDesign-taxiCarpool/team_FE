@@ -1,4 +1,4 @@
-import { Client, IMessage, Versions } from "@stomp/stompjs";
+import { Client, IMessage } from "@stomp/stompjs";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";

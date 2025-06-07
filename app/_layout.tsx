@@ -1,5 +1,7 @@
+import { getAnalytics, logScreenView } from "@react-native-firebase/analytics";
+import { getApp } from "@react-native-firebase/app";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 
 import LoadingScreen from "./loadingpage";
@@ -8,6 +10,19 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+  const app = getApp();
+  const analytics = getAnalytics(app);
+
+  // 페이지 방문 시 애널리틱스에 기록
+  useEffect(() => {
+    logScreenView(analytics, {
+      screen_name: pathname,
+      screen_class: pathname,
+      params: params,
+    });
+  }, [pathname, params, analytics]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 5000); // 5초

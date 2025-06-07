@@ -13,23 +13,16 @@ import InputContainer from "@/entities/signup/input_container";
 const handleSignin = (email: string, password: string, onSuccess: () => void) => {
   fetchInstance()
     .post("/api/auth/login", {
-      email: email + "@kangwon.ac.kr",
-      password,
+      email: email.trim() + "@kangwon.ac.kr",
+      password: password.trim(),
     })
     .then((res) => {
-      console.log("🎯 로그인 응답 전체:", res.data); // 응답 구조 확인
-
       if (!res.data.token || !res.data.refreshToken) {
-        console.warn("⚠️ 응답에 토큰이 없습니다. 응답 구조 확인 필요");
         return;
       }
 
-      authCode.set(res.data.token).then(() => {
-        console.log("✅ accessToken 저장됨:", res.data.token);
-      });
-      refreshCode.set(res.data.refreshToken).then(() => {
-        console.log("✅ refreshToken 저장됨:", res.data.refreshToken);
-      });
+      authCode.set(res.data.token);
+      refreshCode.set(res.data.refreshToken);
 
       onSuccess();
     })

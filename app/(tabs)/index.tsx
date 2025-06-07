@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, isAfter, isToday, parseISO } from "date-fns";
 import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ImageBackground, Text, TouchableOpacity, View } from "react-native";
+import { ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";

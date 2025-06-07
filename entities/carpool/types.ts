@@ -19,6 +19,7 @@ export interface PartyResponse {
   sameGenderOnly: boolean;
   costShareBeforeDropOff: boolean;
   quietMode: boolean;
+  hostMemberId?: number;
   destinationChangeIn5Minutes: boolean;
   startDateTime: number;
   comment: string;

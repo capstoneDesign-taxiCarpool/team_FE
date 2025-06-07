@@ -3,7 +3,6 @@ import { Pressable, Text } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer } from "@/entities/common/components/containers";
-import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import InputContainer from "./input_container";
@@ -27,14 +26,7 @@ export default function PersonalInfo({
   setNickname: (v: string) => void;
 }) {
   useEffect(() => {
-    fetchInstance()
-      .get("/랜덤 닉네임 생성 API")
-      .then((res) => setNickname(String(res.data)))
-      .catch((err) => {
-        //TODO 에러 로깅
-        console.error(err);
-        setNickname(`이름${Math.floor(Math.random() * 1000)}`);
-      });
+    setNickname(`이름${Math.floor(Math.random() * 1000)}`);
   }, [setNickname]);
 
   return (
@@ -43,7 +35,7 @@ export default function PersonalInfo({
         <InputContainer title="비밀번호">
           <Input
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(v) => setPassword(v.trim())}
             secureTextEntry
             autoCapitalize="none"
             placeholder="비밀번호를 입력하세요"

@@ -1,3 +1,4 @@
+import { getCrashlytics, recordError } from "@react-native-firebase/crashlytics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, ScrollView, View } from "react-native";
@@ -11,15 +12,16 @@ import PersonalInfo from "@/entities/signup/personal_info";
 import VertifyEmail from "@/entities/signup/vertify_email";
 
 const handleSignup = (
-  emailCode: string,
+  email: string,
   password: string,
   nickname: string,
   sex: number,
   onSuccess: () => void,
+  crashlytics: ReturnType<typeof getCrashlytics>,
 ) => {
   fetchInstance()
-    .post("/api/auth/signup", {
-      email: emailCode + "@kangwon.ac.kr",
+    .post("", {
+      email: email.trim() + "@kangwon.ac.kr",
       password,
       nickname,
       gender: sex,
@@ -27,16 +29,18 @@ const handleSignup = (
     .then(() => {
       fetchInstance()
         .post("/api/auth/login", {
-          email: emailCode + "@kangwon.ac.kr",
+          email: email.trim() + "@kangwon.ac.kr",
           password,
         })
         .then((res) => {
-          authCode.set(res.data.accessToken);
+          authCode.set(res.data.token);
           refreshCode.set(res.data.refreshToken);
+          Alert.alert("회원가입 성공");
           onSuccess();
         });
     })
     .catch((err) => {
+      recordError(crashlytics, err, "signup fail");
       if (err.response.status === 404) Alert.alert("회원가입 실패", "이메일 인증을 먼저 해주세요.");
       else
         Alert.alert(
@@ -52,6 +56,8 @@ export default function Signup() {
   const [nickname, setNickname] = useState<string>("");
   const [sex, setSex] = useState<number>(0);
   const router = useRouter();
+
+  const crashlytics = getCrashlytics();
 
   return (
     <KeyboardAvoidingView behavior="padding">
@@ -74,7 +80,9 @@ export default function Signup() {
           />
           <CircleButton
             icon="checkmark"
-            onPress={() => handleSignup(email, password, nickname, sex, () => router.push("/"))}
+            onPress={() =>
+              handleSignup(email, password, nickname, sex, () => router.push("/"), crashlytics)
+            }
           />
         </Container>
       </ScrollView>

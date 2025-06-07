@@ -31,14 +31,12 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const stompClient = useRef<Client | null>(null);
   const myInfo = useRef<{ id: string; nickname: string }>({ id: "", nickname: "" });
+
   const client = new Client({
     brokerURL: "wss://knu-carpool.store/chat",
-    // connectHeaders: {
-    //   Authorization: `Bearer ${token}`,
-    // },
     reconnectDelay: 5000,
-    heartbeatIncoming: 10000,
-    heartbeatOutgoing: 10000,
+    heartbeatIncoming: 1000000,
+    heartbeatOutgoing: 1000000,
     forceBinaryWSFrames: true,
     debug: (str: string) => console.log("📡 [DEBUG]", str),
     onConnect: () => {
@@ -95,7 +93,7 @@ export default function ChatPage() {
 
   const handleIncomingMessage = (data: IncomingMessagePayload) => {
     const message: Message = {
-      id: data.id.toString(),
+      id: `${Date.now()}-${Math.random()}`, // 고유 ID 생성
       text: data.content,
       isMe: data.senderId === myInfo.current.id,
       senderName: data.senderNickname,
@@ -113,7 +111,7 @@ export default function ChatPage() {
     };
 
     stompClient.current.publish({
-      destination: `/pub/party/${roomId}/message`,
+      destination: `/sub/party/${roomId}`,
       body: JSON.stringify(payload),
     });
 

@@ -29,8 +29,6 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) return <LoadingScreen />;
-
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}>

@@ -8,14 +8,24 @@ import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import InputContainer from "./input_container";
 
+type CheckState =
+  | "before_send_code"
+  | "code_sending"
+  | "code_sended"
+  | "vertifying"
+  | "vertify_fail"
+  | "vertify_success";
+
 /**
  * 이메일을 입력받고, 서버에 인증코드 전송 요청
  */
-const handleSendCode = (email: string, setCheckState: (v: number) => void) => {
+const handleSendCode = (email: string, setCheckState: (v: CheckState) => void) => {
+  setCheckState("code_sending");
   fetchInstance()
-    .post("/api/email/send", { email: email + "@kangwon.ac.kr" })
-    .then(() => setCheckState(1))
+    .post("/api/email/send", { email: email.trim() + "@kangwon.ac.kr" })
+    .then(() => setCheckState("code_sended"))
     .catch(() => {
+      setCheckState("before_send_code");
       Alert.alert("이메일 전송 실패", "이메일을 다시 확인해주세요");
     });
 };
@@ -25,23 +35,26 @@ const handleSendCode = (email: string, setCheckState: (v: number) => void) => {
  */
 const vertifyCode = (
   v: string,
-  checkState: number,
+  checkState: CheckState,
   email: string,
   setEmailCode: (v: string) => void,
-  setCheckState: (v: number) => void,
+  setCheckState: (v: CheckState) => void,
 ) => {
+  if (checkState === "before_send_code" || checkState === "vertify_success") return;
   setEmailCode(v);
-  if (checkState === 0) return;
   if (v.length !== 6) {
-    setCheckState(1);
+    setCheckState("code_sended");
     return;
   }
+  setCheckState("vertifying");
 
   fetchInstance()
-    .post("/api/email/verify", { email: email + "@kangwon.ac.kr", code: v })
-    .then(() => setCheckState(3))
-    .catch((err) => {
-      setCheckState(2);
+    .post("/api/email/verify", { email: email.trim() + "@kangwon.ac.kr", code: v })
+    .then(() => {
+      setCheckState("vertify_success");
+    })
+    .catch(() => {
+      setCheckState("vertify_fail");
     });
 };
 
@@ -56,8 +69,7 @@ export default function VertifyEmail({
   setEmail: (email: string) => void;
 }) {
   const [emailCode, setEmailCode] = useState<string>("");
-  // 이메일 인증 단계 상태 | 0: 코드 전송 전, 1: 코드 전송 완료, 2: 인증 코드 틀림, 3: 인증 코드 맞음
-  const [checkState, setCheckState] = useState<number>(0);
+  const [checkState, setCheckState] = useState<CheckState>("before_send_code");
 
   return (
     <Container>
@@ -70,7 +82,7 @@ export default function VertifyEmail({
           title="인증코드 보내기"
           icon="paperplane.fill"
           onPress={() => handleSendCode(email, setCheckState)}
-          disabled={checkState !== 0}
+          disabled={checkState !== "before_send_code"}
         />
       </AlignRight>
       <AlignRight>
@@ -83,9 +95,11 @@ export default function VertifyEmail({
           onChangeText={(v) => vertifyCode(v, checkState, email, setEmailCode, setCheckState)}
         />
         <VertifyResult>
-          {checkState === 1 && "인증코드를 입력해주세요"}
-          {checkState === 2 && "❌ 인증코드를 다시 확인해주세요"}
-          {checkState === 3 && "✅ 확인되었습니다"}
+          {checkState === "code_sending" && "인증코드를 보내는 중..."}
+          {checkState === "code_sended" && "인증코드를 입력해주세요"}
+          {checkState === "vertify_fail" && "❌ 인증코드를 다시 확인해주세요"}
+          {checkState === "vertify_success" && "✅ 확인되었습니다"}
+          {checkState === "vertifying" && "확인 중..."}
         </VertifyResult>
       </AlignRight>
     </Container>

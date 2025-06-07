@@ -15,10 +15,11 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
-        "googleMapsApiKey": "process.env.GOOGLE_MAPS_API_KEY_IOS"
+        "googleMapsApiKey": "process.env.GOOGLE_MAPS_IOS_API_KEY"
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -26,7 +27,7 @@
       "package": "edu.kangwon.taxiCarpool",
       "config": {
         "googleMaps": {
-          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+          "apiKey": "x"
         }
       },
       "permissions": [
@@ -41,6 +42,7 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-firebase/crashlytics",
       [
         "expo-splash-screen",
         {
@@ -61,6 +63,14 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "강원대카풀에서 위치정보를 사용하도록 허용하시겠습니까?"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200
         }
       ],
       [

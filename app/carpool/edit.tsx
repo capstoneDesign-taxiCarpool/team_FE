@@ -28,6 +28,12 @@ export default function Edit() {
     queryClient.invalidateQueries({ queryKey: ["parties"] }); // parties key를 가진 애들 리프레시
     router.back();
   };
+  const handleDeleteParty = () => {
+    Alert.alert("정말 삭제하시겠습니까?", "삭제한 카풀은 복구할 수 없습니다.", [
+      { text: "취소", style: "cancel" },
+      { text: "삭제", style: "destructive", onPress: () => deleteParty(partyId!, onEditSuccess) },
+    ]);
+  };
 
   if (!partyId) {
     Alert.alert("오류 발생");
@@ -48,12 +54,7 @@ export default function Edit() {
             destination={destination}
           />
           <ExtraSetting />
-          <BasicButton
-            title="삭제하기"
-            icon="trash"
-            isToRight={true}
-            onPress={() => deleteParty(partyId, onEditSuccess)}
-          />
+          <BasicButton title="삭제하기" icon="trash" isToRight={true} onPress={handleDeleteParty} />
           <CircleButton
             icon="checkmark"
             onPress={() =>

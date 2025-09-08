@@ -13,11 +13,6 @@ import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import usePartyStore from "../store/usePartyStore";
 
-const changeMaxMembers = (v: string, setState: (state: number) => void) => {
-  const num = Number(v);
-  setState(num > 4 ? 4 : num);
-};
-
 /**
  * 최대 참여 인원 수, 추가 옵션, 코맨트 입력
  */
@@ -33,11 +28,29 @@ export default function ExtraSetting() {
       <RowContainer>
         <Label title="최대 참여 인원" />
         <InShadow flexGrow={1}>
-          <StyledTextInput
-            keyboardType="numeric"
-            value={String(maxMembers)}
-            onChangeText={(v) => changeMaxMembers(v, (v) => setPartyState({ maxMembers: v }))}
-          />
+          <NumberControl>
+            <ControlButton
+              accessibilityLabel="decrease-members"
+              onPress={() => setPartyState({ maxMembers: Math.max(1, maxMembers - 1) })}
+              disabled={maxMembers <= 1}
+            >
+              <IconSymbol
+                name="minus.circle"
+                color={maxMembers <= 1 ? Colors.darkGray : Colors.main}
+              />
+            </ControlButton>
+            <NumberDisplay>{maxMembers}</NumberDisplay>
+            <ControlButton
+              accessibilityLabel="increase-members"
+              onPress={() => setPartyState({ maxMembers: Math.min(4, maxMembers + 1) })}
+              disabled={maxMembers >= 4}
+            >
+              <IconSymbol
+                name="plus.circle"
+                color={maxMembers >= 4 ? Colors.darkGray : Colors.main}
+              />
+            </ControlButton>
+          </NumberControl>
         </InShadow>
       </RowContainer>
       <BoxWithDivider
@@ -98,6 +111,27 @@ const StyledTextInput = styled.TextInput({
   margin: "auto",
   textAlign: "center",
   width: "100%",
+});
+
+const NumberControl = styled.View({
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: 6,
+});
+
+const ControlButton = styled.Pressable({
+  padding: 6,
+  borderRadius: 20,
+  minWidth: 40,
+  alignItems: "center",
+  justifyContent: "center",
+});
+
+const NumberDisplay = styled.Text({
+  fontSize: FontSizes.large,
+  textAlign: "center",
+  flex: 1,
 });
 const CheckBoxLable = styled.Pressable({
   fontSize: FontSizes.medium,

@@ -20,9 +20,10 @@ interface Message {
 interface IncomingMessagePayload {
   id: number;
   content: string;
-  senderId: string;
+  senderId: number | string;
   senderNickname: string;
   createdAt: string;
+  type?: string;
 }
 
 export default function ChatPage() {
@@ -31,38 +32,7 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const stompClient = useRef<Client | null>(null);
   const myInfo = useRef<{ id: string; nickname: string }>({ id: "", nickname: "" });
-
-  const client = new Client({
-    brokerURL: "wss://knu-carpool.store/chat",
-    reconnectDelay: 5000,
-    heartbeatIncoming: 1000000,
-    heartbeatOutgoing: 1000000,
-    forceBinaryWSFrames: true,
-    debug: (str: string) => console.log("📡 [DEBUG]", str),
-    onConnect: () => {
-      console.log("✅ STOMP CONNECT 성공");
-      client.subscribe(`/sub/party/${roomId}`, (msg: IMessage) => {
-        try {
-          const data: IncomingMessagePayload = JSON.parse(msg.body);
-          handleIncomingMessage(data);
-        } catch (err) {
-          console.error("❌ 메시지 파싱 실패:", err);
-        }
-      });
-    },
-    onStompError: (frame) => {
-      console.error("❌ STOMP 오류:", frame.headers["message"], frame.body);
-    },
-    onWebSocketError: (evt) => {
-      console.error("❗ WebSocket 에러:", evt.message);
-    },
-    onWebSocketClose: () => {
-      console.warn("🔌 WebSocket 연결 종료됨");
-    },
-    onDisconnect: () => {
-      console.log("🛑 STOMP 연결 해제");
-    },
-  });
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     const connectSocket = async () => {
@@ -73,14 +43,88 @@ export default function ChatPage() {
       }
 
       try {
-        const res = await fetchInstance(true).get<{ nickname: string }>("/api/member/me");
+        // 1️⃣ 사용자 정보 조회
+        const res = await fetchInstance(true).get<{ id: string; nickname: string }>(
+          "/api/member/me",
+        );
         myInfo.current.nickname = res.data.nickname;
+        myInfo.current.id = res.data.id;
+
+        // 2️⃣ 과거 메시지 조회
+        const historyRes = await fetchInstance(true).get<IncomingMessagePayload[]>(
+          `/api/party/${roomId}/messages`,
+        );
+        const historyMessages = historyRes.data.map((msg) => ({
+          id: `${msg.id}-${Date.now()}`,
+          text: msg.content,
+          isMe: msg.senderId.toString() === myInfo.current.id,
+          senderName: msg.senderNickname,
+          type:
+            msg.type === "SYSTEM" || msg.type === "ENTER" || msg.type === "EXIT"
+              ? "system"
+              : "message",
+        }));
+        setMessages(historyMessages);
+
+        // 과거 메시지 로딩 후 최하단 이동
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }, 50);
       } catch (error) {
-        console.error("❌ 사용자 정보 조회 실패:", error);
+        console.error("❌ 사용자 정보 또는 메시지 조회 실패:", error);
       }
 
-      client.activate();
-      stompClient.current = client;
+      // 3️⃣ WebSocket 연결
+      const wsUrl = `wss://knu-carpool.store/chat?access_token=${token}`;
+      stompClient.current = new Client({
+        brokerURL: wsUrl,
+        reconnectDelay: 1000000,
+        heartbeatIncoming: 1000000,
+        heartbeatOutgoing: 1000000,
+        forceBinaryWSFrames: true,
+        debug: (str: string) => console.log("📡 [DEBUG]", str),
+        onConnect: () => {
+          console.log("✅ STOMP CONNECT 성공");
+
+          stompClient.current?.subscribe(`/sub/party/${roomId}`, (msg: IMessage) => {
+            console.log("📩 [RECEIVED] Raw 메시지:", msg.body);
+            let data: IncomingMessagePayload;
+            try {
+              data = JSON.parse(msg.body);
+            } catch (err) {
+              console.warn("⚠️ JSON 파싱 실패, 문자열 처리:", msg.body);
+              data = {
+                id: 0,
+                content: msg.body,
+                senderId: "",
+                senderNickname: "알 수 없음",
+                createdAt: new Date().toISOString(),
+              };
+            }
+            console.log("📬 [PARSED] 메시지 객체:", data);
+            handleIncomingMessage(data);
+          });
+        },
+        onStompError: (frame) =>
+          console.error("❌ STOMP 오류:", frame.headers["message"], frame.body),
+        onWebSocketError: (evt) => console.error("❗ WebSocket 에러:", evt.message),
+        onWebSocketClose: () => console.warn("🔌 WebSocket 연결 종료됨"),
+        onDisconnect: () => console.log("🛑 STOMP 연결 해제"),
+      });
+
+      const originalPublish = stompClient.current.publish.bind(stompClient.current);
+      stompClient.current.publish = (params) => {
+        originalPublish({
+          ...params,
+          body: params.body + "\u0000",
+        });
+        console.log("📤 [RAW SEND FRAME]", {
+          destination: params.destination,
+          body: params.body + "\u0000",
+        });
+      };
+
+      stompClient.current.activate();
     };
 
     connectSocket();
@@ -93,13 +137,22 @@ export default function ChatPage() {
 
   const handleIncomingMessage = (data: IncomingMessagePayload) => {
     const message: Message = {
-      id: `${Date.now()}-${Math.random()}`, // 고유 ID 생성
+      id: `${data.id}-${Date.now()}`,
       text: data.content,
-      isMe: data.senderId === myInfo.current.id,
+      isMe: data.senderId.toString() === myInfo.current.id,
       senderName: data.senderNickname,
-      type: "message",
+      type: data.type === "SYSTEM" ? "system" : "message",
     };
-    setMessages((prev) => [...prev, message]);
+    setMessages((prev) => {
+      const updated = [...prev, message];
+
+      // 새 메시지 추가 후 최하단 이동
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 50);
+
+      return updated;
+    });
   };
 
   const sendMessage = () => {
@@ -111,7 +164,7 @@ export default function ChatPage() {
     };
 
     stompClient.current.publish({
-      destination: `/sub/party/${roomId}`,
+      destination: `/pub/party/${roomId}/message`,
       body: JSON.stringify(payload),
     });
 
@@ -126,7 +179,6 @@ export default function ChatPage() {
         </SystemMessageContainer>
       );
     }
-
     return (
       <MessageRow isMe={item.isMe}>
         {!item.isMe && <ProfileImage source={defaultProfile} />}
@@ -141,12 +193,17 @@ export default function ChatPage() {
   };
 
   return (
-    <Container behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <Container
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "android" ? 80 : 0}
+    >
       <FlatList
+        ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={{ paddingVertical: 16 }}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
       <InputContainer>
         <StyledInput

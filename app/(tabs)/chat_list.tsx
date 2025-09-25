@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, ScrollView, Text } from "react-native";
@@ -28,9 +28,7 @@ const groupByDate = (parties: PartyResponse[]) => {
   return parties.reduce(
     (acc, party) => {
       const date = format(new Date(party.startDateTime), "yyyy-MM-dd");
-      if (!acc[date]) {
-        acc[date] = [];
-      }
+      if (!acc[date]) acc[date] = [];
       acc[date].push(party);
       return acc;
     },
@@ -83,37 +81,35 @@ const HighlightedCard = ({
 
 export default function ChatList() {
   const router = useRouter();
-
-  const { isLoading, data: chatRooms } = useQuery<PartyResponse[]>({
+  const { isLoading, data: chatRoomsData } = useQuery<PartyResponse[]>({
     queryKey: ["parties", "my"],
     queryFn: fetchChatList,
   });
+
+  const [chatRooms, setChatRooms] = useState<PartyResponse[]>([]);
   const partyId = usePartyStore((state) => state.partyId);
   const [userId, setUserId] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const setPartyStore = usePartyStore((state) => state.setPartyState);
+
+  useEffect(() => {
+    if (chatRoomsData) setChatRooms(chatRoomsData);
+  }, [chatRoomsData]);
 
   const groupedChatRooms = chatRooms ? groupByDate(chatRooms) : {};
-  const setPartyStore = usePartyStore((state) => state.setPartyState);
 
   useEffect(() => {
     fetchInstance(true)
       .get("/api/member/me")
-      .then((res) => {
-        setUserId(res.data.id);
-      })
-      .catch(() => {
-        setUserId(-1);
-      });
+      .then((res) => setUserId(res.data.id))
+      .catch(() => setUserId(-1));
   }, []);
 
   useEffect(() => {
     if (chatRooms && partyId) {
       const targetIndex = chatRooms.findIndex((party) => party.id === partyId);
       if (targetIndex !== -1 && scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({
-          y: targetIndex * 180,
-          animated: true,
-        });
+        scrollViewRef.current.scrollTo({ y: targetIndex * 180, animated: true });
       }
     }
   }, [chatRooms, partyId]);
@@ -134,6 +130,19 @@ export default function ChatList() {
     );
   }
 
+  const handleCompleteCarpool = async (v: PartyResponse) => {
+    try {
+      await fetchInstance(true).post(`/api/party/${v.id}/savings`);
+      setChatRooms((prev) =>
+        prev.map((p) => (p.id === v.id ? { ...p, savingsCalculated: true } : p)),
+      );
+      setPartyStore({ isHostButtonVisible: false });
+    } catch (err) {
+      console.error(err);
+      console.log("Party ID:", v.id);
+    }
+  };
+
   return (
     <Container ref={scrollViewRef}>
       {Object.entries(groupedChatRooms).map(([date, parties]) => (
@@ -146,6 +155,7 @@ export default function ChatList() {
                 : format(new Date(date), "yyyy.MM.dd")}
             </DateHeader>
           </RowContainer>
+
           {parties.map((v) => (
             <HighlightedCard key={v.id} isHighlighted={v.id === partyId}>
               <PartyCard
@@ -161,7 +171,17 @@ export default function ChatList() {
                   destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
                 }}
                 buttons={
-                  <RowContainer justifyContent="flex-end">
+                  <RowContainer justifyContent="flex-end" gap={7}>
+                    {userId === v.hostMemberId &&
+                      !v.savingsCalculated &&
+                      new Date(v.startDateTime) <= new Date() && (
+                        <BasicButton
+                          icon="checkmark"
+                          title="카풀 완료"
+                          onPress={() => handleCompleteCarpool(v)}
+                          color="#18c617"
+                        />
+                      )}
                     {userId === v.hostMemberId && (
                       <BasicButton
                         icon="gearshape"
@@ -188,6 +208,7 @@ export default function ChatList() {
                         color={Colors.main}
                       />
                     )}
+
                     <BasicButton
                       icon="bubble.left.fill"
                       title="채팅"

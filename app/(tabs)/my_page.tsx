@@ -37,7 +37,7 @@ export default function MyPage() {
   const [initialNickname, setInitialNickname] = useState("닉네임");
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [savedAmount] = useState<number>(0);
+  const [savedAmount, setSavedAmount] = useState<number>(0);
   const [email, setEmail] = useState<string | null>("example@email.com");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -60,10 +60,12 @@ export default function MyPage() {
         const profileRes = await fetchInstance(true).get("/api/member/me");
         const nickname = profileRes.data?.nickname ?? "닉네임 없음";
         const email = profileRes.data?.email ?? null;
+        const totalSavedAmount = profileRes.data?.totalSavedAmount ?? 0;
 
         setNickname(nickname);
         setInitialNickname(nickname);
         setEmail(email);
+        setSavedAmount(totalSavedAmount); // 여기서 반영
       } catch (error: unknown) {
         console.error("❌ 사용자 정보 불러오기 실패:", error);
         setIsLoggedIn(false);
@@ -96,6 +98,11 @@ export default function MyPage() {
       if (res.data.nickname) {
         setNickname(res.data.nickname);
         setInitialNickname(res.data.nickname);
+      }
+
+      // 업데이트 후 금액도 다시 가져오기
+      if (res.data.totalSavedAmount !== undefined) {
+        setSavedAmount(res.data.totalSavedAmount);
       }
 
       Alert.alert("✅ 수정 완료", "정보가 수정되었습니다.");

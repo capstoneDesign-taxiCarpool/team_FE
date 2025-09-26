@@ -50,25 +50,29 @@ const makeParty = async ({
     return;
   }
 
+  const method: "post" | "patch" = mode === "create" ? "post" : "patch";
+  const url = mode === "create" ? "/api/party" : `/api/party/${partyId}`;
+
   fetchInstance(true)
-    [mode === "create" ? "post" : "put"](
-      mode === "create" ? "/api/party" : `/api/party/${partyId}`,
-      {
+    [method](url, {
+      options: {
         sameGenderOnly: options.sameGenderOnly,
         costShareBeforeDropOff: options.costShareBeforeDropOff,
         quietMode: options.quietMode,
         destinationChangeIn5Minutes: options.destinationChangeIn5Minutes,
-        startDateTime: getISOString(when2go),
-        maxParticipantCount: maxMembers,
-        currentParticipantCount: curMembers,
-        startPlace: departure,
-        endPlace: destination,
-        comment,
       },
-    )
+      startDateTime: getISOString(when2go),
+      comment,
+      ...(mode === "create"
+        ? { currentParticipantCount: curMembers, maxParticipantCount: maxMembers }
+        : { maxParticipantCount: maxMembers }),
+      startPlace: departure,
+      endPlace: destination,
+    })
     .then((res) => {
       setPartyState({
         partyId: res.data.id,
+        when2go: new Date(res.data.startDateTime).getTime(),
       });
       onSuccess();
     })

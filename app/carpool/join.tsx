@@ -6,7 +6,7 @@ import styled from "styled-components/native";
 import PartyCardList from "@/entities/carpool/components/party_card_list";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
-import { LocationInfo, PartyResponse } from "@/entities/carpool/types";
+import { LocationInfo, RawPartyResponse } from "@/entities/carpool/types";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { getISOString } from "@/entities/common/util/datetime_format";
 
@@ -26,6 +26,7 @@ const getPartyListUrl = (
   const destinationStr = destination
     ? `userDestinationLat=${destination.y}&userDestinationLng=${destination.x}&`
     : "";
+  console.log(`/api/party/custom?${when2goStr}${departureStr}${destinationStr}page=0&size=1000000`);
   return `/api/party/custom?${when2goStr}${departureStr}${destinationStr}page=0&size=1000000`;
 };
 
@@ -33,10 +34,10 @@ export default function Join() {
   const [when2go, setWhen2go] = useState<number | undefined>(undefined);
   const { departure, destination } = useStartEndPoint();
 
-  const { isPending, data: partys } = useQuery<PartyResponse[]>({
+  const { isPending, data: partys } = useQuery<RawPartyResponse[]>({
     queryKey: ["parties", when2go, departure, destination],
     queryFn: () =>
-      fetchInstance()
+      fetchInstance(true)
         .get(getPartyListUrl(when2go, departure, destination))
         .then((res) => res.data.content)
         .catch(() => []),

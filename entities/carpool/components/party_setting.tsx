@@ -1,7 +1,7 @@
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Image, TouchableOpacity } from "react-native";
+import { Alert, Image, TouchableOpacity } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import styled from "styled-components/native";
 
@@ -36,8 +36,29 @@ export default function PartySetting({
   const [mode, setMode] = useState<null | "date" | "time">(null);
 
   const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+    if (selectedDate === undefined) {
+      setMode(null);
+      return;
+    }
+    if (
+      mode === "date" &&
+      selectedDate.setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0) &&
+      (when2go === undefined || new Date(when2go).getHours() < new Date().getHours())
+    ) {
+      // 날짜 변경 시, 시간이 현재 시간보다 이전이면 시간을 현재 시간 + 10분으로 설정
+      selectedDate.setHours(new Date().getHours(), new Date().getMinutes() + 20, 0, 0);
+    }
+
+    const tenMinutesLater = new Date();
+    tenMinutesLater.setMinutes(new Date().getMinutes() + 10);
+    if (selectedDate < tenMinutesLater) {
+      setMode(null);
+      Alert.alert("출발 시간을 현재 시간 + 10분 이후로 설정해주세요.");
+      return;
+    }
+
     setMode(null);
-    setWhen2go((selectedDate ?? new Date()).getTime());
+    setWhen2go(selectedDate.getTime());
   };
   const route2FindTrack = () => {
     setPartyState({ departure, destination, isHandOveredData: true });
@@ -54,6 +75,7 @@ export default function PartySetting({
           value={when2go ? new Date(when2go) : new Date()}
           mode={mode}
           locale="ko-KR"
+          minimumDate={new Date()}
           onChange={onChange}
           accentColor={Colors.main}
         />

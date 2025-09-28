@@ -25,6 +25,7 @@ export default function Recheck() {
   const options = usePartyStore((state) => state.options);
   const comment = usePartyStore((state) => state.comment);
   const setPartyState = usePartyStore((state) => state.setPartyState);
+  const clearExceptId = usePartyStore((state) => state.clearExceptId);
 
   return (
     <Container>
@@ -60,7 +61,10 @@ export default function Recheck() {
             onPress={() => {
               setModalVisible(!modalVisible);
               if (partyId) {
-                joinParty(partyId, () => router.push("/(tabs)/chat_list"));
+                joinParty(partyId, () => {
+                  clearExceptId();
+                  router.push("/(tabs)/chat_list");
+                });
               } else {
                 createParty({
                   when2go,
@@ -71,7 +75,10 @@ export default function Recheck() {
                   options,
                   comment,
                   setPartyState,
-                  onSuccess: () => router.push("/(tabs)/chat_list"),
+                  onSuccess: () => {
+                    clearExceptId();
+                    router.push("/(tabs)/chat_list");
+                  },
                 });
               }
             }}

@@ -8,9 +8,9 @@ import CircleButton from "@/entities/common/components/button_circle";
 
 import PartyCard from "../../common/components/party_card";
 import usePartyStore from "../store/usePartyStore";
-import { PartyResponse } from "../types";
+import { mapRawParty, PartyResponse, RawPartyResponse } from "../types";
 
-export default function PartyCardList({ partys }: { partys: PartyResponse[] }) {
+export default function PartyCardList({ partys }: { partys: RawPartyResponse[] }) {
   const router = useRouter();
   const setPartyState = usePartyStore((state) => state.setPartyState);
 
@@ -37,7 +37,9 @@ export default function PartyCardList({ partys }: { partys: PartyResponse[] }) {
     router.push("/carpool/recruit");
   };
 
-  if (partys.length === 0) {
+  const mapped = partys.map(mapRawParty);
+
+  if (mapped.length === 0) {
     return (
       <View>
         <Text>검색 결과가 없습니다</Text>
@@ -52,7 +54,7 @@ export default function PartyCardList({ partys }: { partys: PartyResponse[] }) {
   return (
     <Container>
       <PartyCardListContainer>
-        {partys.map((v) => {
+        {mapped.map((v) => {
           return (
             <PartyCard
               key={v.id}

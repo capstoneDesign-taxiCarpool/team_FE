@@ -18,6 +18,7 @@ const MAPPING = {
   clock: "access-time",
   "person.3": "people",
   checkmark: "check",
+  "minus.circle": "remove-circle-outline",
   "plus.circle": "add-circle-outline",
   "mappin.and.ellipse": "place",
   calendar: "event",

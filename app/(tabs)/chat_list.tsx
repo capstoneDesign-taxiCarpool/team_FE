@@ -6,7 +6,7 @@ import { Animated, ScrollView, Text } from "react-native";
 import styled from "styled-components/native";
 
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
-import { PartyResponse } from "@/entities/carpool/types";
+import { mapRawParty, PartyResponse, RawPartyResponse } from "@/entities/carpool/types";
 import BasicButton from "@/entities/common/components/button_basic";
 import { RowContainer } from "@/entities/common/components/containers";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
@@ -16,8 +16,8 @@ import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 const fetchChatList = async (): Promise<PartyResponse[]> => {
   try {
-    const res = await fetchInstance(true).get<PartyResponse[]>("/api/party/my-parties");
-    return res.data;
+    const res = await fetchInstance(true).get<RawPartyResponse[]>("/api/party/my-parties");
+    return res.data.map(mapRawParty);
   } catch (err) {
     console.error(err);
     return [];
@@ -189,7 +189,7 @@ export default function ChatList() {
                         onPress={() => {
                           setPartyStore({
                             partyId: v.id,
-                            when2go: new Date(v.startDateTime).getTime(),
+                            when2go: v.startDateTime,
                             departure: v.startPlace,
                             destination: v.endPlace,
                             maxMembers: v.maxParticipantCount,

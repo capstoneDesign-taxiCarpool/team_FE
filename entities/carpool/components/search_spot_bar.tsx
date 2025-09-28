@@ -148,7 +148,7 @@ const LocationSearch = styled.TextInput({
 });
 
 const LocationInfoCards = styled.ScrollView({
-  maxHeight: "250px",
+  maxHeight: "150px",
 });
 const LocationInfoCard = styled.Pressable<{ isSelectedIndex: boolean }>((props) => ({
   padding: 10,

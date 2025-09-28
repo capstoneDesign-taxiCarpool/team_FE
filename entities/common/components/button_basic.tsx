@@ -50,7 +50,7 @@ const StyledButton = styled.View<{ activeColor: string; disabled: boolean }>((pr
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  gap: "10px",
+  gap: "9px",
   padding: "5px 8px 5px 15px",
   background: props.disabled ? Colors.gray : props.activeColor,
   borderRadius: "30px",

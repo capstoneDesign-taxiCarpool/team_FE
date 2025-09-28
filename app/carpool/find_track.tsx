@@ -55,6 +55,9 @@ export default function FindTrack() {
         setSelectedIndex={setSelectedIndex}
         departure={startLocation}
         destination={endLocation}
+        showAddMarkerButton={searchingLocationType == null}
+        setDeparture={setStartLocation}
+        setDestination={setEndLocation}
       />
 
       {searchingLocationType === null && (

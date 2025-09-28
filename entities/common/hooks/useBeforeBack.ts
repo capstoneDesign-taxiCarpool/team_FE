@@ -11,10 +11,14 @@ export default function useBeforeBack(callback: () => void) {
   React.useEffect(() => {
     const sub = navigation.addListener(
       "beforeRemove",
-      (e: { data?: { action?: { type?: string } } }) => {
+      (e: { preventDefault(): unknown; data?: { action?: { type?: string } } }) => {
         const t = e?.data?.action?.type;
         if (t === "GO_BACK" || t === "POP" || t === "POP_TO_TOP") {
-          callback();
+          try {
+            callback();
+          } catch {
+            e.preventDefault();
+          }
         }
       },
     );

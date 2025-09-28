@@ -9,6 +9,7 @@ import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { LocationInfo } from "@/entities/carpool/types";
 import CircleButton from "@/entities/common/components/button_circle";
+import useBeforeBack from "@/entities/common/hooks/useBeforeBack";
 
 export default function FindTrack() {
   const router = useRouter();
@@ -24,6 +25,14 @@ export default function FindTrack() {
   const [searchingLocationType, setSearchingLocationType] = useState<"start" | "end" | null>(null);
   const [searchedLocation, setSearchedLocation] = useState<LocationInfo[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
+
+  // 뒤로가기 시 검색 모드 해제
+  useBeforeBack(() => {
+    if (searchingLocationType !== null) {
+      setSearchingLocationType(null);
+      throw "preventBack";
+    }
+  });
 
   return (
     <Container>

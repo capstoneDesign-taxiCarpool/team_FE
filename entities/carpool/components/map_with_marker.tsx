@@ -105,7 +105,7 @@ export default function MapWithMarker({
             onDragEnd={(e) => {
               if (setDeparture) {
                 setDeparture({
-                  ...departure,
+                  name: "사용자 지정 출발지",
                   x: e.nativeEvent.coordinate.longitude,
                   y: e.nativeEvent.coordinate.latitude,
                 });
@@ -126,7 +126,7 @@ export default function MapWithMarker({
             onDragEnd={(e) => {
               if (setDestination) {
                 setDestination({
-                  ...destination,
+                  name: "사용자 지정 도착지",
                   x: e.nativeEvent.coordinate.longitude,
                   y: e.nativeEvent.coordinate.latitude,
                 });
@@ -140,7 +140,7 @@ export default function MapWithMarker({
           onPress={() => {
             // Handle adding a new marker at the center location
             const newMarker: LocationInfo = {
-              name: "새 마커",
+              name: `사용자 지정 ${departure ? "도착지" : "출발지"}`,
               x: center.longitude,
               y: center.latitude,
             };

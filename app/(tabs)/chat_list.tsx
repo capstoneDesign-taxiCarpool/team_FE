@@ -172,42 +172,43 @@ export default function ChatList() {
                 }}
                 buttons={
                   <RowContainer justifyContent="flex-end" gap={7}>
+                    {/* // 호스트인 경우 설정 변경 또는 카풀 완료 버튼 표시 */}
                     {userId === v.hostMemberId &&
-                      !v.savingsCalculated &&
-                      new Date(v.startDateTime) <= new Date() && (
+                      (new Date(v.startDateTime) > new Date() ? (
                         <BasicButton
-                          icon="checkmark"
-                          title="카풀 완료"
-                          onPress={() => handleCompleteCarpool(v)}
-                          color="#18c617"
+                          icon="gearshape"
+                          title="설정 변경"
+                          onPress={() => {
+                            setPartyStore({
+                              partyId: v.id,
+                              when2go: v.startDateTime,
+                              departure: v.startPlace,
+                              destination: v.endPlace,
+                              maxMembers: v.maxParticipantCount,
+                              curMembers: v.currentParticipantCount,
+                              comment: v.comment,
+                              options: {
+                                sameGenderOnly: v.sameGenderOnly,
+                                costShareBeforeDropOff: v.costShareBeforeDropOff,
+                                quietMode: v.quietMode,
+                                destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                              },
+                              isHandOveredData: true,
+                            });
+                            router.push("/carpool/edit");
+                          }}
+                          color={Colors.main}
                         />
-                      )}
-                    {userId === v.hostMemberId && (
-                      <BasicButton
-                        icon="gearshape"
-                        title="설정 변경"
-                        onPress={() => {
-                          setPartyStore({
-                            partyId: v.id,
-                            when2go: v.startDateTime,
-                            departure: v.startPlace,
-                            destination: v.endPlace,
-                            maxMembers: v.maxParticipantCount,
-                            curMembers: v.currentParticipantCount,
-                            comment: v.comment,
-                            options: {
-                              sameGenderOnly: v.sameGenderOnly,
-                              costShareBeforeDropOff: v.costShareBeforeDropOff,
-                              quietMode: v.quietMode,
-                              destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                            },
-                            isHandOveredData: true,
-                          });
-                          router.push("/carpool/edit");
-                        }}
-                        color={Colors.main}
-                      />
-                    )}
+                      ) : (
+                        !v.savingsCalculated && (
+                          <BasicButton
+                            icon="checkmark"
+                            title="카풀 완료"
+                            onPress={() => handleCompleteCarpool(v)}
+                            color="#18c617"
+                          />
+                        )
+                      ))}
 
                     <BasicButton
                       icon="bubble.left.fill"

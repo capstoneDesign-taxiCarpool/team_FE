@@ -93,24 +93,27 @@ export default function PartySetting({
           </TouchableOpacity>
         </OutShadow>
       </RowContainer>
-      <RowContainer>
-        <Image source={VerticalRoad} />
-        <ColContainer2>
-          <OutShadow>
-            <TouchableOpacity onPress={route2FindTrack}>
-              <MediumText>{departure?.name ?? "-"}</MediumText>
-            </TouchableOpacity>
-          </OutShadow>
-          <SwapBtn onPress={swap}>
-            <IconSymbol name="arrow.2.circlepath.circle" size={24} color={Colors.black} />
-          </SwapBtn>
-          <OutShadow>
-            <TouchableOpacity onPress={route2FindTrack}>
-              <MediumText>{destination?.name ?? "-"}</MediumText>
-            </TouchableOpacity>
-          </OutShadow>
-        </ColContainer2>
-      </RowContainer>
+      <ColContainer gap={10} alignItems="stretch">
+        <Label title="경로 설정" />
+        <RowContainer>
+          <Image source={VerticalRoad} />
+          <ColContainer2>
+            <OutShadow>
+              <TouchableOpacity onPress={route2FindTrack}>
+                <MediumText>{departure?.name ?? "-"}</MediumText>
+              </TouchableOpacity>
+            </OutShadow>
+            <SwapBtn onPress={swap}>
+              <IconSymbol name="arrow.2.circlepath.circle" size={24} color={Colors.black} />
+            </SwapBtn>
+            <OutShadow>
+              <TouchableOpacity onPress={route2FindTrack}>
+                <MediumText>{destination?.name ?? "-"}</MediumText>
+              </TouchableOpacity>
+            </OutShadow>
+          </ColContainer2>
+        </RowContainer>
+      </ColContainer>
     </Container>
   );
 }
@@ -118,7 +121,7 @@ export default function PartySetting({
 const Container = styled.View({
   display: "flex",
   flexDirection: "column",
-  gap: "10px",
+  gap: "15px",
 });
 const ColContainer2 = styled(ColContainer)({
   flexGrow: 1,

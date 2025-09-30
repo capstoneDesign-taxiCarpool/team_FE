@@ -24,6 +24,7 @@ const MAPPING = {
   calendar: "event",
   gearshape: "settings",
   trash: "delete",
+  "mappin.circle.fill": "add-location-alt",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

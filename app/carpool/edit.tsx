@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import React from "react";
 import { Alert, KeyboardAvoidingView, ScrollView } from "react-native";
 import styled from "styled-components/native";
 
@@ -10,6 +11,7 @@ import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import BasicButton from "@/entities/common/components/button_basic";
 import CircleButton from "@/entities/common/components/button_circle";
+import useBeforeBack from "@/entities/common/hooks/useBeforeBack";
 
 export default function Edit() {
   const router = useRouter();
@@ -23,6 +25,9 @@ export default function Edit() {
   const options = usePartyStore((state) => state.options);
   const comment = usePartyStore((state) => state.comment);
   const setPartyState = usePartyStore((state) => state.setPartyState);
+  const clearExceptId = usePartyStore((state) => state.clearExceptId);
+
+  useBeforeBack(() => clearExceptId());
 
   const onEditSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["parties"] }); // parties key를 가진 애들 리프레시

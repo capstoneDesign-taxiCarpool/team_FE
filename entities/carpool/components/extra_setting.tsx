@@ -74,18 +74,49 @@ export default function ExtraSetting() {
         <ColContainer gap={10} alignItems="start">
           {optionsList.map((option) => (
             <RowContainer key={option.name} justifyContent="start">
-              <Checkbox
-                color={Colors.main}
-                value={options[option.name]}
-                onValueChange={(v) => setPartyState({ options: { ...options, [option.name]: v } })}
-              />
-              <CheckBoxLable
-                onPress={() =>
-                  setPartyState({ options: { ...options, [option.name]: !options[option.name] } })
-                }
-              >
-                <Text>{option.ko}</Text>
-              </CheckBoxLable>
+              {option.name === "sameGenderOnly" ? (
+                <RadioRow>
+                  <RadioOption
+                    accessibilityLabel="radio-same-gender-only"
+                    onPress={() => setPartyState({ options: { ...options, sameGenderOnly: true } })}
+                  >
+                    <RadioOuter>
+                      <RadioInner $visible={!!options.sameGenderOnly} />
+                    </RadioOuter>
+                    <Text>동성만</Text>
+                  </RadioOption>
+                  <RadioOption
+                    accessibilityLabel="radio-all-genders"
+                    onPress={() =>
+                      setPartyState({ options: { ...options, sameGenderOnly: false } })
+                    }
+                  >
+                    <RadioOuter>
+                      <RadioInner $visible={!options.sameGenderOnly} />
+                    </RadioOuter>
+                    <Text>성별 무관</Text>
+                  </RadioOption>
+                </RadioRow>
+              ) : (
+                <>
+                  <Checkbox
+                    color={Colors.main}
+                    value={options[option.name]}
+                    onValueChange={(v) =>
+                      setPartyState({ options: { ...options, [option.name]: v } })
+                    }
+                  />
+                  <CheckBoxLable
+                    onPress={() =>
+                      setPartyState({
+                        options: { ...options, [option.name]: !options[option.name] },
+                      })
+                    }
+                  >
+                    <Text>{option.ko}</Text>
+                  </CheckBoxLable>
+                </>
+              )}
             </RowContainer>
           ))}
         </ColContainer>
@@ -172,3 +203,37 @@ const Line = styled.View({
   border: `0.6px solid ${Colors.side}`,
   marginVertical: 10,
 });
+
+// Radio UI for sameGenderOnly
+const RadioRow = styled.View({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 16,
+});
+
+const RadioOption = styled.Pressable.attrs(() => ({
+  android_ripple: { color: "transparent" },
+}))({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 8,
+  paddingVertical: 4,
+  paddingHorizontal: 6,
+});
+
+const RadioOuter = styled.View({
+  width: 18,
+  height: 18,
+  borderRadius: 9,
+  borderWidth: 2,
+  borderColor: Colors.main,
+  alignItems: "center",
+  justifyContent: "center",
+});
+
+const RadioInner = styled.View<{ $visible: boolean }>(({ $visible }) => ({
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: $visible ? Colors.main : "transparent",
+}));

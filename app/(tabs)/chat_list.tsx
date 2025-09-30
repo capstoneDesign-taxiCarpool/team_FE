@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, Text } from "react-native";
+import { Alert, Animated, ScrollView, Text } from "react-native";
 import styled from "styled-components/native";
 
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
@@ -81,6 +81,7 @@ const HighlightedCard = ({
 
 export default function ChatList() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isLoading, data: chatRoomsData } = useQuery<PartyResponse[]>({
     queryKey: ["parties", "my"],
     queryFn: fetchChatList,
@@ -172,40 +173,64 @@ export default function ChatList() {
                 }}
                 buttons={
                   <RowContainer justifyContent="flex-end" gap={7}>
-                    {userId === v.hostMemberId &&
-                      !v.savingsCalculated &&
-                      new Date(v.startDateTime) <= new Date() && (
+                    {/* // 호스트인 경우 설정 변경 또는 카풀 완료 버튼 표시 */}
+                    {userId === v.hostMemberId ? (
+                      new Date(v.startDateTime) > new Date() ? (
                         <BasicButton
-                          icon="checkmark"
-                          title="카풀 완료"
-                          onPress={() => handleCompleteCarpool(v)}
-                          color="#18c617"
+                          icon="gearshape"
+                          title="설정 변경"
+                          onPress={() => {
+                            setPartyStore({
+                              partyId: v.id,
+                              when2go: v.startDateTime,
+                              departure: v.startPlace,
+                              destination: v.endPlace,
+                              maxMembers: v.maxParticipantCount,
+                              curMembers: v.currentParticipantCount,
+                              comment: v.comment,
+                              options: {
+                                sameGenderOnly: v.sameGenderOnly,
+                                costShareBeforeDropOff: v.costShareBeforeDropOff,
+                                quietMode: v.quietMode,
+                                destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                              },
+                              isHandOveredData: true,
+                            });
+                            router.push("/carpool/edit");
+                          }}
+                          color={Colors.main}
                         />
-                      )}
-                    {userId === v.hostMemberId && (
+                      ) : (
+                        !v.savingsCalculated && (
+                          <BasicButton
+                            icon="checkmark"
+                            title="카풀 완료"
+                            onPress={() => handleCompleteCarpool(v)}
+                            color="#18c617"
+                          />
+                        )
+                      )
+                    ) : (
+                      // 카풀 퇴장
                       <BasicButton
-                        icon="gearshape"
-                        title="설정 변경"
+                        icon="trash"
+                        title="카풀 퇴장"
                         onPress={() => {
-                          setPartyStore({
-                            partyId: v.id,
-                            when2go: v.startDateTime,
-                            departure: v.startPlace,
-                            destination: v.endPlace,
-                            maxMembers: v.maxParticipantCount,
-                            curMembers: v.currentParticipantCount,
-                            comment: v.comment,
-                            options: {
-                              sameGenderOnly: v.sameGenderOnly,
-                              costShareBeforeDropOff: v.costShareBeforeDropOff,
-                              quietMode: v.quietMode,
-                              destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                            },
-                            isHandOveredData: true,
-                          });
-                          router.push("/carpool/edit");
+                          fetchInstance(true)
+                            .post(`/api/party/${v.id}/leave`)
+                            .then(() => {
+                              Alert.alert("카풀에서 퇴장했습니다.");
+                              queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
+                            })
+                            .catch((err) => {
+                              console.error(err);
+                              Alert.alert(
+                                "퇴장 실패: ",
+                                err.response?.data?.message || "알 수 없는 오류",
+                              );
+                            });
                         }}
-                        color={Colors.main}
+                        color={Colors.side}
                       />
                     )}
 

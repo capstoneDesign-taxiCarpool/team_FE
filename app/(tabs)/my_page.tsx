@@ -35,7 +35,6 @@ export default function MyPage() {
   const router = useRouter();
   const [nickname, setNickname] = useState("닉네임");
   const [initialNickname, setInitialNickname] = useState("닉네임");
-  const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [savedAmount, setSavedAmount] = useState<number>(0);
   const [email, setEmail] = useState<string | null>("example@email.com");
@@ -77,7 +76,7 @@ export default function MyPage() {
   }, []);
 
   const openModal = () => {
-    setModalNickname("");
+    setModalNickname(initialNickname);
     setModalPassword("");
     setIsModalVisible(true);
   };
@@ -186,7 +185,6 @@ export default function MyPage() {
             </LoginGuideButton>
           </TopHalf>
         </AbsoluteTopOverlay>
-        <BottomContainer />
       </Container>
     );
   }
@@ -214,10 +212,7 @@ export default function MyPage() {
           <Ionicons name="wallet" size={30} color="#4a90e2" />
           <InfoText>지금까지 {savedAmount.toLocaleString()}원 아꼈어요!</InfoText>
         </Row>
-      </OverlapBox>
-
-      <BottomContainer>
-        <BottomHalf>
+        <BottomContainer>
           {/* 정보 변경 버튼 */}
           <ActionButton bgColor="#4a90e2" onPress={openModal}>
             <ActionButtonText>정보 변경</ActionButtonText>
@@ -232,8 +227,8 @@ export default function MyPage() {
           <ActionButton bgColor="#e74c3c" onPress={handleDeleteAccount}>
             <ActionButtonText>계정 삭제하기</ActionButtonText>
           </ActionButton>
-        </BottomHalf>
-      </BottomContainer>
+        </BottomContainer>
+      </OverlapBox>
 
       {/* 정보 변경 모달 */}
       <Modal
@@ -305,13 +300,13 @@ const TopHalf = styled(View)({
   justifyContent: "center",
 });
 
-const BottomHalf = styled(View)({
-  flex: 1,
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-  marginTop: 130,
-});
+// const BottomHalf = styled(View)({
+//   flex: 1,
+//   flexDirection: "row",
+//   justifyContent: "space-around",
+//   alignItems: "center",
+//   marginTop: 130,
+// });
 
 const TopRow = styled(View)({
   flexDirection: "row",
@@ -338,17 +333,16 @@ const EmailText = styled(Text)({
 });
 
 const BottomContainer = styled(View)({
-  flex: 0.35,
-  width: "100%",
-  backgroundColor: "#f0f0f0",
+  display: "flex",
+  flexDirection: "row",
+  gap: 12,
+  marginBottom: 10,
 });
 
 const OverlapBox = styled(View)({
   position: "absolute",
-  top: "52%",
-  alignSelf: "center",
-  width: 380,
-  height: 100,
+  top: "34%",
+  width: "340px",
   backgroundColor: "#ffffff",
   borderRadius: 20,
   zIndex: 10,
@@ -374,20 +368,16 @@ const NicknameText = styled(Text)({
   marginLeft: 4,
 });
 
-const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>({
-  width: 110,
-  height: 60,
+const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
+  padding: "8px 12px",
   borderRadius: 15,
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: ({ bgColor }) => bgColor || "#4a90e2",
-  opacity: 0.85,
+  backgroundColor: bgColor || "#4a90e2",
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.3,
   shadowRadius: 4,
   elevation: 6,
-});
+}));
 
 const ActionButtonText = styled(Text)({
   fontSize: 16,
@@ -458,15 +448,15 @@ const ModalInput = styled(TextInput)({
   marginBottom: 12,
 });
 
-const ModalButton = styled(TouchableOpacity)<{ bgColor?: string }>({
+const ModalButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
   width: "100%",
   paddingVertical: 12,
   borderRadius: 8,
   marginTop: 8,
-  backgroundColor: ({ bgColor }) => bgColor || "#4a90e2",
+  backgroundColor: bgColor || "#4a90e2",
   justifyContent: "center",
   alignItems: "center",
-});
+}));
 
 const ModalButtonText = styled(Text)({
   fontSize: 16,

@@ -14,16 +14,23 @@ import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
+const mapRawPartyWithSavings = (raw: RawPartyResponse): PartyResponse => ({
+  ...mapRawParty(raw),
+  savingsCalculated: raw.savingsCalculated ?? false,
+});
+
+// 서버에서 파티 목록 가져오기
 const fetchChatList = async (): Promise<PartyResponse[]> => {
   try {
     const res = await fetchInstance(true).get<RawPartyResponse[]>("/api/party/my-parties");
-    return res.data.map(mapRawParty);
+    return res.data.map(mapRawPartyWithSavings);
   } catch (err) {
     console.error(err);
     return [];
   }
 };
 
+// 날짜별 그룹화
 const groupByDate = (parties: PartyResponse[]) => {
   return parties.reduce(
     (acc, party) => {
@@ -36,6 +43,7 @@ const groupByDate = (parties: PartyResponse[]) => {
   );
 };
 
+// 강조 카드 (애니메이션)
 const HighlightedCard = ({
   isHighlighted,
   children,
@@ -92,12 +100,14 @@ export default function ChatList() {
   const scrollViewRef = useRef<ScrollView>(null);
   const setPartyStore = usePartyStore((state) => state.setPartyState);
 
+  // 서버에서 받아온 데이터로 상태 초기화
   useEffect(() => {
     if (chatRoomsData) setChatRooms(chatRoomsData);
   }, [chatRoomsData]);
 
   const groupedChatRooms = chatRooms ? groupByDate(chatRooms) : {};
 
+  // 사용자 ID 가져오기
   useEffect(() => {
     fetchInstance(true)
       .get("/api/member/me")
@@ -105,6 +115,7 @@ export default function ChatList() {
       .catch(() => setUserId(-1));
   }, []);
 
+  // 특정 파티로 스크롤
   useEffect(() => {
     if (chatRooms && partyId) {
       const targetIndex = chatRooms.findIndex((party) => party.id === partyId);
@@ -114,6 +125,7 @@ export default function ChatList() {
     }
   }, [chatRooms, partyId]);
 
+  // 로딩/빈 상태 처리
   if ((userId ?? -1) < 0 || isLoading || !chatRooms || chatRooms.length === 0) {
     return (
       <Container>
@@ -130,6 +142,7 @@ export default function ChatList() {
     );
   }
 
+  // 카풀 완료 처리
   const handleCompleteCarpool = async (v: PartyResponse) => {
     try {
       await fetchInstance(true).post(`/api/party/${v.id}/savings`);
@@ -156,75 +169,77 @@ export default function ChatList() {
             </DateHeader>
           </RowContainer>
 
-          {parties.map((v) => (
-            <HighlightedCard key={v.id} isHighlighted={v.id === partyId}>
-              <PartyCard
-                when2go={v.startDateTime}
-                departure={v.startPlace}
-                destination={v.endPlace}
-                maxMembers={v.maxParticipantCount}
-                curMembers={v.currentParticipantCount}
-                options={{
-                  sameGenderOnly: v.sameGenderOnly,
-                  costShareBeforeDropOff: v.costShareBeforeDropOff,
-                  quietMode: v.quietMode,
-                  destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                }}
-                buttons={
-                  <RowContainer justifyContent="flex-end" gap={7}>
-                    {userId === v.hostMemberId &&
-                      !v.savingsCalculated &&
-                      new Date(v.startDateTime) <= new Date() && (
+          {parties.map((v) => {
+            return (
+              <HighlightedCard key={v.id} isHighlighted={v.id === partyId}>
+                <PartyCard
+                  when2go={v.startDateTime}
+                  departure={v.startPlace}
+                  destination={v.endPlace}
+                  maxMembers={v.maxParticipantCount}
+                  curMembers={v.currentParticipantCount}
+                  options={{
+                    sameGenderOnly: v.sameGenderOnly,
+                    costShareBeforeDropOff: v.costShareBeforeDropOff,
+                    quietMode: v.quietMode,
+                    destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                  }}
+                  buttons={
+                    <RowContainer justifyContent="flex-end" gap={7}>
+                      {userId === v.hostMemberId &&
+                      !(v.savingsCalculated ?? false) &&
+                      new Date(v.startDateTime).getTime() + 60_000 <= Date.now() ? (
                         <BasicButton
                           icon="checkmark"
                           title="카풀 완료"
                           onPress={() => handleCompleteCarpool(v)}
                           color="#18c617"
                         />
-                      )}
-                    {userId === v.hostMemberId && (
-                      <BasicButton
-                        icon="gearshape"
-                        title="설정 변경"
-                        onPress={() => {
-                          setPartyStore({
-                            partyId: v.id,
-                            when2go: v.startDateTime,
-                            departure: v.startPlace,
-                            destination: v.endPlace,
-                            maxMembers: v.maxParticipantCount,
-                            curMembers: v.currentParticipantCount,
-                            comment: v.comment,
-                            options: {
-                              sameGenderOnly: v.sameGenderOnly,
-                              costShareBeforeDropOff: v.costShareBeforeDropOff,
-                              quietMode: v.quietMode,
-                              destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                            },
-                            isHandOveredData: true,
-                          });
-                          router.push("/carpool/edit");
-                        }}
-                        color={Colors.main}
-                      />
-                    )}
+                      ) : null}
 
-                    <BasicButton
-                      icon="bubble.left.fill"
-                      title="채팅"
-                      onPress={() => {
-                        setPartyStore({ partyId: v.id });
-                        router.push({
-                          pathname: "/chatpage",
-                          params: { roomId: v.id },
-                        });
-                      }}
-                    />
-                  </RowContainer>
-                }
-              />
-            </HighlightedCard>
-          ))}
+                      {userId === v.hostMemberId && (
+                        <BasicButton
+                          icon="gearshape"
+                          title="설정 변경"
+                          onPress={() => {
+                            setPartyStore({
+                              partyId: v.id,
+                              when2go: v.startDateTime,
+                              departure: v.startPlace,
+                              destination: v.endPlace,
+                              maxMembers: v.maxParticipantCount,
+                              curMembers: v.currentParticipantCount,
+                              comment: v.comment,
+                              options: {
+                                sameGenderOnly: v.sameGenderOnly,
+                                costShareBeforeDropOff: v.costShareBeforeDropOff,
+                                quietMode: v.quietMode,
+                                destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                              },
+                              isHandOveredData: true,
+                            });
+                            router.push("/carpool/edit");
+                          }}
+                          color={Colors.main}
+                        />
+                      )}
+                      <BasicButton
+                        icon="bubble.left.fill"
+                        title="채팅"
+                        onPress={() => {
+                          setPartyStore({ partyId: v.id });
+                          router.push({
+                            pathname: "/chatpage",
+                            params: { roomId: v.id },
+                          });
+                        }}
+                      />
+                    </RowContainer>
+                  }
+                />
+              </HighlightedCard>
+            );
+          })}
         </DateGroup>
       ))}
     </Container>

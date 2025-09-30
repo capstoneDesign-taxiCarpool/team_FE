@@ -1,6 +1,6 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -45,36 +45,38 @@ export default function MyPage() {
   const [modalNickname, setModalNickname] = useState("");
   const [modalPassword, setModalPassword] = useState("");
 
-  // 사용자 정보 가져오기
-  useEffect(() => {
-    const checkTokenAndFetchUser = async () => {
-      const token = await authCode.get();
-      if (!token) {
-        setIsLoggedIn(false);
-        return;
-      }
+  // 🔹 페이지 포커스될 때마다 토큰 체크 및 유저 정보 갱신
+  useFocusEffect(
+    useCallback(() => {
+      const checkTokenAndFetchUser = async () => {
+        const token = await authCode.get();
+        if (!token) {
+          setIsLoggedIn(false);
+          return;
+        }
 
-      setIsLoggedIn(true);
+        setIsLoggedIn(true);
 
-      try {
-        const profileRes = await fetchInstance(true).get("/api/member/me");
-        const nickname = profileRes.data?.nickname ?? "닉네임 없음";
-        const email = profileRes.data?.email ?? null;
-        const totalSavedAmount = profileRes.data?.totalSavedAmount ?? 0;
+        try {
+          const profileRes = await fetchInstance(true).get("/api/member/me");
+          const nickname = profileRes.data?.nickname ?? "닉네임 없음";
+          const email = profileRes.data?.email ?? null;
+          const totalSavedAmount = profileRes.data?.totalSavedAmount ?? 0;
 
-        setNickname(nickname);
-        setInitialNickname(nickname);
-        setEmail(email);
-        setSavedAmount(totalSavedAmount); // 여기서 반영
-      } catch (error: unknown) {
-        console.error("❌ 사용자 정보 불러오기 실패:", error);
-        setIsLoggedIn(false);
-        Alert.alert("⚠️ 오류", "회원 정보를 불러오지 못했습니다.");
-      }
-    };
+          setNickname(nickname);
+          setInitialNickname(nickname);
+          setEmail(email);
+          setSavedAmount(totalSavedAmount);
+        } catch (error: unknown) {
+          console.error("❌ 사용자 정보 불러오기 실패:", error);
+          setIsLoggedIn(false);
+          Alert.alert("⚠️ 오류", "회원 정보를 불러오지 못했습니다.");
+        }
+      };
 
-    checkTokenAndFetchUser();
-  }, []);
+      checkTokenAndFetchUser();
+    }, []),
+  );
 
   const openModal = () => {
     setModalNickname("");
@@ -100,7 +102,6 @@ export default function MyPage() {
         setInitialNickname(res.data.nickname);
       }
 
-      // 업데이트 후 금액도 다시 가져오기
       if (res.data.totalSavedAmount !== undefined) {
         setSavedAmount(res.data.totalSavedAmount);
       }
@@ -179,13 +180,24 @@ export default function MyPage() {
         <TopContainer />
         <AbsoluteTopOverlay>
           <TopHalf>
-            <ProfileImage source={defaultProfile} />
-            <LoginGuideText>로그인이 필요합니다.</LoginGuideText>
+            <TopRow>
+              <TextContainer>
+                <NicknameText>닉네임</NicknameText>
+                <EmailBox>
+                  <EmailText>로그인이 필요합니다.</EmailText>
+                </EmailBox>
+              </TextContainer>
+              <ProfileImage source={defaultProfile} />
+            </TopRow>
+          </TopHalf>
+        </AbsoluteTopOverlay>
+        <OverlapBox>
+          <Row>
             <LoginGuideButton onPress={() => router.push("/signin")}>
               <LoginGuideText>로그인 하러 가기 &gt;</LoginGuideText>
             </LoginGuideButton>
-          </TopHalf>
-        </AbsoluteTopOverlay>
+          </Row>
+        </OverlapBox>
         <BottomContainer />
       </Container>
     );
@@ -207,8 +219,6 @@ export default function MyPage() {
           </TopRow>
         </TopHalf>
       </AbsoluteTopOverlay>
-
-      {/* 저장 금액 표시 */}
       <OverlapBox>
         <Row>
           <Ionicons name="wallet" size={30} color="#4a90e2" />
@@ -218,24 +228,17 @@ export default function MyPage() {
 
       <BottomContainer>
         <BottomHalf>
-          {/* 정보 변경 버튼 */}
           <ActionButton bgColor="#4a90e2" onPress={openModal}>
             <ActionButtonText>정보 변경</ActionButtonText>
           </ActionButton>
-
-          {/* 로그아웃 버튼 */}
           <ActionButton bgColor="#f1c40f" onPress={handleLogout}>
             <ActionButtonText>로그아웃</ActionButtonText>
           </ActionButton>
-
-          {/* 계정 삭제 버튼 */}
           <ActionButton bgColor="#e74c3c" onPress={handleDeleteAccount}>
             <ActionButtonText>계정 삭제하기</ActionButtonText>
           </ActionButton>
         </BottomHalf>
       </BottomContainer>
-
-      {/* 정보 변경 모달 */}
       <Modal
         visible={isModalVisible}
         animationType="slide"
@@ -272,7 +275,6 @@ export default function MyPage() {
   );
 }
 
-/* ------------------- Styled Components ------------------- */
 const { width } = Dimensions.get("window");
 
 const Container = styled(View)({
@@ -386,39 +388,41 @@ const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>({
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.3,
   shadowRadius: 4,
-  elevation: 6,
+  elevation: 3,
 });
 
 const ActionButtonText = styled(Text)({
   fontSize: 16,
   fontWeight: "bold",
-  color: "#fff",
+  color: "#333",
 });
 
 const Row = styled(View)({
   flexDirection: "row",
   alignItems: "center",
-  marginBottom: 20,
-  marginTop: 10,
+  marginBottom: 2,
 });
 
 const InfoText = styled(Text)({
   fontSize: 20,
-  color: "#4a4a4a",
-  marginLeft: 8,
+  color: "#333",
+  marginLeft: 7,
 });
 
 const LoginGuideButton = styled(TouchableOpacity)({
-  backgroundColor: "#4a90e2",
+  width: 380,
+  height: 100,
+  backgroundColor: "#ffffff",
   paddingVertical: 12,
   paddingHorizontal: 24,
   borderRadius: 25,
-  marginTop: 16,
+  alignItems: "center",
+  justifyContent: "center",
 });
 
 const LoginGuideText = styled(Text)({
-  color: "white",
-  fontSize: 16,
+  color: "#333",
+  fontSize: 22,
   fontWeight: "bold",
 });
 

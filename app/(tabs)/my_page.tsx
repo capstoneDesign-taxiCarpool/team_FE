@@ -35,7 +35,6 @@ export default function MyPage() {
   const router = useRouter();
   const [nickname, setNickname] = useState("닉네임");
   const [initialNickname, setInitialNickname] = useState("닉네임");
-  const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [savedAmount, setSavedAmount] = useState<number>(0);
   const [email, setEmail] = useState<string | null>("example@email.com");
@@ -79,7 +78,7 @@ export default function MyPage() {
   );
 
   const openModal = () => {
-    setModalNickname("");
+    setModalNickname(initialNickname);
     setModalPassword("");
     setIsModalVisible(true);
   };
@@ -340,17 +339,16 @@ const EmailText = styled(Text)({
 });
 
 const BottomContainer = styled(View)({
-  flex: 0.35,
-  width: "100%",
-  backgroundColor: "#f0f0f0",
+  display: "flex",
+  flexDirection: "row",
+  gap: 12,
+  marginBottom: 10,
 });
 
 const OverlapBox = styled(View)({
   position: "absolute",
-  top: "52%",
-  alignSelf: "center",
-  width: 380,
-  height: 100,
+  top: "34%",
+  width: "340px",
   backgroundColor: "#ffffff",
   borderRadius: 20,
   zIndex: 10,
@@ -376,20 +374,17 @@ const NicknameText = styled(Text)({
   marginLeft: 4,
 });
 
-const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>({
-  width: 110,
-  height: 60,
+const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
+  paddingVertical: 8,
+  paddingHorizontal: 12,
   borderRadius: 15,
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: ({ bgColor }) => bgColor || "#4a90e2",
-  opacity: 0.85,
+  backgroundColor: bgColor || "#4a90e2",
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.3,
   shadowRadius: 4,
   elevation: 3,
-});
+}));
 
 const ActionButtonText = styled(Text)({
   fontSize: 16,
@@ -462,15 +457,15 @@ const ModalInput = styled(TextInput)({
   marginBottom: 12,
 });
 
-const ModalButton = styled(TouchableOpacity)<{ bgColor?: string }>({
+const ModalButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
   width: "100%",
   paddingVertical: 12,
   borderRadius: 8,
   marginTop: 8,
-  backgroundColor: ({ bgColor }) => bgColor || "#4a90e2",
+  backgroundColor: bgColor || "#4a90e2",
   justifyContent: "center",
   alignItems: "center",
-});
+}));
 
 const ModalButtonText = styled(Text)({
   fontSize: 16,

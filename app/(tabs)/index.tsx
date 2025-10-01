@@ -136,7 +136,7 @@ const ScheduleBox = styled.TouchableOpacity({
 });
 
 const PartyBox = styled(ImageBackground).attrs({
-  imageStyle: { borderRadius: 40 },
+  imageStyle: { borderRadius: 40, opacity: 0.5 },
 })({
   width: 400,
   height: 200,

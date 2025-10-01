@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
 import PartyCardList from "@/entities/carpool/components/party_card_list";
 import PartySetting from "@/entities/carpool/components/party_setting";
 import useStartEndPoint from "@/entities/carpool/hooks/use_start_end_point";
+import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { LocationInfo, RawPartyResponse } from "@/entities/carpool/types";
+import useBeforeBack from "@/entities/common/hooks/useBeforeBack";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { getISOString } from "@/entities/common/util/datetime_format";
 
@@ -33,6 +35,8 @@ const getPartyListUrl = (
 export default function Join() {
   const [when2go, setWhen2go] = useState<number | undefined>(undefined);
   const { departure, destination } = useStartEndPoint();
+  const clearExceptId = usePartyStore((state) => state.clearExceptId);
+  useBeforeBack(() => clearExceptId());
 
   const { isPending, data: partys } = useQuery<RawPartyResponse[]>({
     queryKey: ["parties", when2go, departure, destination],

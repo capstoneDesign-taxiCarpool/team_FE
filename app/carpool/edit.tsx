@@ -59,7 +59,13 @@ export default function Edit() {
             destination={destination}
           />
           <ExtraSetting />
-          <BasicButton title="삭제하기" icon="trash" isToRight={true} onPress={handleDeleteParty} />
+          <BasicButton
+            title="삭제하기"
+            icon="trash"
+            color="#FF0000"
+            isToRight={true}
+            onPress={handleDeleteParty}
+          />
           <CircleButton
             icon="checkmark"
             onPress={() =>

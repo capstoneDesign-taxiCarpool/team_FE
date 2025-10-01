@@ -1,4 +1,4 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -40,11 +40,11 @@ export default function MyPage() {
   const [email, setEmail] = useState<string | null>("example@email.com");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  // 모달 전용 상태
   const [modalNickname, setModalNickname] = useState("");
   const [modalPassword, setModalPassword] = useState("");
 
-  // 🔹 페이지 포커스될 때마다 토큰 체크 및 유저 정보 갱신
+  const { width } = Dimensions.get("window");
+
   useFocusEffect(
     useCallback(() => {
       const checkTokenAndFetchUser = async () => {
@@ -176,7 +176,7 @@ export default function MyPage() {
   if (!isLoggedIn) {
     return (
       <Container>
-        <TopContainer />
+        <TopContainer width={width} />
         <AbsoluteTopOverlay>
           <TopHalf>
             <TopRow>
@@ -204,7 +204,7 @@ export default function MyPage() {
 
   return (
     <Container>
-      <TopContainer />
+      <TopContainer width={width} />
       <AbsoluteTopOverlay>
         <TopHalf>
           <TopRow>
@@ -238,6 +238,7 @@ export default function MyPage() {
           </ActionButton>
         </BottomHalf>
       </BottomContainer>
+
       <Modal
         visible={isModalVisible}
         animationType="slide"
@@ -274,8 +275,7 @@ export default function MyPage() {
   );
 }
 
-const { width } = Dimensions.get("window");
-
+// 스타일 정의
 const Container = styled(View)({
   flex: 1,
   backgroundColor: "#f0f0f0",
@@ -283,7 +283,7 @@ const Container = styled(View)({
   justifyContent: "flex-start",
 });
 
-const TopContainer = styled(View)({
+const TopContainer = styled(View)<{ width: number }>(({ width }) => ({
   width: width * 1.6,
   height: width * 1.6,
   borderRadius: (width * 1.6) / 2,
@@ -291,7 +291,7 @@ const TopContainer = styled(View)({
   top: -width * 0.3,
   position: "relative",
   backgroundColor: "rgb(148, 200, 230)",
-});
+}));
 
 const AbsoluteTopOverlay = styled(View)({
   position: "absolute",
@@ -311,7 +311,7 @@ const BottomHalf = styled(View)({
   flexDirection: "row",
   justifyContent: "space-around",
   alignItems: "center",
-  marginTop: 130,
+  marginTop: 115,
 });
 
 const TopRow = styled(View)({
@@ -339,7 +339,6 @@ const EmailText = styled(Text)({
 });
 
 const BottomContainer = styled(View)({
-  display: "flex",
   flexDirection: "row",
   gap: 12,
   marginBottom: 10,
@@ -347,8 +346,9 @@ const BottomContainer = styled(View)({
 
 const OverlapBox = styled(View)({
   position: "absolute",
-  top: "34%",
-  width: "340px",
+  top: "52%",
+  height: 100,
+  width: 370,
   backgroundColor: "#ffffff",
   borderRadius: 20,
   zIndex: 10,
@@ -358,7 +358,7 @@ const OverlapBox = styled(View)({
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.25,
   shadowRadius: 6,
-  elevation: 8,
+  elevation: 6,
 });
 
 const ProfileImage = styled(Image)({
@@ -375,6 +375,10 @@ const NicknameText = styled(Text)({
 });
 
 const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
+  width: 120,
+  height: 50,
+  alignItems: "center",
+  justifyContent: "center",
   paddingVertical: 8,
   paddingHorizontal: 12,
   borderRadius: 15,
@@ -383,7 +387,7 @@ const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.3,
   shadowRadius: 4,
-  elevation: 3,
+  elevation: 2,
 }));
 
 const ActionButtonText = styled(Text)({

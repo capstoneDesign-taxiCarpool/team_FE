@@ -252,7 +252,7 @@ export default function ChatList() {
                       ) : // 일반 참여자 버튼
                       now < startTime ? (
                         <BasicButton
-                          icon="exit"
+                          icon="trash"
                           title="카풀퇴장"
                           onPress={() => handleDeleteOrLeave(v, false)}
                           color="#e74c3c"

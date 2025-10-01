@@ -14,18 +14,23 @@ import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
+const mapRawPartyWithSavings = (raw: RawPartyResponse): PartyResponse => ({
+  ...mapRawParty(raw),
+  savingsCalculated: raw.savingsCalculated ?? false,
+});
+
 const fetchChatList = async (): Promise<PartyResponse[]> => {
   try {
     const res = await fetchInstance(true).get<RawPartyResponse[]>("/api/party/my-parties");
-    return res.data.map(mapRawParty);
+    return res.data.map(mapRawPartyWithSavings);
   } catch (err) {
     console.error(err);
     return [];
   }
 };
 
-const groupByDate = (parties: PartyResponse[]) => {
-  return parties.reduce(
+const groupByDate = (parties: PartyResponse[]) =>
+  parties.reduce(
     (acc, party) => {
       const date = format(new Date(party.startDateTime), "yyyy-MM-dd");
       if (!acc[date]) acc[date] = [];
@@ -34,7 +39,6 @@ const groupByDate = (parties: PartyResponse[]) => {
     },
     {} as Record<string, PartyResponse[]>,
   );
-};
 
 const HighlightedCard = ({
   isHighlighted,
@@ -144,6 +148,27 @@ export default function ChatList() {
     }
   };
 
+  const handleDeleteOrLeave = async (party: PartyResponse, isHost: boolean) => {
+    const action = isHost ? "삭제" : "퇴장";
+    Alert.alert(`⚠️ ${action}`, `정말로 ${isHost ? "파티를 삭제" : "카풀에서 퇴장"}하시겠습니까?`, [
+      { text: "취소", style: "cancel" },
+      {
+        text: action,
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await fetchInstance(true).post(`/api/party/${party.id}/leave`);
+            Alert.alert(isHost ? "파티가 삭제되었습니다." : "카풀에서 퇴장했습니다.");
+            queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
+          } catch (err) {
+            console.error(err);
+            Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <Container ref={scrollViewRef}>
       {Object.entries(groupedChatRooms).map(([date, parties]) => (
@@ -157,99 +182,108 @@ export default function ChatList() {
             </DateHeader>
           </RowContainer>
 
-          {parties.map((v) => (
-            <HighlightedCard key={v.id} isHighlighted={v.id === partyId}>
-              <PartyCard
-                when2go={v.startDateTime}
-                departure={v.startPlace}
-                destination={v.endPlace}
-                maxMembers={v.maxParticipantCount}
-                curMembers={v.currentParticipantCount}
-                options={{
-                  sameGenderOnly: v.sameGenderOnly,
-                  costShareBeforeDropOff: v.costShareBeforeDropOff,
-                  quietMode: v.quietMode,
-                  destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                }}
-                buttons={
-                  <RowContainer justifyContent="flex-end" gap={7}>
-                    {/* // 호스트인 경우 설정 변경 또는 카풀 완료 버튼 표시 */}
-                    {userId === v.hostMemberId ? (
-                      new Date(v.startDateTime) > new Date() ? (
-                        <BasicButton
-                          icon="gearshape"
-                          title="설정 변경"
-                          onPress={() => {
-                            setPartyStore({
-                              partyId: v.id,
-                              when2go: v.startDateTime,
-                              departure: v.startPlace,
-                              destination: v.endPlace,
-                              maxMembers: v.maxParticipantCount,
-                              curMembers: v.currentParticipantCount,
-                              comment: v.comment,
-                              options: {
-                                sameGenderOnly: v.sameGenderOnly,
-                                costShareBeforeDropOff: v.costShareBeforeDropOff,
-                                quietMode: v.quietMode,
-                                destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                              },
-                              isHandOveredData: true,
-                            });
-                            router.push("/carpool/edit");
-                          }}
-                          color={Colors.main}
-                        />
-                      ) : (
-                        !v.savingsCalculated && (
-                          <BasicButton
-                            icon="checkmark"
-                            title="카풀 완료"
-                            onPress={() => handleCompleteCarpool(v)}
-                            color="#18c617"
-                          />
-                        )
-                      )
-                    ) : (
-                      // 카풀 퇴장
-                      <BasicButton
-                        icon="trash"
-                        title="카풀 퇴장"
-                        onPress={() => {
-                          fetchInstance(true)
-                            .post(`/api/party/${v.id}/leave`)
-                            .then(() => {
-                              Alert.alert("카풀에서 퇴장했습니다.");
-                              queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
-                            })
-                            .catch((err) => {
-                              console.error(err);
-                              Alert.alert(
-                                "퇴장 실패: ",
-                                err.response?.data?.message || "알 수 없는 오류",
-                              );
-                            });
-                        }}
-                        color={Colors.side}
-                      />
-                    )}
+          {parties.map((v) => {
+            const isHost = userId === v.hostMemberId;
+            const now = new Date();
+            const startTime = new Date(v.startDateTime);
+            const startPlus1Min = new Date(startTime.getTime() + 60_000);
 
-                    <BasicButton
-                      icon="bubble.left.fill"
-                      title="채팅"
-                      onPress={() => {
-                        setPartyStore({ partyId: v.id });
-                        router.push({
-                          pathname: "/chatpage",
-                          params: { roomId: v.id },
-                        });
-                      }}
-                    />
-                  </RowContainer>
-                }
-              />
-            </HighlightedCard>
-          ))}
+            return (
+              <HighlightedCard key={v.id} isHighlighted={v.id === partyId}>
+                <PartyCard
+                  when2go={v.startDateTime}
+                  departure={v.startPlace}
+                  destination={v.endPlace}
+                  maxMembers={v.maxParticipantCount}
+                  curMembers={v.currentParticipantCount}
+                  options={{
+                    sameGenderOnly: v.sameGenderOnly,
+                    costShareBeforeDropOff: v.costShareBeforeDropOff,
+                    quietMode: v.quietMode,
+                    destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                  }}
+                  buttons={
+                    <RowContainer justifyContent="flex-end" gap={7}>
+                      {/* 호스트 버튼 */}
+                      {isHost ? (
+                        now < startTime ? (
+                          <BasicButton
+                            icon="gearshape"
+                            title="설정 변경"
+                            onPress={() => {
+                              setPartyStore({
+                                partyId: v.id,
+                                when2go: v.startDateTime,
+                                departure: v.startPlace,
+                                destination: v.endPlace,
+                                maxMembers: v.maxParticipantCount,
+                                curMembers: v.currentParticipantCount,
+                                comment: v.comment,
+                                options: {
+                                  sameGenderOnly: v.sameGenderOnly,
+                                  costShareBeforeDropOff: v.costShareBeforeDropOff,
+                                  quietMode: v.quietMode,
+                                  destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                                },
+                                isHandOveredData: true,
+                              });
+                              router.push("/carpool/edit");
+                            }}
+                            color={Colors.main}
+                          />
+                        ) : now >= startPlus1Min ? (
+                          <>
+                            {!v.savingsCalculated && (
+                              <BasicButton
+                                icon="checkmark"
+                                title="카풀 완료"
+                                onPress={() => handleCompleteCarpool(v)}
+                                color="#18c617"
+                              />
+                            )}
+                            <BasicButton
+                              icon="trash"
+                              title="삭제하기"
+                              onPress={() => handleDeleteOrLeave(v, true)}
+                              color="#e74c3c"
+                            />
+                          </>
+                        ) : null
+                      ) : // 일반 참여자 버튼
+                      now < startTime ? (
+                        <BasicButton
+                          icon="trash"
+                          title="카풀퇴장"
+                          onPress={() => handleDeleteOrLeave(v, false)}
+                          color="#e74c3c"
+                        />
+                      ) : now >= startPlus1Min ? (
+                        <BasicButton
+                          icon="trash"
+                          title="삭제하기"
+                          onPress={() => handleDeleteOrLeave(v, false)}
+                          color="#e74c3c"
+                        />
+                      ) : null}
+
+                      {/* 채팅 버튼 */}
+                      <BasicButton
+                        icon="bubble.left.fill"
+                        title="채팅"
+                        onPress={() => {
+                          setPartyStore({ partyId: v.id });
+                          router.push({
+                            pathname: "/chatpage",
+                            params: { roomId: v.id },
+                          });
+                        }}
+                      />
+                    </RowContainer>
+                  }
+                />
+              </HighlightedCard>
+            );
+          })}
         </DateGroup>
       ))}
     </Container>

@@ -22,7 +22,6 @@ type Party = {
 
 const getMySchedule = async () => {
   const token = await authCode.get();
-  console.log("🏠 토큰 체크:", token);
   if (!token) return null;
 
   const res = await fetchInstance(true).get("/api/party/my-parties");
@@ -50,7 +49,6 @@ export default function HomeScreen() {
     useCallback(() => {
       const checkToken = async () => {
         const token = await authCode.get();
-        console.log("📌 Home 진입 - 현재 토큰:", token);
         setIsLoggedIn(!!token);
         setAuthChanged((prev) => prev + 1);
       };
@@ -80,7 +78,7 @@ export default function HomeScreen() {
 
   return (
     <Container>
-      <ScheduleBox onPress={handleSchedulePress}>
+      <ScheduleBox onPress={handleSchedulePress} disabled={!!isLoggedIn && !schedule}>
         {isLoggedIn === null || (isLoggedIn && isPending) ? (
           <BoxText>불러오는 중...</BoxText>
         ) : !isLoggedIn ? (

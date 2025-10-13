@@ -3,10 +3,11 @@ import { Alert } from "react-native";
 
 import { authCode as accessTokenStorage, refreshCode as refreshTokenStorage } from "./storage";
 
-const handleNotAuth = () => {
+const handleNotAuth = (msg?: string) => {
   accessTokenStorage.set();
   refreshTokenStorage.set();
-  Alert.alert("로그인이 필요합니다.");
+  if (msg) Alert.alert("로그인이 필요합니다.", msg);
+  else Alert.alert("로그인이 필요합니다.");
   return;
 };
 
@@ -53,7 +54,7 @@ const initInstance = (config: AxiosRequestConfig, authContained: boolean) => {
             error.config.headers.Authorization = `Bearer ${res.data.newAccessToken}`;
             return axios(error.config);
           } catch {
-            return handleNotAuth();
+            return handleNotAuth(error.response.data.message);
           }
         } else {
           return handleNotAuth();

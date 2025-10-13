@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Dimensions, Image } from "react-native";
 import styled from "styled-components/native";
 
+import { fetchInstance } from "@/entities/common/util/axios_instance";
+
 import loadingImage from "../assets/images/loading.png";
 
 const screenWidth = Dimensions.get("window").width;
@@ -17,6 +19,8 @@ export default function LoadingScreen() {
         useNativeDriver: true,
       }).start();
     }, 2000);
+
+    fetchInstance(true).get("/api/member/me");
 
     return () => clearTimeout(timer);
   }, [imageOpacity]);

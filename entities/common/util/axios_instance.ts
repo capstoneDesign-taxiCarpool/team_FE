@@ -3,10 +3,19 @@ import { Alert } from "react-native";
 
 import { authCode as accessTokenStorage, refreshCode as refreshTokenStorage } from "./storage";
 
-const handleNotAuth = () => {
+const handleNotAuth = (msg?: string) => {
   accessTokenStorage.set();
   refreshTokenStorage.set();
-  Alert.alert("로그인이 필요합니다.");
+  if (
+    msg &&
+    msg.trim() ===
+      "다른 기기에서 더 최근에 로그인되어 현재 토큰이 무효화되었습니다. 다시 로그인해주세요."
+  )
+    Alert.alert(
+      "로그인이 필요합니다.",
+      "다른 기기에서 더 최근에 로그인되었습니다. 다시 로그인 해주세요. 오류라고 생각되면 관리자에게 문의해주세요.",
+    );
+  else Alert.alert("로그인이 필요합니다.");
   return;
 };
 
@@ -53,7 +62,7 @@ const initInstance = (config: AxiosRequestConfig, authContained: boolean) => {
             error.config.headers.Authorization = `Bearer ${res.data.newAccessToken}`;
             return axios(error.config);
           } catch {
-            return handleNotAuth();
+            return handleNotAuth(error.response.data.message);
           }
         } else {
           return handleNotAuth();

@@ -1,3 +1,4 @@
+import { Client } from "@stomp/stompjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useRouter } from "expo-router";
@@ -14,11 +15,13 @@ import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
+// Raw -> Party 변환
 const mapRawPartyWithSavings = (raw: RawPartyResponse): PartyResponse => ({
   ...mapRawParty(raw),
   savingsCalculated: raw.savingsCalculated ?? false,
 });
 
+// 내 파티 조회
 const fetchChatList = async (): Promise<PartyResponse[]> => {
   try {
     const res = await fetchInstance(true).get<RawPartyResponse[]>("/api/party/my-parties");
@@ -29,6 +32,7 @@ const fetchChatList = async (): Promise<PartyResponse[]> => {
   }
 };
 
+// 날짜별 그룹화
 const groupByDate = (parties: PartyResponse[]) =>
   parties.reduce(
     (acc, party) => {
@@ -40,6 +44,7 @@ const groupByDate = (parties: PartyResponse[]) =>
     {} as Record<string, PartyResponse[]>,
   );
 
+// 강조 카드 애니메이션
 const HighlightedCard = ({
   isHighlighted,
   children,
@@ -51,17 +56,10 @@ const HighlightedCard = ({
 
   useEffect(() => {
     if (isHighlighted) {
-      Animated.timing(borderColorAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: false,
-      }).start(() => {
-        Animated.timing(borderColorAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: false,
-        }).start();
-      });
+      Animated.sequence([
+        Animated.timing(borderColorAnim, { toValue: 1, duration: 1000, useNativeDriver: false }),
+        Animated.timing(borderColorAnim, { toValue: 0, duration: 1000, useNativeDriver: false }),
+      ]).start();
     }
   }, [isHighlighted, borderColorAnim]);
 
@@ -71,13 +69,7 @@ const HighlightedCard = ({
   });
 
   return (
-    <Animated.View
-      style={{
-        borderColor,
-        borderWidth: 2,
-        borderRadius: 22,
-      }}
-    >
+    <Animated.View style={{ borderColor, borderWidth: 2, borderRadius: 22 }}>
       {children}
     </Animated.View>
   );
@@ -96,6 +88,7 @@ export default function ChatList() {
   const [userId, setUserId] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const setPartyStore = usePartyStore((state) => state.setPartyState);
+  const stompClients = useRef<Record<number, Client>>({}); // roomId -> STOMP client
 
   useEffect(() => {
     if (chatRoomsData) setChatRooms(chatRoomsData);
@@ -103,6 +96,7 @@ export default function ChatList() {
 
   const groupedChatRooms = chatRooms ? groupByDate(chatRooms) : {};
 
+  // 내 정보 가져오기
   useEffect(() => {
     fetchInstance(true)
       .get("/api/member/me")
@@ -110,6 +104,7 @@ export default function ChatList() {
       .catch(() => setUserId(-1));
   }, []);
 
+  // 특정 파티 스크롤
   useEffect(() => {
     if (chatRooms && partyId) {
       const targetIndex = chatRooms.findIndex((party) => party.id === partyId);
@@ -118,6 +113,61 @@ export default function ChatList() {
       }
     }
   }, [chatRooms, partyId]);
+
+  // 카풀 완료
+  const handleCompleteCarpool = async (v: PartyResponse) => {
+    try {
+      await fetchInstance(true).post(`/api/party/${v.id}/savings`);
+      setChatRooms((prev) =>
+        prev.map((p) => (p.id === v.id ? { ...p, savingsCalculated: true } : p)),
+      );
+      setPartyStore({ isHostButtonVisible: false });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteOrLeave = async (party: PartyResponse, isHost: boolean) => {
+    const now = new Date();
+    const startTime = new Date(party.startDateTime);
+    const startPlus1Min = new Date(startTime.getTime() + 60_000);
+
+    // 일반 참여자가 종료된 카풀에서 삭제 버튼을 누르면 메시지 변경
+    const alertMessage = isHost
+      ? "정말로 파티를 삭제하시겠습니까?"
+      : now >= startPlus1Min
+        ? "종료된 카풀입니다. 삭제하시겠습니까?"
+        : "정말로 카풀에서 퇴장하시겠습니까?";
+
+    const actionText = isHost || now >= startPlus1Min ? "삭제" : "퇴장";
+
+    Alert.alert(`⚠️ ${actionText}`, alertMessage, [
+      { text: "취소", style: "cancel" },
+      {
+        text: actionText,
+        style: "destructive",
+        onPress: async () => {
+          try {
+            // FCM 알림 방지
+            await fetchInstance(true).post(`/api/party/${party.id}/leave`, { preventFcm: true });
+
+            // STOMP 구독 해제
+            const client = stompClients.current[party.id];
+            if (client && client.connected) {
+              client.deactivate();
+              delete stompClients.current[party.id];
+            }
+
+            Alert.alert(isHost ? "✅ 파티가 삭제되었습니다." : "✅ 카풀 기록이 삭제되었습니다.");
+            queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
+          } catch (err) {
+            console.error(err);
+            Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
+          }
+        },
+      },
+    ]);
+  };
 
   if ((userId ?? -1) < 0 || isLoading || !chatRooms || chatRooms.length === 0) {
     return (
@@ -134,40 +184,6 @@ export default function ChatList() {
       </Container>
     );
   }
-
-  const handleCompleteCarpool = async (v: PartyResponse) => {
-    try {
-      await fetchInstance(true).post(`/api/party/${v.id}/savings`);
-      setChatRooms((prev) =>
-        prev.map((p) => (p.id === v.id ? { ...p, savingsCalculated: true } : p)),
-      );
-      setPartyStore({ isHostButtonVisible: false });
-    } catch (err) {
-      console.error(err);
-      console.log("Party ID:", v.id);
-    }
-  };
-
-  const handleDeleteOrLeave = async (party: PartyResponse, isHost: boolean) => {
-    const action = isHost ? "삭제" : "퇴장";
-    Alert.alert(`⚠️ ${action}`, `정말로 ${isHost ? "파티를 삭제" : "카풀에서 퇴장"}하시겠습니까?`, [
-      { text: "취소", style: "cancel" },
-      {
-        text: action,
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await fetchInstance(true).post(`/api/party/${party.id}/leave`);
-            Alert.alert(isHost ? "파티가 삭제되었습니다." : "카풀에서 퇴장했습니다.");
-            queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
-          } catch (err) {
-            console.error(err);
-            Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
-          }
-        },
-      },
-    ]);
-  };
 
   return (
     <Container ref={scrollViewRef}>
@@ -204,7 +220,6 @@ export default function ChatList() {
                   }}
                   buttons={
                     <RowContainer justifyContent="flex-end" gap={7}>
-                      {/* 호스트 버튼 */}
                       {isHost ? (
                         now < startTime ? (
                           <BasicButton
@@ -249,8 +264,7 @@ export default function ChatList() {
                             />
                           </>
                         ) : null
-                      ) : // 일반 참여자 버튼
-                      now < startTime ? (
+                      ) : now < startTime ? (
                         <BasicButton
                           icon="trash"
                           title="카풀퇴장"

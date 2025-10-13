@@ -1,10 +1,13 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
+import notifee, { AndroidImportance } from "@notifee/react-native";
+import messaging from "@react-native-firebase/messaging";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { format, isAfter, isToday, parseISO } from "date-fns";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
-import { ImageBackground } from "react-native";
+import * as SecureStore from "expo-secure-store";
+import React, { useCallback, useEffect, useState } from "react";
+import { ImageBackground, PermissionsAndroid, Platform } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -20,13 +23,44 @@ type Party = {
   startDateTime: string;
 };
 
+const DEVICE_ID_KEY = "my_app_device_id_v1";
+
+async function getDeviceIdOrGenerate() {
+  const stored = await SecureStore.getItemAsync(DEVICE_ID_KEY);
+  if (stored) return stored;
+  const newId = `generated-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+  await SecureStore.setItemAsync(DEVICE_ID_KEY, newId);
+  return newId;
+}
+
+async function registerFcmToken(token: string) {
+  try {
+    const deviceId = await getDeviceIdOrGenerate();
+    const body = {
+      fcmToken: token,
+      platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
+      deviceId,
+      appVersion: "1.0.0",
+      bundleOrPackage: "com.myapp",
+    };
+    const auth = await authCode.get();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (auth) headers["Authorization"] = `Bearer ${auth}`;
+    await fetch("https://knu-carpool.store/api/fcm/token", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    console.log("❌ FCM 토큰 등록 실패", e);
+  }
+}
+
 const getMySchedule = async () => {
   const token = await authCode.get();
   if (!token) return null;
-
   const res = await fetchInstance(true).get("/api/party/my-parties");
   const now = new Date();
-
   const sorted = res.data
     .map((party: Party) => ({
       id: party.id,
@@ -36,13 +70,12 @@ const getMySchedule = async () => {
     }))
     .filter((p) => isAfter(p.startDateTime, now))
     .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
-
   return sorted[0] || null;
 };
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChanged, setAuthChanged] = useState(0);
 
   useFocusEffect(
@@ -56,10 +89,10 @@ export default function HomeScreen() {
     }, []),
   );
 
-  const { data: schedule, isPending } = useQuery({
+  const { data: schedule, isFetching } = useQuery({
     queryKey: ["mySchedule", authChanged],
     queryFn: getMySchedule,
-    enabled: isLoggedIn !== null,
+    enabled: isLoggedIn,
   });
 
   const formatScheduleDateTime = (date: Date) => {
@@ -69,20 +102,58 @@ export default function HomeScreen() {
   };
 
   const handleSchedulePress = () => {
-    if (!isLoggedIn) {
-      router.push("/signin");
-    } else if (schedule) {
-      router.push("/chat_list");
-    }
+    if (!isLoggedIn) router.push("/signin");
+    else if (schedule) router.push("/chat_list");
   };
+
+  useEffect(() => {
+    const initFCM = async () => {
+      if (Platform.OS === "ios")
+        await messaging().requestPermission({ alert: true, sound: true, badge: true });
+      if (Platform.OS === "android" && Platform.Version >= 33)
+        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+
+      if (Platform.OS === "android") {
+        await notifee.createChannel({
+          id: "fcm_default_channel",
+          name: "Default Channel",
+          importance: AndroidImportance.HIGH,
+          vibration: true,
+          sound: "default",
+        });
+      }
+
+      const token = await messaging().getToken();
+      if (token) await registerFcmToken(token);
+
+      messaging().onTokenRefresh(registerFcmToken);
+
+      messaging().onMessage(async (remoteMessage) => {
+        await notifee.displayNotification({
+          title: remoteMessage.notification?.title || "새 메시지",
+          body: remoteMessage.notification?.body || "",
+          android: {
+            channelId: "fcm_default_channel",
+            importance: AndroidImportance.HIGH,
+            smallIcon: "ic_launcher",
+            autoCancel: true,
+            pressAction: { id: "default" },
+          },
+          ios: { sound: "default" },
+        });
+      });
+    };
+
+    initFCM();
+  }, []);
 
   return (
     <Container>
-      <ScheduleBox onPress={handleSchedulePress} disabled={!!isLoggedIn && !schedule}>
-        {isLoggedIn === null || (isLoggedIn && isPending) ? (
-          <BoxText>불러오는 중...</BoxText>
-        ) : !isLoggedIn ? (
+      <ScheduleBox onPress={handleSchedulePress} disabled={!schedule}>
+        {!isLoggedIn ? (
           <BoxText>로그인 후 이용해 주세요!</BoxText>
+        ) : isFetching ? (
+          <BoxText>불러오는 중...</BoxText>
         ) : !schedule ? (
           <BoxText>현재 카풀 일정이 없습니다!</BoxText>
         ) : (

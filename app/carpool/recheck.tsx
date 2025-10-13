@@ -27,6 +27,32 @@ export default function Recheck() {
   const setPartyState = usePartyStore((state) => state.setPartyState);
   const clearExceptId = usePartyStore((state) => state.clearExceptId);
 
+  // 참여/생성 성공 시 페이지 이동만 처리
+  const handleSuccess = (joinedPartyId: string) => {
+    clearExceptId();
+    router.push("/(tabs)/chat_list");
+  };
+
+  const handlePress = () => {
+    setModalVisible(false);
+
+    if (partyId) {
+      joinParty(partyId, () => handleSuccess(partyId));
+    } else {
+      createParty({
+        when2go,
+        departure,
+        destination,
+        maxMembers,
+        curMembers,
+        options,
+        comment,
+        setPartyState,
+        onSuccess: (newPartyId) => handleSuccess(newPartyId),
+      });
+    }
+  };
+
   return (
     <Container>
       <PartyCard
@@ -56,33 +82,7 @@ export default function Recheck() {
           <Pressable onPress={() => setModalVisible(false)}>
             <ModalBtnText color={Colors.side}>취소</ModalBtnText>
           </Pressable>
-          <Pressable
-            aria-label={`카풀${partyId ? " 참여" : " 생성"} 버튼`}
-            onPress={() => {
-              setModalVisible(!modalVisible);
-              if (partyId) {
-                joinParty(partyId, () => {
-                  clearExceptId();
-                  router.push("/(tabs)/chat_list");
-                });
-              } else {
-                createParty({
-                  when2go,
-                  departure,
-                  destination,
-                  maxMembers,
-                  curMembers,
-                  options,
-                  comment,
-                  setPartyState,
-                  onSuccess: () => {
-                    clearExceptId();
-                    router.push("/(tabs)/chat_list");
-                  },
-                });
-              }
-            }}
-          >
+          <Pressable aria-label={`카풀${partyId ? " 참여" : " 생성"} 버튼`} onPress={handlePress}>
             <ModalBtnText>{partyId ? "참여하기" : "생성하기"}</ModalBtnText>
           </Pressable>
         </RowContainer>
@@ -94,6 +94,7 @@ export default function Recheck() {
 const Container = styled.View({
   flex: 1,
 });
+
 const ModalBtnText = styled.Text<{ color?: string }>((props) => ({
   color: props.color || Colors.black,
   padding: "5px 10px",

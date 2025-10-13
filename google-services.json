@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "766105734903",
-    "project_id": "knu-car",
-    "storage_bucket": "knu-car.firebasestorage.app"
+    "project_number": "723492174679",
+    "project_id": "knu-carpool",
+    "storage_bucket": "knu-carpool.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:766105734903:android:1ede19d638777433d74df2",
+        "mobilesdk_app_id": "1:723492174679:android:35e6222e9e04082cb41c12",
         "android_client_info": {
           "package_name": "edu.kangwon.taxiCarpool"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDv0lJNtQVUdVtuU6_VQhLrOkb_NkUgjJ8"
+          "current_key": "AIzaSyBy1au71-2LqRIc9SZ1Y1OoTVu3NfNyj50"
         }
       ],
       "services": {

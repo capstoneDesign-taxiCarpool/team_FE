@@ -41,8 +41,11 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-firebase/app", 
       "expo-router",
       "@react-native-firebase/crashlytics",
+      "@react-native-firebase/messaging",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {

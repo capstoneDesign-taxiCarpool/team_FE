@@ -1,13 +1,14 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import notifee, { AndroidImportance } from "@notifee/react-native";
-import messaging from "@react-native-firebase/messaging";
+// import notifee, { AndroidImportance } from "@notifee/react-native"; // RootLayout으로 이동
+// import messaging from "@react-native-firebase/messaging"; // RootLayout으로 이동
 import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { format, isAfter, isToday, parseISO } from "date-fns";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
+// import * as SecureStore from "expo-secure-store"; // RootLayout으로 이동
 import React, { useCallback, useEffect, useState } from "react";
-import { ImageBackground, PermissionsAndroid, Platform } from "react-native";
+// import { ImageBackground, PermissionsAndroid, Platform } from "react-native"; // RootLayout으로 이동
+import { ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -23,38 +24,10 @@ type Party = {
   startDateTime: string;
 };
 
-const DEVICE_ID_KEY = "my_app_device_id_v1";
-
-async function getDeviceIdOrGenerate() {
-  const stored = await SecureStore.getItemAsync(DEVICE_ID_KEY);
-  if (stored) return stored;
-  const newId = `generated-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-  await SecureStore.setItemAsync(DEVICE_ID_KEY, newId);
-  return newId;
-}
-
-async function registerFcmToken(token: string) {
-  try {
-    const deviceId = await getDeviceIdOrGenerate();
-    const body = {
-      fcmToken: token,
-      platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
-      deviceId,
-      appVersion: "1.0.0",
-      bundleOrPackage: "com.myapp",
-    };
-    const auth = await authCode.get();
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (auth) headers["Authorization"] = `Bearer ${auth}`;
-    await fetch("https://knu-carpool.store/api/fcm/token", {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
-  } catch (e) {
-    console.log("❌ FCM 토큰 등록 실패", e);
-  }
-}
+// **FCM 관련 함수 제거 (RootLayout.tsx로 이동)**
+// const DEVICE_ID_KEY = "my_app_device_id_v1";
+// async function getDeviceIdOrGenerate() { ... }
+// async function registerFcmToken(token: string) { ... }
 
 const getMySchedule = async () => {
   const token = await authCode.get();
@@ -78,6 +51,7 @@ export default function HomeScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChanged, setAuthChanged] = useState(0);
 
+  // 로그인 상태 체크 (기존 로직 유지)
   useFocusEffect(
     useCallback(() => {
       const checkToken = async () => {
@@ -106,46 +80,11 @@ export default function HomeScreen() {
     else if (schedule) router.push("/chat_list");
   };
 
-  useEffect(() => {
-    const initFCM = async () => {
-      if (Platform.OS === "ios")
-        await messaging().requestPermission({ alert: true, sound: true, badge: true });
-      if (Platform.OS === "android" && Platform.Version >= 33)
-        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-
-      if (Platform.OS === "android") {
-        await notifee.createChannel({
-          id: "fcm_default_channel",
-          name: "Default Channel",
-          importance: AndroidImportance.HIGH,
-          vibration: true,
-          sound: "default",
-        });
-      }
-
-      const token = await messaging().getToken();
-      if (token) await registerFcmToken(token);
-
-      messaging().onTokenRefresh(registerFcmToken);
-
-      messaging().onMessage(async (remoteMessage) => {
-        await notifee.displayNotification({
-          title: remoteMessage.notification?.title || "새 메시지",
-          body: remoteMessage.notification?.body || "",
-          android: {
-            channelId: "fcm_default_channel",
-            importance: AndroidImportance.HIGH,
-            smallIcon: "ic_launcher",
-            autoCancel: true,
-            pressAction: { id: "default" },
-          },
-          ios: { sound: "default" },
-        });
-      });
-    };
-
-    initFCM();
-  }, []);
+  // **FCM 초기화 useEffect 제거**
+  // useEffect(() => {
+  //   const initFCM = async () => { ... };
+  //   initFCM();
+  // }, []);
 
   return (
     <Container>

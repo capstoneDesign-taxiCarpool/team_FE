@@ -64,8 +64,9 @@ export default function ChatPage() {
         );
         myInfo.current = res.data;
 
+        // 70개까지 메시지를 불러오도록 maxResults=70 파라미터를 추가했습니다.
         const historyRes = await fetchInstance(true).get<IncomingMessagePayload[]>(
-          `/api/party/${roomId}/messages`,
+          `/api/party/${roomId}/messages?maxResults=70`,
         );
         const historyMessages = historyRes.data.map((msg) => ({
           id: `${msg.id}-${Date.now()}`,

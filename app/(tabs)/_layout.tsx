@@ -10,6 +10,7 @@ export default function TabLayout() {
         options={{
           title: "홈",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -24,6 +25,13 @@ export default function TabLayout() {
         options={{
           title: "마이페이지",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.circle" color={color} />,
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "rgb(148, 200, 230)",
+          },
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
         }}
       />
     </Tabs>

@@ -1,13 +1,9 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-// import notifee, { AndroidImportance } from "@notifee/react-native"; // RootLayout으로 이동
-// import messaging from "@react-native-firebase/messaging"; // RootLayout으로 이동
 import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { format, isAfter, isToday, parseISO } from "date-fns";
 import { useRouter } from "expo-router";
-// import * as SecureStore from "expo-secure-store"; // RootLayout으로 이동
 import React, { useCallback, useEffect, useState } from "react";
-// import { ImageBackground, PermissionsAndroid, Platform } from "react-native"; // RootLayout으로 이동
 import { ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
@@ -23,11 +19,6 @@ type Party = {
   endPlace: { name: string };
   startDateTime: string;
 };
-
-// **FCM 관련 함수 제거 (RootLayout.tsx로 이동)**
-// const DEVICE_ID_KEY = "my_app_device_id_v1";
-// async function getDeviceIdOrGenerate() { ... }
-// async function registerFcmToken(token: string) { ... }
 
 const getMySchedule = async () => {
   const token = await authCode.get();
@@ -50,14 +41,18 @@ export default function HomeScreen() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChanged, setAuthChanged] = useState(0);
+  // 🟢 추가: 로그인 상태 확인이 완료될 때까지 로딩 상태를 표시합니다.
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // 로그인 상태 체크 (기존 로직 유지)
+  // 로그인 상태 체크
   useFocusEffect(
     useCallback(() => {
       const checkToken = async () => {
         const token = await authCode.get();
         setIsLoggedIn(!!token);
         setAuthChanged((prev) => prev + 1);
+        // 🟢 추가: 토큰 확인 완료 후 로딩 해제
+        setIsAuthChecking(false);
       };
       checkToken();
     }, []),
@@ -76,20 +71,35 @@ export default function HomeScreen() {
   };
 
   const handleSchedulePress = () => {
-    if (!isLoggedIn) router.push("/signin");
-    else if (schedule) router.push("/chat_list");
+    // 비로그인 상태면 로그인 페이지로 즉시 라우팅
+    if (!isLoggedIn) {
+      router.push("/signin");
+    }
+    // 로그인 상태이고 스케줄이 있으면 채팅 목록으로 라우팅
+    else if (schedule) {
+      router.push("/chat_list");
+    }
   };
 
-  // **FCM 초기화 useEffect 제거**
-  // useEffect(() => {
-  //   const initFCM = async () => { ... };
-  //   initFCM();
-  // }, []);
+  // 🟢 로딩 중일 때는 아무것도 렌더링하지 않거나 로딩 인디케이터를 보여줄 수 있습니다.
+  // 여기서는 단순히 컴포넌트 전체를 비활성화하지 않고 내용을 보여주도록 합니다.
+  if (isAuthChecking) {
+    // 토큰 확인 중일 때 화면이 잠깐 깜빡이는 것을 막기 위해 최소한의 UI를 보여줄 수 있습니다.
+    // 하지만 현재는 로딩 상태를 명확히 보여주는 코드가 없으므로,
+    // 로딩 중에도 UI를 렌더링하고 상호작용만 막는 방식으로 처리합니다.
+  }
 
   return (
     <Container>
-      <ScheduleBox onPress={handleSchedulePress} disabled={!schedule}>
-        {!isLoggedIn ? (
+      {/* 🔴 수정: 비로그인일 때도 onPress가 동작하도록 disabled={!schedule}를 제거합니다. */}
+      {/* 🔴 수정: 대신 isAuthChecking 중에는 disabled를 true로 설정하여 오작동을 막습니다. */}
+      <ScheduleBox
+        onPress={handleSchedulePress}
+        disabled={isAuthChecking || (isLoggedIn && !schedule)}
+      >
+        {isAuthChecking ? (
+          <BoxText>인증 정보를 확인 중입니다...</BoxText>
+        ) : !isLoggedIn ? (
           <BoxText>로그인 후 이용해 주세요!</BoxText>
         ) : isFetching ? (
           <BoxText>불러오는 중...</BoxText>
@@ -106,7 +116,10 @@ export default function HomeScreen() {
       </ScheduleBox>
 
       <PartyBox source={partyMakeImage}>
-        <OverlayTouchable onPress={() => router.push("/carpool/recruit")}>
+        <OverlayTouchable
+          onPress={() => (isLoggedIn ? router.push("/carpool/recruit") : router.push("/signin"))}
+          disabled={isAuthChecking} // 🟢 로딩 중 비활성화
+        >
           <IconContainer>
             <Feather name="plus" size={30} color="#333333" />
           </IconContainer>
@@ -116,7 +129,10 @@ export default function HomeScreen() {
       </PartyBox>
 
       <PartyBox source={partyJoinImage}>
-        <OverlayTouchable onPress={() => router.push("/carpool/join")}>
+        <OverlayTouchable
+          onPress={() => (isLoggedIn ? router.push("/carpool/join") : router.push("/signin"))}
+          disabled={isAuthChecking} // 🟢 로딩 중 비활성화
+        >
           <IconContainer>
             <Ionicons name="search" size={30} color="#333333" />
           </IconContainer>
@@ -127,6 +143,8 @@ export default function HomeScreen() {
     </Container>
   );
 }
+
+// ... (스타일 컴포넌트는 변경 없음)
 
 const Container = styled.View({
   flex: 1,

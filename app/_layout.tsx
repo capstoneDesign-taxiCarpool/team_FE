@@ -1,23 +1,19 @@
-import messaging from "@react-native-firebase/messaging";
+import messaging, { RemoteMessage } from "@react-native-firebase/messaging";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// 💡 Expo Notifications 임포트 (이전 수정 반영)
+// 💡 Expo Notifications 임포트
 import * as Notifications from "expo-notifications";
 import { Stack, StackScreenProps, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { useEffect } from "react"; // 💡 useState, isLoading 제거
+import React, { useEffect } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { authCode } from "@/entities/common/util/storage";
 
-// ⚠️ notifee import 제거
-// import notifee, { AndroidImportance } from "@notifee/react-native";
-
 const queryClient = new QueryClient();
 
 type ChatPageParams = { roomId?: string; startPlace?: string; endPlace?: string };
 
-// HomeScreen.tsx에서 이동된 유틸리티 함수 및 상수
 const DEVICE_ID_KEY = "my_app_device_id_v1";
 
 async function getDeviceIdOrGenerate() {
@@ -56,10 +52,9 @@ async function registerFcmToken(token: string) {
 type SetPartyStoreFn = (state: { partyId: number | null }) => void;
 
 // FCM 초기화 및 리스너 등록 함수
-// 💡 setPartyStore의 'any' 타입 수정
 const initializeFCM = async (
   router: ReturnType<typeof useRouter>,
-  setPartyStore: SetPartyStoreFn,
+  setPartyStore: SetPartyStoreFn, // 💡 any 타입 제거
 ) => {
   // 1. 권한 요청
   if (Platform.OS === "ios") {
@@ -69,13 +64,14 @@ const initializeFCM = async (
     await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
   }
 
-  // 2. Android 채널 생성 (Expo Notifications 사용 - 포그라운드 제어 목적)
+  // 2. Android 채널 생성 (중복 진동/소리 방지를 위해 null 설정)
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("fcm_default_channel", {
       name: "Default Channel",
       importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      sound: "default",
+      // 🟢 수정: 진동 및 소리 비활성화 (OS 기본 알림만 사용)
+      vibrationPattern: null,
+      sound: null,
     });
   }
 
@@ -113,8 +109,8 @@ const initializeFCM = async (
   });
 
   // 6. 백그라운드/종료 상태 알림 클릭 처리 (딥링크)
-  // 💡 remoteMessage의 'any' 타입을 'RemoteMessage'로 수정
-  const handleNotificationClick = (remoteMessage: messaging.RemoteMessage | null) => {
+  const handleNotificationClick = (remoteMessage: RemoteMessage | null) => {
+    // 💡 any 타입 제거
     const data = remoteMessage?.data;
     if (data?.type === "CHAT_MESSAGE" && data?.partyId) {
       setPartyStore({ partyId: Number(data.partyId) });
@@ -135,7 +131,7 @@ const initializeFCM = async (
   };
 };
 
-// 💡 포그라운드에서 알림 배너가 보이도록 설정 (추가)
+// 💡 포그라운드에서 알림 배너가 보이도록 설정 (소리/진동은 false로 유지)
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -145,14 +141,12 @@ Notifications.setNotificationHandler({
 });
 
 export default function RootLayout() {
-  // 💡 isLoading 상태 및 관련 useEffect 제거 (사용되지 않는 변수 경고 해결)
   const router = useRouter();
   const setPartyStore = usePartyStore((state) => state.setPartyState);
 
-  // FCM 초기화 (RootLayout에서 모든 것을 처리)
+  // FCM 초기화
   useEffect(() => {
     let cleanup: () => void;
-    // initializeFCM 함수는 SetPartyStoreFn 타입을 사용합니다.
     initializeFCM(router, setPartyStore).then((c) => {
       cleanup = c;
     });

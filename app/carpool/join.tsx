@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
@@ -35,15 +35,25 @@ const getPartyListUrl = (
 export default function Join() {
   const [when2go, setWhen2go] = useState<number | undefined>(undefined);
   const { departure, destination } = useStartEndPoint();
+  const [userId, setUserId] = useState<number | undefined>(undefined);
   const clearExceptId = usePartyStore((state) => state.clearExceptId);
   useBeforeBack(() => clearExceptId());
+
+  useEffect(() => {
+    fetchInstance()
+      .get("/api/member/me")
+      .then((res) => setUserId(res.data.id))
+      .catch(() => setUserId(undefined));
+  }, []);
 
   const { isPending, data: partys } = useQuery<RawPartyResponse[]>({
     queryKey: ["parties", when2go, departure, destination],
     queryFn: () =>
       fetchInstance(true)
         .get(getPartyListUrl(when2go, departure, destination))
-        .then((res) => res.data.content)
+        .then((res) =>
+          res.data.content.filter((party: RawPartyResponse) => party.hostMemberId !== userId),
+        )
         .catch(() => []),
   });
 

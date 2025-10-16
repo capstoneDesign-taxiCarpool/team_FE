@@ -29,6 +29,6 @@ export const formatOptions = (options: Party["options"]) => {
       result += `#${option.ko} `;
     }
   }
-  if (result === "") return " - ";
+  if (result === "") return "";
   else return result;
 };

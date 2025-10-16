@@ -15,7 +15,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
-        "googleMapsApiKey": "process.env.GOOGLE_MAPS_IOS_API_KEY"
+        "googleMapsApiKey": "x"
       }
     },
     "android": {
@@ -41,7 +41,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "@react-native-firebase/app", 
+      "@react-native-firebase/app",
       "expo-router",
       "@react-native-firebase/crashlytics",
       "@react-native-firebase/messaging",
@@ -65,7 +65,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "강원대카풀에서 위치정보를 사용하도록 허용하시겠습니까?"
+          "locationWhenInUsePermission": "강원대카풀에서 위치정보를 사용하도록 허용하시겠습니까?"
         }
       ],
       [

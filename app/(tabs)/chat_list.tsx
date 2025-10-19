@@ -90,6 +90,10 @@ export default function ChatList() {
   const setPartyStore = usePartyStore((state) => state.setPartyState);
   const stompClients = useRef<Record<number, Client>>({}); // roomId -> STOMP client
 
+  const refreshChatList = () => {
+    queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
+  };
+
   useEffect(() => {
     if (chatRoomsData) setChatRooms(chatRoomsData);
   }, [chatRoomsData]);
@@ -159,7 +163,7 @@ export default function ChatList() {
             }
 
             Alert.alert(isHost ? "✅ 파티가 삭제되었습니다." : "✅ 카풀 기록이 삭제되었습니다.");
-            queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
+            refreshChatList();
           } catch (err) {
             console.error(err);
             Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
@@ -186,7 +190,7 @@ export default function ChatList() {
   }
 
   return (
-    <Container ref={scrollViewRef}>
+    <Container ref={scrollViewRef} onScrollToTop={refreshChatList}>
       {Object.entries(groupedChatRooms).map(([date, parties]) => (
         <DateGroup key={date}>
           <RowContainer justifyContent="flex-start">

@@ -50,8 +50,6 @@ export default function Edit() {
     <KeyboardAvoidingView behavior="padding">
       <ScrollView>
         <Container>
-          <Header>{`카풀
-설정 변경하기`}</Header>
           <PartySetting
             when2go={when2go}
             setWhen2go={(when2go) => setPartyState({ when2go: when2go })}
@@ -88,12 +86,6 @@ export default function Edit() {
     </KeyboardAvoidingView>
   );
 }
-
-const Header = styled.Text({
-  fontSize: 30,
-  fontWeight: "bold",
-  marginBottom: 20,
-});
 
 const Container = styled.View({
   display: "flex",

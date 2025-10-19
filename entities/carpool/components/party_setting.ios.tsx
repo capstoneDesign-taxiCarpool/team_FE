@@ -32,32 +32,19 @@ export default function PartySetting({
 }) {
   const router = useRouter();
   const setPartyState = usePartyStore((state) => state.setPartyState);
-  // datetime picker mode state
-  const [mode, setMode] = useState<null | "date" | "time">(null);
 
   const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
     if (selectedDate === undefined) {
-      setMode(null);
       return;
-    }
-    if (
-      mode === "date" &&
-      selectedDate.setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0) &&
-      (when2go === undefined || new Date(when2go).getHours() < new Date().getHours())
-    ) {
-      // 날짜 변경 시, 시간이 현재 시간보다 이전이면 시간을 현재 시간 + 10분으로 설정
-      selectedDate.setHours(new Date().getHours(), new Date().getMinutes() + 20, 0, 0);
     }
 
     const tenMinutesLater = new Date();
     tenMinutesLater.setMinutes(new Date().getMinutes() + 10);
     if (selectedDate < tenMinutesLater) {
-      setMode(null);
       Alert.alert("출발 시간을 현재 시간 + 10분 이후로 설정해주세요.");
       return;
     }
 
-    setMode(null);
     setWhen2go(selectedDate.getTime());
   };
   const route2FindTrack = () => {
@@ -70,27 +57,17 @@ export default function PartySetting({
 
   return (
     <Container>
-      {mode && (
-        <DateTimePicker
-          value={when2go ? new Date(when2go) : new Date()}
-          mode={mode}
-          locale="ko-KR"
-          minimumDate={new Date()}
-          onChange={onChange}
-          accentColor={Colors.main}
-        />
-      )}
       <RowContainer>
         <Label title="출발 시간" />
         <OutShadow flexGrow={1} borderRadius={10}>
-          <TouchableOpacity onPress={() => setMode("date")}>
-            <MediumText>{datetimeFormat(when2go, "date")}</MediumText>
-          </TouchableOpacity>
-        </OutShadow>
-        <OutShadow flexGrow={1} borderRadius={10}>
-          <TouchableOpacity onPress={() => setMode("time")}>
-            <MediumText>{datetimeFormat(when2go, "time")}</MediumText>
-          </TouchableOpacity>
+          <DateTimePicker
+            value={when2go ? new Date(when2go) : new Date()}
+            mode="datetime"
+            locale="ko-KR"
+            minimumDate={new Date()}
+            onChange={onChange}
+            accentColor={Colors.main}
+          />
         </OutShadow>
       </RowContainer>
       <ColContainer gap={10} alignItems="stretch">

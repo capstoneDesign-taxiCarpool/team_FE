@@ -40,10 +40,13 @@ export const ColContainer = styled.View<{ gap?: number; alignItems?: string }>((
   gap: props.gap ?? 10,
 }));
 
-export const RowContainer = styled.View<{ gap?: number; justifyContent?: string }>((props) => ({
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: props.justifyContent ?? "center",
-  alignItems: "center",
-  gap: props.gap ?? 10,
-}));
+export const RowContainer = styled.View<{ gap?: number; justifyContent?: string; wrap?: boolean }>(
+  (props) => ({
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: props.justifyContent ?? "center",
+    alignItems: "center",
+    gap: props.gap ?? 10,
+    flexWrap: props.wrap ? "wrap" : "nowrap",
+  }),
+);

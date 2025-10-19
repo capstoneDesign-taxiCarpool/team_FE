@@ -24,8 +24,6 @@ export default function Recruit() {
     <KeyboardAvoidingView behavior="padding">
       <ScrollView>
         <Container>
-          <Header>{`카풀
-모집하기`}</Header>
           <PartySetting
             when2go={when2go}
             setWhen2go={setWhen2go}
@@ -51,12 +49,6 @@ export default function Recruit() {
     </KeyboardAvoidingView>
   );
 }
-
-const Header = styled.Text({
-  fontSize: 36,
-  fontWeight: "bold",
-  marginBottom: 5,
-});
 
 const Container = styled.View({
   display: "flex",

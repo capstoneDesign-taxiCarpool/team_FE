@@ -43,7 +43,8 @@ export default function MapWithMarker({
       setSelectedIndex!(0);
     }
     if (markers.length > 0 && selectedIndex !== undefined && markers[selectedIndex]) {
-      // 마커가 선택되었을 때, 해당 마커로 맵을 이동
+      // 마커가 선택되었을 때,
+      // 해당 마커로 지도를 이동
       const selectedMarker = markers[selectedIndex];
       mapRef.current?.animateToRegion(
         {
@@ -81,8 +82,8 @@ export default function MapWithMarker({
               latitude: loc.y,
               longitude: loc.x,
             }}
-            pinColor={Colors.side}
             title={loc.name}
+            pinColor={Colors.darkGray}
             description={loc.roadAddressName}
             onPress={() => {
               if (setSelectedIndex) {

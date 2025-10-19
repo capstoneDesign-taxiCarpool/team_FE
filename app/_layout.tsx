@@ -158,15 +158,20 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ contentStyle: { backgroundColor: "#fff" } }}>
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: "#fff" },
+          headerBackButtonDisplayMode: "minimal",
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="signup" options={{ title: "회원가입" }} />
         <Stack.Screen name="signin" options={{ title: "로그인" }} />
-        <Stack.Screen name="carpool/join" options={{ headerShown: false }} />
-        <Stack.Screen name="carpool/edit" options={{ headerShown: false }} />
-        <Stack.Screen name="carpool/recruit" options={{ headerShown: false }} />
-        <Stack.Screen name="carpool/recheck" options={{ headerShown: false }} />
-        <Stack.Screen name="carpool/find_track" options={{ headerShown: false }} />
+        <Stack.Screen name="carpool/join" options={{ title: "카풀 참여하기" }} />
+        <Stack.Screen name="carpool/edit" options={{ title: "카풀 설정 변경하기" }} />
+        <Stack.Screen name="carpool/recruit" options={{ title: "카풀 모집하기" }} />
+        <Stack.Screen name="carpool/recheck" options={{ title: "설정확인" }} />
+        <Stack.Screen name="carpool/find_track" options={{ title: "경로 설정" }} />
         <Stack.Screen
           name="chatpage"
           options={({ route }: StackScreenProps<{ chatpage: ChatPageParams }>["route"]) => {

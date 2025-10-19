@@ -56,7 +56,7 @@ export default function ExtraSetting() {
       <BoxWithDivider
         title="추가 옵션"
         children={
-          <RowContainer>
+          <RowContainer wrap={true}>
             <Text>{formatOptions(options)}</Text>
             <OptionButton onPress={() => setModalVisible(true)}>
               <Text>추가하기</Text>

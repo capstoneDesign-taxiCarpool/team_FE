@@ -3,8 +3,16 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { format, isAfter, isToday, parseISO } from "date-fns";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
-import { ImageBackground } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  Alert, // 링크 열기 오류 시 사용
+  ImageBackground,
+  Linking, // 외부 링크 열기에 사용
+  Modal, // 모달 컴포넌트 사용
+  Text, // 모달 내 텍스트에 사용
+  TouchableOpacity, // 버튼에 사용
+  View, // 버튼 컨테이너에 사용
+} from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -12,6 +20,9 @@ import { authCode } from "@/entities/common/util/storage";
 
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
+
+const REPORT_URL = "https://naver.me/ximjhzzM";
+const SUGGESTION_URL = "https://naver.me/57QAljUM";
 
 type Party = {
   id: number;
@@ -32,17 +43,55 @@ const getMySchedule = async () => {
       destination: party.endPlace.name,
       startDateTime: parseISO(party.startDateTime),
     }))
-    .filter((p) => isAfter(p.startDateTime, now))
-    .sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
+    .filter((p: { startDateTime: Date }) => isAfter(p.startDateTime, now))
+    .sort(
+      (a: { startDateTime: Date }, b: { startDateTime: Date }) =>
+        a.startDateTime.getTime() - b.startDateTime.getTime(),
+    );
   return sorted[0] || null;
 };
+
+// -------------------------------------------------------------
+// 🟢 신고/건의 버튼 스타일
+// -------------------------------------------------------------
+const ReportOrSuggestButton = styled(TouchableOpacity)({
+  position: "absolute",
+  top: 10,
+  right: 16,
+  backgroundColor: "#e74c3c", // 빨간색
+  borderRadius: 20,
+  width: 40,
+  height: 40,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 100, // 다른 요소 위에 표시
+  borderWidth: 2,
+  borderColor: "#fff",
+});
+
+const ReportModalButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
+  width: "100%",
+  paddingVertical: 12,
+  borderRadius: 8,
+  marginTop: 8,
+  backgroundColor: bgColor || "#3498db",
+  justifyContent: "center",
+  alignItems: "center",
+}));
+
+const ReportModalButtonText = styled(Text)({
+  fontSize: 16,
+  fontWeight: "bold",
+  color: "#fff",
+});
 
 export default function HomeScreen() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChanged, setAuthChanged] = useState(0);
-  // 🟢 추가: 로그인 상태 확인이 완료될 때까지 로딩 상태를 표시합니다.
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  // 🟢 추가: 신고/건의 모달 상태
+  const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
   // 로그인 상태 체크
   useFocusEffect(
@@ -51,7 +100,6 @@ export default function HomeScreen() {
         const token = await authCode.get();
         setIsLoggedIn(!!token);
         setAuthChanged((prev) => prev + 1);
-        // 🟢 추가: 토큰 확인 완료 후 로딩 해제
         setIsAuthChecking(false);
       };
       checkToken();
@@ -81,18 +129,29 @@ export default function HomeScreen() {
     }
   };
 
-  // 🟢 로딩 중일 때는 아무것도 렌더링하지 않거나 로딩 인디케이터를 보여줄 수 있습니다.
-  // 여기서는 단순히 컴포넌트 전체를 비활성화하지 않고 내용을 보여주도록 합니다.
-  if (isAuthChecking) {
-    // 토큰 확인 중일 때 화면이 잠깐 깜빡이는 것을 막기 위해 최소한의 UI를 보여줄 수 있습니다.
-    // 하지만 현재는 로딩 상태를 명확히 보여주는 코드가 없으므로,
-    // 로딩 중에도 UI를 렌더링하고 상호작용만 막는 방식으로 처리합니다.
-  }
+  // 🟢 신고/건의 모달 열기 함수
+  const openReportModal = () => {
+    setIsReportModalVisible(true);
+  };
+
+  // 🟢 외부 링크 열기 핸들러
+  const handleOpenLink = async (url: string) => {
+    setIsReportModalVisible(false); // 모달 닫기
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert(`⚠️ 오류`, `링크를 열 수 없습니다: ${url}`);
+    }
+  };
 
   return (
     <Container>
-      {/* 🔴 수정: 비로그인일 때도 onPress가 동작하도록 disabled={!schedule}를 제거합니다. */}
-      {/* 🔴 수정: 대신 isAuthChecking 중에는 disabled를 true로 설정하여 오작동을 막습니다. */}
+      {/* 🟢 신고/건의 버튼 렌더링 */}
+      <ReportOrSuggestButton onPress={openReportModal}>
+        <Ionicons name="alert-circle" size={24} color="#fff" />
+      </ReportOrSuggestButton>
+
       <ScheduleBox
         onPress={handleSchedulePress}
         disabled={isAuthChecking || (isLoggedIn && !schedule)}
@@ -140,12 +199,74 @@ export default function HomeScreen() {
           <BoxSmallText>다른 카풀에 참여 해보세요!</BoxSmallText>
         </OverlayTouchable>
       </PartyBox>
+
+      {/* 🟢 신고/건의 모달 렌더링 */}
+      <Modal
+        visible={isReportModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIsReportModalVisible(false)}
+      >
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalTitle>신고 및 건의</ModalTitle>
+            <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
+              해당 링크를 누르면 외부 폼으로 이동합니다.
+            </Text>
+
+            <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="megaphone" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <ReportModalButtonText>신고하기</ReportModalButtonText>
+              </View>
+            </ReportModalButton>
+
+            <ReportModalButton bgColor="#2ecc71" onPress={() => handleOpenLink(SUGGESTION_URL)}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons
+                  name="chatbox-ellipses"
+                  size={20}
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
+                <ReportModalButtonText>건의하기</ReportModalButtonText>
+              </View>
+            </ReportModalButton>
+
+            <ReportModalButton bgColor="#aaa" onPress={() => setIsReportModalVisible(false)}>
+              <ReportModalButtonText>닫기</ReportModalButtonText>
+            </ReportModalButton>
+          </ModalContainer>
+        </ModalOverlay>
+      </Modal>
     </Container>
   );
 }
 
-// ... (스타일 컴포넌트는 변경 없음)
+const ModalOverlay = styled(View)({
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+});
 
+const ModalContainer = styled(View)({
+  width: 300,
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 20,
+  alignItems: "center",
+});
+
+const ModalTitle = styled(Text)({
+  fontSize: 20,
+  fontWeight: "bold",
+  marginBottom: 12,
+});
+
+// -------------------------------------------------------------
+// 기존 스타일 컴포넌트
+// -------------------------------------------------------------
 const Container = styled.View({
   flex: 1,
   justifyContent: "center",

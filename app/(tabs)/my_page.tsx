@@ -5,6 +5,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Linking, // 외부 링크 열기를 위해 추가
   Modal,
   Text,
   TextInput,
@@ -17,6 +18,8 @@ import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { authCode } from "@/entities/common/util/storage";
 
 import defaultProfile from "../../assets/images/default-profile.png";
+const REPORT_URL = "https://naver.me/ximjhzzM";
+const SUGGESTION_URL = "https://naver.me/57QAljUM";
 
 type UpdatePayload = {
   newNickname?: string;
@@ -27,9 +30,49 @@ interface ApiErrorResponse {
   errors?: {
     newNickname?: string;
     newPassword?: string;
+    newPasswordCheck?: string;
   };
   message?: string;
 }
+
+// 신고/건의 모달 버튼 컴포넌트 (프로필 이미지 위에 위치)
+const ReportOrSuggestButton = styled(TouchableOpacity)({
+  position: "absolute",
+  bottom: 240,
+  right: 14,
+  backgroundColor: "#e74c3c", // 신고의 느낌을 줄 수 있는 빨간색
+  borderRadius: 20,
+  width: 40,
+  height: 40,
+  justifyContent: "center",
+  alignItems: "center",
+  borderWidth: 2,
+  borderColor: "#fff",
+});
+
+// 프로필 이미지와 신고 버튼을 감싸는 컨테이너
+const ProfileImageContainer = styled(View)({
+  position: "relative", // ReportOrSuggestButton의 absolute 위치 기준
+  width: 140, // ProfileImage와 동일하게 설정
+  height: 140, // ProfileImage와 동일하게 설정
+});
+
+// 신고/건의 모달 내부 버튼
+const ReportModalButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
+  width: "100%",
+  paddingVertical: 12,
+  borderRadius: 8,
+  marginTop: 8,
+  backgroundColor: bgColor || "#3498db", // 기본 파란색
+  justifyContent: "center",
+  alignItems: "center",
+}));
+
+const ReportModalButtonText = styled(Text)({
+  fontSize: 16,
+  fontWeight: "bold",
+  color: "#fff",
+});
 
 export default function MyPage() {
   const router = useRouter();
@@ -39,6 +82,8 @@ export default function MyPage() {
   const [savedAmount, setSavedAmount] = useState<number>(0);
   const [email, setEmail] = useState<string | null>("example@email.com");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // 신고/건의 모달 상태 추가
+  const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
   const [modalNickname, setModalNickname] = useState("");
   const [modalPassword, setModalPassword] = useState("");
@@ -81,6 +126,22 @@ export default function MyPage() {
     setModalNickname(initialNickname);
     setModalPassword("");
     setIsModalVisible(true);
+  };
+
+  // 신고/건의 모달 열기 함수
+  const openReportModal = () => {
+    setIsReportModalVisible(true);
+  };
+
+  // 외부 링크 열기 핸들러
+  const handleOpenLink = async (url: string) => {
+    setIsReportModalVisible(false); // 모달 닫기
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert(`⚠️ 오류`, `링크를 열 수 없습니다: ${url}`);
+    }
   };
 
   const handleUpdateInfo = async () => {
@@ -186,7 +247,9 @@ export default function MyPage() {
                   <EmailText>로그인이 필요합니다.</EmailText>
                 </EmailBox>
               </TextContainer>
-              <ProfileImage source={defaultProfile} />
+              <ProfileImageContainer>
+                <ProfileImage source={defaultProfile} />
+              </ProfileImageContainer>
             </TopRow>
           </TopHalf>
         </AbsoluteTopOverlay>
@@ -206,6 +269,10 @@ export default function MyPage() {
     <Container>
       <TopContainer width={width} />
       <AbsoluteTopOverlay>
+        <ReportOrSuggestButton onPress={openReportModal}>
+          {/* 신고 아이콘 (alert-circle) 사용 */}
+          <Ionicons name="alert-circle" size={24} color="#fff" />
+        </ReportOrSuggestButton>
         <TopHalf>
           <TopRow>
             <TextContainer>
@@ -214,7 +281,10 @@ export default function MyPage() {
                 <EmailText>{email ?? "이메일 정보 없음"}</EmailText>
               </EmailBox>
             </TextContainer>
-            <ProfileImage source={defaultProfile} />
+            {/* 프로필 이미지와 신고 버튼 영역 */}
+            <ProfileImageContainer>
+              <ProfileImage source={defaultProfile} />
+            </ProfileImageContainer>
           </TopRow>
         </TopHalf>
       </AbsoluteTopOverlay>
@@ -239,6 +309,7 @@ export default function MyPage() {
         </BottomHalf>
       </BottomContainer>
 
+      {/* 정보 변경 모달 (기존 모달) */}
       <Modal
         visible={isModalVisible}
         animationType="slide"
@@ -271,11 +342,53 @@ export default function MyPage() {
           </ModalContainer>
         </ModalOverlay>
       </Modal>
+
+      {/* 신고/건의 모달 (새로 추가된 모달) */}
+      <Modal
+        visible={isReportModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIsReportModalVisible(false)}
+      >
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalTitle>신고 및 건의</ModalTitle>
+            <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
+              해당 링크를 누르면 외부 폼으로 이동합니다.
+            </Text>
+
+            {/* 신고하기 버튼 (네이버 폼 링크 연결) */}
+            <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="megaphone" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <ReportModalButtonText>신고하기</ReportModalButtonText>
+              </View>
+            </ReportModalButton>
+
+            {/* 건의하기 버튼 (네이버 폼 링크 연결) */}
+            <ReportModalButton bgColor="#2ecc71" onPress={() => handleOpenLink(SUGGESTION_URL)}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons
+                  name="chatbox-ellipses"
+                  size={20}
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
+                <ReportModalButtonText>건의하기</ReportModalButtonText>
+              </View>
+            </ReportModalButton>
+
+            <ReportModalButton bgColor="#aaa" onPress={() => setIsReportModalVisible(false)}>
+              <ReportModalButtonText>닫기</ReportModalButtonText>
+            </ReportModalButton>
+          </ModalContainer>
+        </ModalOverlay>
+      </Modal>
     </Container>
   );
 }
 
-// 스타일 정의
+// 스타일 정의 (기존 스타일에서 ProfileImageContainer 추가)
 const Container = styled(View)({
   flex: 1,
   backgroundColor: "#f0f0f0",

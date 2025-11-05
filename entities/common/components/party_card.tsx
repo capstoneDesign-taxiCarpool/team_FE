@@ -16,6 +16,7 @@ import { OutShadow } from "./shadows";
 
 type Buttons = {
   buttons: React.ReactNode;
+  showTitle?: boolean;
 };
 
 export default function PartyCard({
@@ -27,14 +28,24 @@ export default function PartyCard({
   options,
   comment = "",
   buttons,
+  showTitle = false,
 }: Omit<Party, "partyId"> & Buttons) {
   if (when2go === undefined) {
     return <MediumText>데이터 이상</MediumText>;
   }
 
+  const targetDate = new Date(when2go);
+
+  const getTitle = () => {
+    const dateStr = format(targetDate, "M/d");
+    const timeStr = format(targetDate, "HH:mm");
+    return `${dateStr} ${timeStr}에 ${destination?.name} (으)로`;
+  };
+
   return (
     <OutShadow borderRadius={22}>
       <Container>
+        {showTitle && <Title>{getTitle()}</Title>}
         <Path>
           <MediumText color={Colors.main}>{departure?.name}</MediumText>
           <IconSymbol name="arrow.right" color={Colors.main} />
@@ -76,6 +87,12 @@ const Container = styled.View({
   backgroundColor: "rgba(255, 255, 255, 0.5)",
   padding: 20,
   borderRadius: 22,
+});
+const Title = styled.Text({
+  fontSize: FontSizes.large,
+  fontWeight: "bold",
+  color: Colors.black,
+  marginBottom: 10,
 });
 const Path = styled.View({
   display: "flex",

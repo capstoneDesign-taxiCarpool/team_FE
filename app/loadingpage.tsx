@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Dimensions, Image } from "react-native";
+import { Animated, Dimensions, Image, Platform } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -12,13 +12,14 @@ export default function LoadingScreen() {
   const imageOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    const delayTime = Platform.OS === "android" ? 2000 : 3000;
     const timer = setTimeout(() => {
       Animated.timing(imageOpacity, {
         toValue: 0,
         duration: 500,
         useNativeDriver: true,
       }).start();
-    }, 2000);
+    }, delayTime);
 
     fetchInstance(true).get("/api/member/me");
 

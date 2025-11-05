@@ -31,12 +31,12 @@ export default function ExtraSetting() {
           <NumberControl>
             <ControlButton
               accessibilityLabel="decrease-members"
-              onPress={() => setPartyState({ maxMembers: Math.max(1, maxMembers - 1) })}
-              disabled={maxMembers <= 1}
+              onPress={() => setPartyState({ maxMembers: Math.max(2, maxMembers - 1) })}
+              disabled={maxMembers <= 2}
             >
               <IconSymbol
                 name="minus.circle"
-                color={maxMembers <= 1 ? Colors.darkGray : Colors.main}
+                color={maxMembers <= 2 ? Colors.darkGray : Colors.main}
               />
             </ControlButton>
             <NumberDisplay>{maxMembers}</NumberDisplay>

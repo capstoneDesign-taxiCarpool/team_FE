@@ -2,8 +2,9 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { format, isAfter, isToday, parseISO } from "date-fns";
+import { setBadgeCountAsync } from "expo-notifications";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert, // 링크 열기 오류 시 사용
   ImageBackground,
@@ -105,6 +106,10 @@ export default function HomeScreen() {
       checkToken();
     }, []),
   );
+
+  useEffect(() => {
+    setBadgeCountAsync(0);
+  }, []);
 
   const { data: schedule, isFetching } = useQuery({
     queryKey: ["mySchedule", authChanged],

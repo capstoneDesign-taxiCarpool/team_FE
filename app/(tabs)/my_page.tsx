@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -82,6 +83,7 @@ export default function MyPage() {
   const [savedAmount, setSavedAmount] = useState<number>(0);
   const [email, setEmail] = useState<string | null>("example@email.com");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const queryClient = useQueryClient();
   // 신고/건의 모달 상태 추가
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
@@ -194,6 +196,7 @@ export default function MyPage() {
         onPress: async () => {
           try {
             await authCode.set(null);
+            queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
             setIsLoggedIn(false);
             Alert.alert("로그아웃 완료", "정상적으로 로그아웃되었습니다.");
           } catch (error) {

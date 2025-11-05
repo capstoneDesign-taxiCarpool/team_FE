@@ -82,6 +82,7 @@ export default function ChatList() {
     queryKey: ["parties", "my"],
     queryFn: fetchChatList,
   });
+  const [isSubLoading, setIsSubLoading] = useState(false);
 
   const [chatRooms, setChatRooms] = useState<PartyResponse[]>([]);
   const partyId = usePartyStore((state) => state.partyId);
@@ -121,11 +122,20 @@ export default function ChatList() {
   // 카풀 완료
   const handleCompleteCarpool = async (v: PartyResponse) => {
     try {
-      await fetchInstance(true).post(`/api/party/${v.id}/savings`);
-      setChatRooms((prev) =>
-        prev.map((p) => (p.id === v.id ? { ...p, savingsCalculated: true } : p)),
-      );
-      setPartyStore({ isHostButtonVisible: false });
+      setIsSubLoading(true);
+      await fetchInstance(true)
+        .post(`/api/party/${v.id}/savings`)
+        .then(() => {
+          Alert.alert("✅ 카풀이 성공적으로 완료되었습니다.");
+          setChatRooms((prev) =>
+            prev.map((p) => (p.id === v.id ? { ...p, savingsCalculated: true } : p)),
+          );
+          setIsSubLoading(false);
+        })
+        .catch((err) => {
+          Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
+          setIsSubLoading(false);
+        });
     } catch (err) {
       console.error(err);
     }
@@ -191,6 +201,7 @@ export default function ChatList() {
 
   return (
     <Container ref={scrollViewRef} onScrollToTop={refreshChatList}>
+      {isSubLoading && <LoadingIndicator />}
       {Object.entries(groupedChatRooms).map(([date, parties]) => (
         <DateGroup key={date}>
           <RowContainer justifyContent="flex-start">
@@ -211,6 +222,7 @@ export default function ChatList() {
             return (
               <HighlightedCard key={v.id} isHighlighted={v.id === partyId}>
                 <PartyCard
+                  showTitle={true}
                   when2go={v.startDateTime}
                   departure={v.startPlace}
                   destination={v.endPlace}
@@ -332,3 +344,8 @@ const DateHeader = styled.Text({
   fontSize: FontSizes.medium,
   fontWeight: "bold",
 });
+
+const LoadingIndicator = styled.ActivityIndicator.attrs({
+  size: "small",
+  color: Colors.main,
+})``;

@@ -145,6 +145,9 @@ const LocationSearch = styled.TextInput({
   padding: 10,
   borderRadius: 8,
   borderWidth: 1,
+  "::placeholder": {
+    color: "#6c6c6cff",
+  },
 });
 
 const LocationInfoCards = styled.ScrollView({

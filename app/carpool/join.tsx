@@ -11,6 +11,7 @@ import { LocationInfo, RawPartyResponse } from "@/entities/carpool/types";
 import useBeforeBack from "@/entities/common/hooks/useBeforeBack";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { getISOString } from "@/entities/common/util/datetime_format";
+import { FontSizes } from "@/entities/common/util/style_var";
 
 const getPartyListUrl = (
   when2go?: number,
@@ -65,11 +66,22 @@ export default function Join() {
         departure={departure}
         destination={destination}
       />
+      <Info>
+        설정한 출발 시간과 경로에 맞추어 카풀이 정렬됩니다. (출발시간, 출발지, 도착지 중 2개 이상
+        선택해주세요.){" "}
+      </Info>
       {isPending ? <Text>Loading...</Text> : <PartyCardList partys={partys ?? []} />}
     </Container>
   );
 }
 
+const Info = styled.Text({
+  fontSize: FontSizes.small,
+  color: "#666666",
+  marginBottom: -20,
+  marginTop: -20,
+  textAlign: "center",
+});
 const Container = styled.View({
   display: "flex",
   flexDirection: "column",

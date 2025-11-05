@@ -168,7 +168,10 @@ export default function ChatPage() {
   };
 
   return (
-    <Container behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <Container
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 120 : 0}
+    >
       <FlatList
         ref={flatListRef}
         data={messages}

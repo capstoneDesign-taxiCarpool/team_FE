@@ -29,6 +29,7 @@ export interface RawPartyResponse {
   currentParticipantCount: number;
   maxParticipantCount: number;
   startPlace: LocationInfo;
+  savingsCalculated: boolean;
   endPlace: LocationInfo;
 }
 
@@ -43,6 +44,7 @@ export interface PartyResponse {
   startDateTime: number; // timestamp(ms)
   comment: string;
   currentParticipantCount: number;
+  savingsCalculated: boolean;
   maxParticipantCount: number;
   startPlace: LocationInfo;
   endPlace: LocationInfo;
@@ -57,6 +59,7 @@ export const mapRawParty = (raw: RawPartyResponse): PartyResponse => ({
   destinationChangeIn5Minutes: raw.options.destinationChangeIn5Minutes,
   startDateTime: new Date(raw.startDateTime).getTime(),
   comment: raw.comment,
+  savingsCalculated: raw.savingsCalculated,
   currentParticipantCount: raw.currentParticipantCount,
   maxParticipantCount: raw.maxParticipantCount,
   startPlace: raw.startPlace,

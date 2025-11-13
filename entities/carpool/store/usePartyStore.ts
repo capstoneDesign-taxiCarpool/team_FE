@@ -15,6 +15,7 @@ const usePartyStore = create<Party & storeThings>((set) => ({
   destination: undefined,
   maxMembers: 4,
   curMembers: 1,
+  estimatedFare: 0,
   comment: "",
   options: {
     sameGenderOnly: false,

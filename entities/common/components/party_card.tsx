@@ -25,6 +25,7 @@ export default function PartyCard({
   destination,
   maxMembers,
   curMembers,
+  estimatedFare,
   options,
   comment = "",
   buttons,
@@ -71,6 +72,14 @@ export default function PartyCard({
             <MediumText>
               {curMembers} / {maxMembers}
             </MediumText>
+            <Instructor>
+              {estimatedFare !== undefined && estimatedFare !== null && (
+                <MediumText>
+                  <MediumText style={{ fontWeight: "bold" }}>₩</MediumText>
+                  {estimatedFare} 예상
+                </MediumText>
+              )}
+            </Instructor>
           </Instructor>
           <Instructor>
             <MediumText color={Colors.darkGray}>{formatOptions(options)}</MediumText>

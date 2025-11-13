@@ -57,15 +57,15 @@ const getMySchedule = async () => {
 // -------------------------------------------------------------
 const ReportOrSuggestButton = styled(TouchableOpacity)({
   position: "absolute",
-  top: 10,
-  right: 16,
-  backgroundColor: "#e74c3c", // 빨간색
+  bottom: 15,
+  right: 15,
+  backgroundColor: "#e74c3c",
   borderRadius: 20,
   width: 40,
   height: 40,
   justifyContent: "center",
   alignItems: "center",
-  zIndex: 100, // 다른 요소 위에 표시
+  zIndex: 100,
   borderWidth: 2,
   borderColor: "#fff",
 });
@@ -152,7 +152,6 @@ export default function HomeScreen() {
 
   return (
     <Container>
-      {/* 🟢 신고/건의 버튼 렌더링 */}
       <ReportOrSuggestButton onPress={openReportModal}>
         <Ionicons name="alert-circle" size={24} color="#fff" />
       </ReportOrSuggestButton>
@@ -216,7 +215,7 @@ export default function HomeScreen() {
           <ModalContainer>
             <ModalTitle>신고 및 건의</ModalTitle>
             <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
-              해당 링크를 누르면 외부 폼으로 이동합니다.
+              해당 버튼을 누르면 외부 폼으로 이동합니다.
             </Text>
 
             <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>

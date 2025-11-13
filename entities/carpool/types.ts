@@ -5,6 +5,7 @@ export interface Party {
   destination?: LocationInfo;
   maxMembers: number;
   curMembers: number;
+  estimatedFare: number;
   comment?: string;
   options: {
     sameGenderOnly: boolean;
@@ -31,6 +32,7 @@ export interface RawPartyResponse {
   startPlace: LocationInfo;
   savingsCalculated: boolean;
   endPlace: LocationInfo;
+  estimatedFare: number;
 }
 
 // 기존 프론트 사용 형태 (플랫 옵션 + timestamp 시간)
@@ -48,6 +50,7 @@ export interface PartyResponse {
   maxParticipantCount: number;
   startPlace: LocationInfo;
   endPlace: LocationInfo;
+  estimatedFare: number;
 }
 
 export const mapRawParty = (raw: RawPartyResponse): PartyResponse => ({
@@ -64,6 +67,7 @@ export const mapRawParty = (raw: RawPartyResponse): PartyResponse => ({
   maxParticipantCount: raw.maxParticipantCount,
   startPlace: raw.startPlace,
   endPlace: raw.endPlace,
+  estimatedFare: raw.estimatedFare,
 });
 
 export interface LocationInfo {

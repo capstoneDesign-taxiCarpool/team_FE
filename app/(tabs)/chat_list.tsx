@@ -228,6 +228,7 @@ export default function ChatList() {
                   destination={v.endPlace}
                   maxMembers={v.maxParticipantCount}
                   curMembers={v.currentParticipantCount}
+                  estimatedFare={v.estimatedFare}
                   options={{
                     sameGenderOnly: v.sameGenderOnly,
                     costShareBeforeDropOff: v.costShareBeforeDropOff,

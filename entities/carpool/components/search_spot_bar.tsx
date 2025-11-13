@@ -1,7 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import debounce from "lodash.debounce";
 import { useEffect, useState } from "react";
-import { Text } from "react-native";
+import { Keyboard, Text, TouchableOpacity, View } from "react-native"; // ✅ Keyboard import
 import styled from "styled-components/native";
 
 import { LocationInfo } from "@/entities/carpool/types";
@@ -15,19 +16,15 @@ const fetchCurLocation = async (
   setCurLocation: React.Dispatch<React.SetStateAction<Location.LocationObjectCoords>>,
 ) => {
   try {
-    // 위치 권한 요청
     const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      return;
-    }
-
-    // 현재 위치 가져오기
+    if (status !== "granted") return;
     const currentLocation = await Location.getCurrentPositionAsync({});
     setCurLocation(currentLocation.coords);
   } catch (error) {
     console.error("위치를 가져오는데 실패했습니다:", error);
   }
 };
+
 const searchLocation = debounce(
   (
     text: string,
@@ -37,22 +34,12 @@ const searchLocation = debounce(
   ) => {
     fetchInstance()
       .get(`/api/map/search?keyword=${text}&x=${long}&y=${lat}`)
-      .then((res) => {
-        setSearchResult(res.data.places);
-      })
-      .catch(() => {
-        // TODO: 에러 처리
-      });
+      .then((res) => setSearchResult(res.data.places))
+      .catch(() => {});
   },
   500,
 );
 
-/**
- * 장소 검색 쿼리를 입력받고, 검색 결과를 리스트와 지도마커로 보여줌
- * 하나의 결과가 클릭되면(selectedIndex) 자세한 정보를 보여줌
- * selectedIndex를 출발지/도착지에 저장하고 검색창 숨김
- * @returns 장소 검색 창
- */
 export default function SearchSpotBar({
   location,
   setLocation,
@@ -70,7 +57,6 @@ export default function SearchSpotBar({
   setSelectedIndex: React.Dispatch<React.SetStateAction<number | undefined>>;
   quitSearch: () => void;
 }) {
-  // 현재 위치, 출발지, 도착지 상태 관리
   const [curLocation, setCurLocation] = useState<Location.LocationObjectCoords>({
     latitude: 37.868897,
     longitude: 127.744994,
@@ -91,18 +77,46 @@ export default function SearchSpotBar({
     }
   }, [location, setSearchedLocation, setSelectedIndex]);
 
+  const handleSearch = (text?: string) => {
+    const keyword = text ?? query;
+    if (keyword.trim().length === 0) return;
+    setQuery(keyword);
+    searchLocation(keyword, curLocation.latitude, curLocation.longitude, setSearchedLocation);
+
+    Keyboard.dismiss(); // ✅ 검색 후 키보드 내리기
+  };
+
+  const quickPlaces = ["강원대학교", "남춘천역", "춘천시외버스터미널"];
+
   return (
     <Container>
       <FloadContainer attachTop={true}>
-        <LocationSearch
-          placeholder="장소를 검색하세요"
-          value={query}
-          onChangeText={(v) => {
-            setQuery(v);
-            searchLocation(v, curLocation.latitude, curLocation.longitude, setSearchedLocation);
-          }}
-        />
+        <SearchBarContainer>
+          <LocationSearch
+            placeholder="장소를 검색하세요"
+            value={query}
+            onChangeText={(v) => {
+              setQuery(v);
+              searchLocation(v, curLocation.latitude, curLocation.longitude, setSearchedLocation);
+            }}
+            onSubmitEditing={() => handleSearch()} // ✅ 엔터 눌러도 검색+키보드 닫기
+            returnKeyType="search"
+          />
+          <SearchBtn onPress={() => handleSearch()}>
+            <Ionicons name="search" size={22} color="#333" />
+          </SearchBtn>
+        </SearchBarContainer>
+
+        {/* 빠른 검색 버튼 */}
+        <QuickButtonsRow>
+          {quickPlaces.map((place) => (
+            <QuickButton key={place} onPress={() => handleSearch(place)}>
+              <QuickButtonText>{place}</QuickButtonText>
+            </QuickButton>
+          ))}
+        </QuickButtonsRow>
       </FloadContainer>
+
       <FloadContainer attachTop={false}>
         <LocationInfoCards>
           <ColContainer>
@@ -141,23 +155,54 @@ const Container = styled.View({
   height: "100%",
 });
 
-const LocationSearch = styled.TextInput({
-  padding: 10,
-  borderRadius: 8,
+const SearchBarContainer = styled(View)({
+  flexDirection: "row",
+  alignItems: "center",
   borderWidth: 1,
-  "::placeholder": {
-    color: "#6c6c6cff",
-  },
+  borderRadius: 8,
+  paddingHorizontal: 6,
+});
+
+const LocationSearch = styled.TextInput({
+  flex: 1,
+  padding: 6,
+  fontSize: FontSizes.medium,
+});
+
+const SearchBtn = styled(TouchableOpacity)({
+  padding: 6,
+});
+
+const QuickButtonsRow = styled.View({
+  flexDirection: "row",
+  justifyContent: "space-around",
+  marginTop: 17,
+});
+
+const QuickButton = styled.TouchableOpacity({
+  backgroundColor: "#f0f0f0",
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  borderRadius: 16,
+  elevation: 2,
+});
+
+const QuickButtonText = styled.Text({
+  fontSize: FontSizes.medium,
+  fontWeight: "500",
+  color: "#333",
 });
 
 const LocationInfoCards = styled.ScrollView({
   maxHeight: "150px",
 });
+
 const LocationInfoCard = styled.Pressable<{ isSelectedIndex: boolean }>((props) => ({
   padding: 10,
   width: "100%",
   ...(props.isSelectedIndex && { backgroundColor: "rgba(0, 0, 0, 0.1)", borderRadius: 8 }),
 }));
+
 const LocationName = styled.Text({
   fontSize: FontSizes.large,
 });

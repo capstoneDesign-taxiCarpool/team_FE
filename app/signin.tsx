@@ -1,6 +1,6 @@
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, TextInput, View } from "react-native";
+import { Alert, ImageBackground, TextInput, View } from "react-native";
 import styled from "styled-components/native";
 
 import CircleButton from "@/entities/common/components/button_circle";
@@ -17,13 +17,9 @@ const handleSignin = (email: string, password: string, onSuccess: () => void) =>
       password: password.trim(),
     })
     .then((res) => {
-      if (!res.data.token || !res.data.refreshToken) {
-        return;
-      }
-
+      if (!res.data.token || !res.data.refreshToken) return;
       authCode.set(res.data.token);
       refreshCode.set(res.data.refreshToken);
-
       onSuccess();
     })
     .catch((err) => {
@@ -38,42 +34,49 @@ export default function Signin() {
   const router = useRouter();
 
   return (
-    <Container>
-      <View>
+    <Background source={{ uri: "여기에 경로 지정" }} resizeMode="cover">
+      <Container>
         <NoticeText>
           {`강원대학교 학생을 위한 카풀 서비스,
-            --- 입니다.`}
+--- 입니다.`}
         </NoticeText>
-      </View>
-      <ColContainer alignItems="flex-end" gap={7}>
-        <InputContainer title="강원대 메일">
-          <Input value={email} onChangeText={setEmail} autoCapitalize="none" />
-          <MailText>@kangwon.ac.kr</MailText>
-        </InputContainer>
-        <InputContainer title="비밀번호">
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            placeholder="비밀번호를 입력하세요"
-          />
-        </InputContainer>
-        <ToSignup href="/signup">회원가입</ToSignup>
-      </ColContainer>
-      <CircleButton
-        icon="checkmark"
-        onPress={() => handleSignin(email, password, () => router.push("/"))}
-      />
-    </Container>
+        <ColContainer alignItems="center" gap={15}>
+          <InputContainer title="강원대 메일">
+            <Input value={email} onChangeText={setEmail} autoCapitalize="none" />
+            <MailText>@kangwon.ac.kr</MailText>
+          </InputContainer>
+          <InputContainer title="비밀번호">
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              placeholder="비밀번호를 입력하세요"
+            />
+          </InputContainer>
+          <ToSignup href="/signup">회원가입</ToSignup>
+        </ColContainer>
+        <CircleButton
+          icon="checkmark"
+          onPress={() => handleSignin(email, password, () => router.push("/"))}
+        />
+      </Container>
+    </Background>
   );
 }
 
+const Background = styled(ImageBackground)({
+  flex: 1,
+  justifyContent: "center", // 세로 중앙 정렬
+  alignItems: "center", // 가로 중앙 정렬
+});
+
 const Container = styled.View({
-  padding: "0 20px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "40px",
+  width: "100%",
+  paddingHorizontal: 20,
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 30,
 });
 
 const Input = styled.TextInput({
@@ -83,18 +86,22 @@ const Input = styled.TextInput({
   textAlign: "right",
   flexGrow: 1,
 });
+
 const NoticeText = styled.Text({
-  padding: "20px",
+  padding: 20,
   fontSize: FontSizes.medium,
   textAlign: "center",
   width: "100%",
 });
+
 const MailText = styled.Text({
   color: Colors.main,
   fontSize: FontSizes.medium,
 });
+
 const ToSignup = styled(Link)({
   color: Colors.side,
   fontSize: FontSizes.small,
   textDecorationLine: "underline",
+  alignSelf: "flex-end",
 });

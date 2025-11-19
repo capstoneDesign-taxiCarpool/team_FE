@@ -27,7 +27,6 @@ const fetchChatList = async (): Promise<PartyResponse[]> => {
     const res = await fetchInstance(true).get<RawPartyResponse[]>("/api/party/my-parties");
     return res.data.map(mapRawPartyWithSavings);
   } catch (err) {
-    console.error(err);
     return [];
   }
 };
@@ -136,9 +135,7 @@ export default function ChatList() {
           Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
           setIsSubLoading(false);
         });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) {}
   };
 
   const handleDeleteOrLeave = async (party: PartyResponse, isHost: boolean) => {
@@ -174,10 +171,7 @@ export default function ChatList() {
 
             Alert.alert(isHost ? "✅ 파티가 삭제되었습니다." : "✅ 카풀 기록이 삭제되었습니다.");
             refreshChatList();
-          } catch (err) {
-            console.error(err);
-            Alert.alert("실패", err.response?.data?.message || "알 수 없는 오류");
-          }
+          } catch (err) {}
         },
       },
     ]);

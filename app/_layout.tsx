@@ -42,10 +42,7 @@ async function registerFcmToken(token: string) {
       headers,
       body: JSON.stringify(body),
     });
-    console.log("✅ FCM 토큰 서버 등록 성공");
-  } catch (e) {
-    console.log("❌ FCM 토큰 등록 실패", e);
-  }
+  } catch (e) {}
 }
 
 // 💡 setPartyStore에 대한 정확한 타입 정의
@@ -78,7 +75,6 @@ const initializeFCM = async (
   // 3. 토큰 획득 및 서버 등록
   const token = await messaging().getToken();
   if (token) {
-    console.log("FCM Token:", token);
     await registerFcmToken(token);
   }
 
@@ -87,8 +83,6 @@ const initializeFCM = async (
 
   // 5. 포그라운드 메시지 리스너 등록 (Expo Notifications로 직접 띄우며 진동/소리 제거)
   const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
-    console.log("FCM 포그라운드 메시지 수신", remoteMessage);
-
     const title = remoteMessage.notification?.title || remoteMessage.data?.title || "새 알림";
     const body = remoteMessage.notification?.body || remoteMessage.data?.body || "";
 

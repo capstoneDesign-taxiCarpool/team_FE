@@ -1,14 +1,10 @@
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, ImageBackground, TextInput, View } from "react-native";
+import { Alert, ImageBackground } from "react-native";
 import styled from "styled-components/native";
 
-import CircleButton from "@/entities/common/components/button_circle";
-import { ColContainer } from "@/entities/common/components/containers";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { authCode, refreshCode } from "@/entities/common/util/storage";
-import { Colors, FontSizes } from "@/entities/common/util/style_var";
-import InputContainer from "@/entities/signup/input_container";
 
 const handleSignin = (email: string, password: string, onSuccess: () => void) => {
   fetchInstance()
@@ -22,8 +18,7 @@ const handleSignin = (email: string, password: string, onSuccess: () => void) =>
       refreshCode.set(res.data.refreshToken);
       onSuccess();
     })
-    .catch((err) => {
-      console.error("❌ 로그인 실패:", err.response?.data || err.message);
+    .catch(() => {
       Alert.alert("로그인 실패", "이메일 또는 비밀번호를 확인해주세요.");
     });
 };
@@ -36,30 +31,49 @@ export default function Signin() {
   return (
     <Background source={{ uri: "여기에 경로 지정" }} resizeMode="cover">
       <Container>
-        <NoticeText>
-          {`강원대학교 학생을 위한 카풀 서비스,
---- 입니다.`}
-        </NoticeText>
-        <ColContainer alignItems="center" gap={15}>
-          <InputContainer title="강원대 메일">
-            <Input value={email} onChangeText={setEmail} autoCapitalize="none" />
-            <MailText>@kangwon.ac.kr</MailText>
-          </InputContainer>
-          <InputContainer title="비밀번호">
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoCapitalize="none"
-              placeholder="비밀번호를 입력하세요"
-            />
-          </InputContainer>
-          <ToSignup href="/signup">회원가입</ToSignup>
-        </ColContainer>
-        <CircleButton
-          icon="checkmark"
-          onPress={() => handleSignin(email, password, () => router.push("/"))}
-        />
+        <LoginContainer>
+          <NoticeText>
+            <BoldText>
+              강원대학교 학생만을 위한{"\n"}
+              택시 카풀 서비스,{"\n"}
+            </BoldText>
+            강택을 만나보세요.
+          </NoticeText>
+
+          <InputsWrapper>
+            <InputBox>
+              <Label>강원대 메일</Label>
+              <StyledInputRow>
+                <StyledInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="이메일을 입력하세요"
+                  placeholderTextColor="#888"
+                  autoCapitalize="none"
+                />
+                <MailText>@kangwon.ac.kr</MailText>
+              </StyledInputRow>
+            </InputBox>
+
+            <InputBox>
+              <Label>비밀번호</Label>
+              <StyledInput
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                placeholder="비밀번호를 입력하세요"
+                placeholderTextColor="#888"
+              />
+            </InputBox>
+          </InputsWrapper>
+          <LoginButton onPress={() => handleSignin(email, password, () => router.push("/"))}>
+            <LoginButtonText>로그인</LoginButtonText>
+          </LoginButton>
+          <SignupButton onPress={() => router.push("/signup")}>
+            <SignupButtonText>회원가입</SignupButtonText>
+          </SignupButton>
+        </LoginContainer>
       </Container>
     </Background>
   );
@@ -67,8 +81,13 @@ export default function Signin() {
 
 const Background = styled(ImageBackground)({
   flex: 1,
-  justifyContent: "center", // 세로 중앙 정렬
-  alignItems: "center", // 가로 중앙 정렬
+  justifyContent: "center",
+  alignItems: "center",
+});
+
+const BoldText = styled.Text({
+  fontWeight: "700",
+  color: "#333",
 });
 
 const Container = styled.View({
@@ -76,32 +95,101 @@ const Container = styled.View({
   paddingHorizontal: 20,
   alignItems: "center",
   justifyContent: "center",
-  gap: 30,
 });
 
-const Input = styled.TextInput({
-  fontSize: FontSizes.medium,
-  maxWidth: "6rem",
-  border: "none",
-  textAlign: "right",
-  flexGrow: 1,
+const LoginContainer = styled.View({
+  width: "90%",
+  backgroundColor: "rgb(148, 200, 230)",
+  borderRadius: 16,
+  paddingVertical: 30,
+  paddingHorizontal: 25,
+
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
+  elevation: 6,
+
+  alignItems: "center",
+  gap: 20,
 });
 
 const NoticeText = styled.Text({
-  padding: 20,
-  fontSize: FontSizes.medium,
-  textAlign: "center",
+  fontSize: 18,
+  textAlign: "left",
+  fontWeight: "600",
+  color: "black",
   width: "100%",
+  lineHeight: 26,
+  marginLeft: "35%",
+});
+
+const InputsWrapper = styled.View({
+  width: "100%",
+  gap: 18,
+});
+
+const InputBox = styled.View({
+  width: "100%",
+  minHeight: 75,
+  backgroundColor: "#f5f5f5",
+  borderRadius: 12,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+});
+
+const Label = styled.Text({
+  fontSize: 14,
+  fontWeight: "600",
+  color: "black",
+  marginBottom: 6,
+});
+
+const StyledInputRow = styled.View({
+  flexDirection: "row",
+  alignItems: "center",
+});
+
+const StyledInput = styled.TextInput({
+  flex: 1,
+  fontSize: 14,
+  paddingVertical: 6,
+  color: "black",
 });
 
 const MailText = styled.Text({
-  color: Colors.main,
-  fontSize: FontSizes.medium,
+  fontSize: 14,
+  color: "black",
+  marginLeft: 4,
 });
 
-const ToSignup = styled(Link)({
-  color: Colors.side,
-  fontSize: FontSizes.small,
-  textDecorationLine: "underline",
-  alignSelf: "flex-end",
+const LoginButton = styled.TouchableOpacity({
+  width: "100%",
+  height: 48,
+  backgroundColor: "#4A90E2",
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 10,
+});
+
+const LoginButtonText = styled.Text({
+  color: "#333",
+  fontSize: 16,
+  fontWeight: "600",
+});
+
+const SignupButton = styled.TouchableOpacity({
+  width: "100%",
+  height: 48,
+  backgroundColor: "#4A90E2",
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center",
+});
+
+const SignupButtonText = styled.Text({
+  color: "#333",
+  fontSize: 16,
+  fontWeight: "600",
 });

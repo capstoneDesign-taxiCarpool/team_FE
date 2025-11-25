@@ -6,11 +6,15 @@ import styled from "styled-components/native";
 
 // SF Symbols -> Material Icons
 const MAPPING = {
+  "arrow-back-outline": "arrow-back",
+  "arrow-back": "arrow-back",
+  "chatbubble-ellipses": "chat",
   "house.fill": "home",
   "paperplane.fill": "send",
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
   "bubble.left.fill": "chat",
+  settings: "settings",
   "person.circle": "account-circle",
   "magnifyingglass.circle": "search",
   "arrow.2.circlepath.circle": "swap-vert",

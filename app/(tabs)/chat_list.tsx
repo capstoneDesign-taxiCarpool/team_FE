@@ -14,7 +14,6 @@ import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
-
 interface AxiosErrorResponse {
   response?: {
     data?: {
@@ -113,6 +112,28 @@ export default function ChatList() {
     ]);
   };
 
+  const handleComplete = (party: PartyResponse) => {
+    Alert.alert("카풀 완료", "해당 카풀을 완료 처리하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "완료",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await fetchInstance(true).post(`/api/party/${party.id}/savings`);
+
+            Alert.alert("완료", "카풀이 정상적으로 완료되었습니다.");
+            refreshChatList();
+          } catch (err: unknown) {
+            const message = isAxiosError(err) ? err.response?.data?.message : "알 수 없는 오류";
+
+            Alert.alert("오류", message ?? "알 수 없는 오류");
+          }
+        },
+      },
+    ]);
+  };
+
   if ((userId ?? -1) < 0 || isLoading || chatRooms.length === 0) {
     return (
       <Container>
@@ -130,6 +151,7 @@ export default function ChatList() {
   }
 
   const groupedChatRooms = groupByDate(chatRooms);
+  const now = new Date();
 
   return (
     <Container ref={scrollViewRef} onScrollToTop={refreshChatList}>
@@ -146,7 +168,6 @@ export default function ChatList() {
 
           {parties.map((v) => {
             const isHost = userId === v.hostMemberId;
-            const now = new Date();
             const start = new Date(v.startDateTime);
             const isActive = start > now;
 
@@ -197,7 +218,14 @@ export default function ChatList() {
                             }}
                           />
                         )}
-
+                        {now >= start && !v.savingsCalculated && (
+                          <BasicButton
+                            icon="checkmark"
+                            title="카풀완료"
+                            color="#27ae60"
+                            onPress={() => handleComplete(v)}
+                          />
+                        )}
                         <BasicButton
                           icon="arrow-back"
                           title="퇴장하기"

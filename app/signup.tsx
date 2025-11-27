@@ -1,7 +1,7 @@
 import { getCrashlytics, recordError } from "@react-native-firebase/crashlytics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, ScrollView, View } from "react-native";
+import { Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import styled from "styled-components/native";
 
 import CircleButton from "@/entities/common/components/button_circle";
@@ -51,55 +51,148 @@ const handleSignup = (
 };
 
 export default function Signup() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [nickname, setNickname] = useState<string>("");
-  const [sex, setSex] = useState<number>(0);
-  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [sex, setSex] = useState(0);
 
   const crashlytics = getCrashlytics();
+  const router = useRouter();
 
   return (
-    <KeyboardAvoidingView behavior="padding">
-      <ScrollView>
-        <Container>
-          <View>
-            <NoticeText>
-              {`강원대학교 학생을 위한 카풀 서비스,
-          --- 입니다.`}
-            </NoticeText>
-          </View>
-          <VertifyEmail email={email} setEmail={setEmail} />
-          <PersonalInfo
-            password={password}
-            setPassword={setPassword}
-            sex={sex}
-            setSex={setSex}
-            nickname={nickname}
-            setNickname={setNickname}
-          />
-          <CircleButton
-            icon="checkmark"
-            onPress={() =>
-              handleSignup(email, password, nickname, sex, () => router.push("/"), crashlytics)
-            }
-          />
-        </Container>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <Background source={{ uri: "여기에 이미지 경로 입력" }} resizeMode="cover">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, width: "100%" }}
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <Container>
+            <SignupContainer>
+              <NoticeText>
+                <BoldText>
+                  강원대학교 학생만을 위한{"\n"}
+                  택시 카풀 서비스,{"\n"}
+                </BoldText>
+                강택에서 회원가입을 진행하세요.
+              </NoticeText>
+
+              {/* 이메일 인증 컴포넌트 */}
+              <InputWrapper>
+                <VertifyEmail email={email} setEmail={setEmail} />
+              </InputWrapper>
+
+              {/* 개인정보 입력 컴포넌트 */}
+              <InputWrapper>
+                <PersonalInfo
+                  password={password}
+                  setPassword={setPassword}
+                  sex={sex}
+                  setSex={setSex}
+                  nickname={nickname}
+                  setNickname={setNickname}
+                />
+              </InputWrapper>
+
+              {/* 회원가입 버튼 */}
+              <LoginButton
+                onPress={() =>
+                  handleSignup(email, password, nickname, sex, () => router.push("/"), crashlytics)
+                }
+              >
+                <LoginButtonText>회원가입</LoginButtonText>
+              </LoginButton>
+
+              {/* 로그인 이동 버튼 */}
+              <SignupButton onPress={() => router.push("/signin")}>
+                <SignupButtonText>로그인으로 돌아가기</SignupButtonText>
+              </SignupButton>
+            </SignupContainer>
+          </Container>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Background>
   );
 }
 
+const Background = styled(ImageBackground)({
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+});
+
 const Container = styled.View({
-  padding: "0 20px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "40px",
+  width: "100%",
+  paddingHorizontal: 20,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 40,
+});
+
+const SignupContainer = styled.View({
+  width: "90%",
+  backgroundColor: "rgb(148, 200, 230)",
+  borderRadius: 16,
+  paddingVertical: 30,
+  paddingHorizontal: 25,
+  marginTop: 30,
+
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
+  elevation: 6,
+
+  alignItems: "center",
+  gap: 24,
 });
 
 const NoticeText = styled.Text({
-  padding: "20px",
-  fontSize: FontSizes.medium,
-  textAlign: "center",
+  fontSize: 18,
+  textAlign: "left",
+  fontWeight: "600",
+  color: "black",
   width: "100%",
+  lineHeight: 26,
+  marginLeft: "20%",
+});
+
+const BoldText = styled.Text({
+  fontWeight: "700",
+  color: "#333",
+});
+
+const InputWrapper = styled.View({
+  width: "100%",
+  gap: 18,
+});
+
+const LoginButton = styled.TouchableOpacity({
+  width: "100%",
+  height: 48,
+  backgroundColor: "#4A90E2",
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 10,
+});
+
+const LoginButtonText = styled.Text({
+  color: "#333",
+  fontSize: 16,
+  fontWeight: "600",
+});
+
+const SignupButton = styled.TouchableOpacity({
+  width: "100%",
+  height: 48,
+  backgroundColor: "#4A90E2",
+  borderRadius: 10,
+  justifyContent: "center",
+  alignItems: "center",
+});
+
+const SignupButtonText = styled.Text({
+  color: "#333",
+  fontSize: 16,
+  fontWeight: "600",
 });

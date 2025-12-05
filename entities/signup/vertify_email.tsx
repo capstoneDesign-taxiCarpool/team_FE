@@ -90,7 +90,7 @@ export default function VertifyEmail({
           autoCapitalize="characters"
           maxLength={6}
           value={emailCode}
-          placeholderTextColor={Colors.gray}
+          placeholderTextColor="rgba(255, 255, 255, 0.7)"
           placeholder="인증코드 입력"
           onChangeText={(v) => vertifyCode(v, checkState, email, setEmailCode, setCheckState)}
         />

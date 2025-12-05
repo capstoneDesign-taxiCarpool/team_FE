@@ -31,25 +31,25 @@ const HandleClick = styled.Pressable({
   width: "100%",
   height: "100%",
 });
+
 const Container = styled.View({
   position: "relative",
-  display: "flex",
   flexDirection: "row",
   alignItems: "center",
   width: "100%",
-  gap: "10px",
-  padding: "8px 0",
+  gap: 10,
+  paddingVertical: 8,
   borderBottomColor: Colors.darkGray,
   borderBottomWidth: 1,
 });
+
 const InputGroup = styled.View({
   flexGrow: 1,
 });
+
 const InputGroupDiv = styled.View({
-  margin: "auto",
-  display: "flex",
-  flexDirection: "row",
   alignItems: "center",
-  gap: "6px",
-  textAlign: "center",
+  flexDirection: "row",
+  gap: 6,
+  justifyContent: "flex-end",
 });

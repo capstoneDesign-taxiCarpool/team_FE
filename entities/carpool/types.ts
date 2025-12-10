@@ -7,6 +7,7 @@ export interface Party {
   curMembers: number;
   estimatedFare: number;
   comment?: string;
+  hostGender?: "MALE" | "FEMALE";
   options: {
     sameGenderOnly: boolean;
     costShareBeforeDropOff: boolean;
@@ -19,6 +20,7 @@ export interface Party {
 export interface RawPartyResponse {
   id: number;
   hostMemberId?: number;
+  hostGender?: "MALE" | "FEMALE";
   options: {
     sameGenderOnly: boolean;
     costShareBeforeDropOff: boolean;
@@ -42,6 +44,7 @@ export interface PartyResponse {
   costShareBeforeDropOff: boolean;
   quietMode: boolean;
   hostMemberId?: number;
+  hostGender?: "MALE" | "FEMALE";
   destinationChangeIn5Minutes: boolean;
   startDateTime: number; // timestamp(ms)
   comment: string;
@@ -57,6 +60,7 @@ export const mapRawParty = (raw: RawPartyResponse): PartyResponse => ({
   id: raw.id,
   sameGenderOnly: raw.options.sameGenderOnly,
   costShareBeforeDropOff: raw.options.costShareBeforeDropOff,
+  hostGender: raw.hostGender,
   quietMode: raw.options.quietMode,
   hostMemberId: raw.hostMemberId,
   destinationChangeIn5Minutes: raw.options.destinationChangeIn5Minutes,

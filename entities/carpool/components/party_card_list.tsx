@@ -62,6 +62,8 @@ export default function PartyCardList({ partys }: { partys: RawPartyResponse[] }
               departure={v.startPlace}
               destination={v.endPlace}
               maxMembers={v.maxParticipantCount}
+              estimatedFare={v.estimatedFare}
+              hostGender={v.hostGender}
               curMembers={v.currentParticipantCount}
               options={{
                 sameGenderOnly: v.sameGenderOnly,

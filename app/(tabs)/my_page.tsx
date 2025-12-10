@@ -70,9 +70,7 @@ export default function MyPage() {
           setEmail(profileRes.data?.email ?? null);
           setSavedAmount(profileRes.data?.totalSavedAmount ?? 0);
         } catch (error) {
-          console.error("❌ 사용자 정보 불러오기 실패:", error);
           setIsLoggedIn(false);
-          Alert.alert("⚠️ 오류", "회원 정보를 불러오지 못했습니다.");
         }
       };
 
@@ -100,7 +98,9 @@ export default function MyPage() {
       const res = await fetchInstance(true).patch("/api/member/me", payload);
 
       if (res.data.nickname) setNickname(res.data.nickname);
-      if (res.data.totalSavedAmount !== undefined) setSavedAmount(res.data.totalSavedAmount);
+      if (res.data.totalSavedAmount !== undefined) {
+        setSavedAmount(res.data.totalSavedAmount);
+      }
 
       Alert.alert("✅ 수정 완료", "정보가 수정되었습니다.");
     } catch (error: unknown) {
@@ -113,8 +113,6 @@ export default function MyPage() {
           err.response?.data?.message ||
           msg;
       }
-      console.error("❌ 수정 실패:", msg);
-      Alert.alert("❌ 수정 실패", msg);
     } finally {
       setModalNickname("");
       setModalPassword("");
@@ -133,9 +131,7 @@ export default function MyPage() {
             queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
             setIsLoggedIn(false);
             Alert.alert("로그아웃 완료", "정상적으로 로그아웃되었습니다.");
-          } catch (error) {
-            console.error("❌ 로그아웃 실패:", error);
-          }
+          } catch (error) {}
         },
       },
     ]);
@@ -152,10 +148,7 @@ export default function MyPage() {
             await fetchInstance(true).delete("/api/member/me");
             await authCode.set(null);
             setIsLoggedIn(false);
-          } catch (error) {
-            Alert.alert("삭제 실패", "계정 삭제에 실패했습니다.");
-            console.error(error);
-          }
+          } catch (error) {}
         },
       },
     ]);
@@ -173,31 +166,42 @@ export default function MyPage() {
 
   if (!isLoggedIn) {
     return (
-      <Container>
-        <TopContainer width={width} />
-        <AbsoluteTopOverlay>
-          <TopHalf>
-            <TopRow>
-              <TextContainer>
-                <NicknameText>닉네임</NicknameText>
-                <EmailBox>
-                  <EmailText>로그인이 필요합니다.</EmailText>
-                </EmailBox>
-              </TextContainer>
-              <ProfileImageContainer>
-                <ProfileImage source={defaultProfile} />
-              </ProfileImageContainer>
-            </TopRow>
-          </TopHalf>
-        </AbsoluteTopOverlay>
-        <OverlapBox>
-          <Row>
-            <LoginGuideButton onPress={() => router.push("/signin")}>
-              <LoginGuideText>로그인 하러 가기 &gt;</LoginGuideText>
-            </LoginGuideButton>
-          </Row>
-        </OverlapBox>
-      </Container>
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+        >
+          <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center" }}>
+            <Container>
+              <TopContainer width={width} />
+              <AbsoluteTopOverlay>
+                <TopHalf>
+                  <TopRow>
+                    <TextContainer>
+                      <NicknameText>닉네임</NicknameText>
+                      <EmailBox>
+                        <EmailText>로그인이 필요합니다.</EmailText>
+                      </EmailBox>
+                    </TextContainer>
+                    <ProfileImageContainer>
+                      <ProfileImage source={defaultProfile} />
+                    </ProfileImageContainer>
+                  </TopRow>
+                </TopHalf>
+              </AbsoluteTopOverlay>
+
+              <OverlapGroup>
+                <SavedBox>
+                  <LoginGuideButton onPress={() => router.push("/signin")}>
+                    <LoginGuideText>로그인 하러 가기 &gt;</LoginGuideText>
+                  </LoginGuideButton>
+                </SavedBox>
+              </OverlapGroup>
+            </Container>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     );
   }
 
@@ -211,6 +215,7 @@ export default function MyPage() {
         <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center" }}>
           <Container>
             <TopContainer width={width} />
+
             <AbsoluteTopOverlay>
               <TopHalf>
                 <TopRow>
@@ -225,7 +230,16 @@ export default function MyPage() {
                   </ProfileImageContainer>
                 </TopRow>
               </TopHalf>
-              <BottomHalf>
+            </AbsoluteTopOverlay>
+            <OverlapGroup>
+              <SavedBox>
+                <Row>
+                  <Ionicons name="wallet" size={30} color="#4a90e2" />
+                  <InfoText>지금까지 {savedAmount.toLocaleString()}원 아꼈어요!</InfoText>
+                </Row>
+              </SavedBox>
+
+              <ActionButtonsRow>
                 <ActionButton bgColor="#4a90e2" onPress={openModal}>
                   <ActionButtonText>정보 변경</ActionButtonText>
                 </ActionButton>
@@ -235,15 +249,8 @@ export default function MyPage() {
                 <ActionButton bgColor="#e74c3c" onPress={handleDeleteAccount}>
                   <ActionButtonText>계정 삭제</ActionButtonText>
                 </ActionButton>
-              </BottomHalf>
-            </AbsoluteTopOverlay>
-
-            <OverlapBox>
-              <Row>
-                <Ionicons name="wallet" size={30} color="#4a90e2" />
-                <InfoText>지금까지 {savedAmount.toLocaleString()}원 아꼈어요!</InfoText>
-              </Row>
-            </OverlapBox>
+              </ActionButtonsRow>
+            </OverlapGroup>
 
             <Modal
               visible={isModalVisible}
@@ -284,7 +291,6 @@ export default function MyPage() {
   );
 }
 
-// 스타일 정의
 const Container = styled(View)({
   flex: 1,
   backgroundColor: "#f0f0f0",
@@ -306,21 +312,13 @@ const AbsoluteTopOverlay = styled(View)({
   position: "absolute",
   top: 0,
   width: "100%",
-  height: "35%",
+  height: "40%",
 });
 
 const TopHalf = styled(View)({
   flex: 1.6,
   paddingHorizontal: 20,
   justifyContent: "center",
-});
-
-const BottomHalf = styled(View)({
-  flex: 1,
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-  top: 150,
 });
 
 const TopRow = styled(View)({
@@ -347,23 +345,6 @@ const EmailText = styled(Text)({
   color: "#333",
 });
 
-const OverlapBox = styled(View)({
-  position: "absolute",
-  top: "52%",
-  height: 100,
-  width: 370,
-  backgroundColor: "#ffffff",
-  borderRadius: 20,
-  zIndex: 10,
-  justifyContent: "center",
-  alignItems: "center",
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.25,
-  shadowRadius: 6,
-  elevation: 6,
-});
-
 const ProfileImage = styled(Image)({
   width: 140,
   height: 140,
@@ -377,19 +358,47 @@ const NicknameText = styled(Text)({
   marginLeft: 4,
 });
 
+const OverlapGroup = styled(View)({
+  position: "absolute",
+  top: "54%",
+  width: "100%",
+  alignItems: "center",
+  zIndex: 10,
+});
+
+const SavedBox = styled(View)({
+  width: "90%",
+  backgroundColor: "#ffffff",
+  borderRadius: 20,
+  paddingVertical: 20,
+  paddingHorizontal: 16,
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.25,
+  shadowRadius: 6,
+  elevation: 6,
+  marginBottom: 16,
+});
+
+const ActionButtonsRow = styled(View)({
+  width: "90%",
+  flexDirection: "row",
+  justifyContent: "space-between",
+});
+
 const ActionButton = styled(TouchableOpacity)<{ bgColor?: string }>(({ bgColor }) => ({
-  width: 120,
+  flex: 1,
   height: 50,
+  marginHorizontal: 4,
   alignItems: "center",
   justifyContent: "center",
-  paddingVertical: 8,
-  paddingHorizontal: 12,
   borderRadius: 15,
   backgroundColor: bgColor || "#4a90e2",
   shadowColor: "#000",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.3,
-  shadowRadius: 4,
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 3,
   elevation: 2,
 }));
 
@@ -402,29 +411,26 @@ const ActionButtonText = styled(Text)({
 const Row = styled(View)({
   flexDirection: "row",
   alignItems: "center",
-  marginBottom: 2,
 });
 
 const InfoText = styled(Text)({
-  fontSize: 20,
+  fontSize: 18,
   color: "#333",
   marginLeft: 7,
 });
 
 const LoginGuideButton = styled(TouchableOpacity)({
-  width: 380,
-  height: 100,
-  backgroundColor: "#ffffff",
-  paddingVertical: 12,
-  paddingHorizontal: 24,
-  borderRadius: 25,
+  width: "100%",
+  paddingVertical: 20,
+  borderRadius: 15,
   alignItems: "center",
   justifyContent: "center",
+  backgroundColor: "#ffffff",
 });
 
 const LoginGuideText = styled(Text)({
   color: "#333",
-  fontSize: 22,
+  fontSize: 20,
   fontWeight: "bold",
 });
 
@@ -480,4 +486,8 @@ const ModalButtonText = styled(Text)({
   color: "#fff",
 });
 
-const ProfileImageContainer = styled(View)({ position: "relative", width: 140, height: 140 });
+const ProfileImageContainer = styled(View)({
+  position: "relative",
+  width: 140,
+  height: 140,
+});

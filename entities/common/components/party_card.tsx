@@ -26,6 +26,7 @@ export default function PartyCard({
   destination,
   maxMembers,
   curMembers,
+  hostGender,
   estimatedFare,
   options,
   comment = "",
@@ -101,7 +102,7 @@ export default function PartyCard({
           {/* 옵션 */}
           <Instructor>
             <MediumText isActive={isActive} color={Colors.darkGray}>
-              {formatOptions(options)}
+              {formatOptions(options, hostGender)}
             </MediumText>
           </Instructor>
 

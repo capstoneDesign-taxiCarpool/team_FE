@@ -2,7 +2,7 @@
 
 .env
 android/
-
+shelter/
 # dependencies
 node_modules/
 android/

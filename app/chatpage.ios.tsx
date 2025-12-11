@@ -46,7 +46,9 @@ export default function ChatPage() {
         setChatTitle(title);
 
         navigation.setOptions({ title });
-      } catch (error) {}
+      } catch (error) {
+        console.error("❌ 채팅방 정보 조회 실패:", error);
+      }
     };
     fetchRoomInfo();
   }, [roomId, navigation]);
@@ -76,7 +78,9 @@ export default function ChatPage() {
         setMessages(historyMessages);
 
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
-      } catch (error) {}
+      } catch (error) {
+        console.error(error);
+      }
 
       const wsUrl = `wss://knu-carpool.store/chat?access_token=${token}`;
       stompClient.current = new Client({
@@ -164,7 +168,7 @@ export default function ChatPage() {
   };
 
   return (
-    <Container>
+    <Container behavior={"padding"} keyboardVerticalOffset={120}>
       <FlatList
         ref={flatListRef}
         data={messages}

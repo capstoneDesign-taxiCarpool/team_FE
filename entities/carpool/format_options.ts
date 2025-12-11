@@ -10,23 +10,26 @@ export const optionsList: {
   },
   {
     name: "costShareBeforeDropOff",
-    ko: "내리기전N빵",
+    ko: "내리기전N빵 ",
   },
   {
     name: "quietMode",
-    ko: "조용히",
+    ko: "조용히 ",
   },
   {
     name: "destinationChangeIn5Minutes",
-    ko: "5분이내거리변경허용",
+    ko: "5분이내거리변경허용 ",
   },
 ];
 
-export const formatOptions = (options: Party["options"]) => {
+export const formatOptions = (options: Party["options"], hostGender?: "MALE" | "FEMALE") => {
   let result = "";
   for (const option of optionsList) {
     if (options[option.name]) {
-      result += `#${option.ko} `;
+      result += `#${option.ko}`;
+    }
+    if (option.name === "sameGenderOnly" && options[option.name] && hostGender) {
+      result += hostGender === "MALE" ? "♂️ " : "♀️ ";
     }
   }
   if (result === "") return "";

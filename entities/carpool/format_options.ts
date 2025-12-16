@@ -6,7 +6,7 @@ export const optionsList: {
 }[] = [
   {
     name: "sameGenderOnly",
-    ko: "동성만",
+    ko: "",
   },
   {
     name: "costShareBeforeDropOff",
@@ -29,7 +29,7 @@ export const formatOptions = (options: Party["options"], hostGender?: "MALE" | "
       result += `#${option.ko}`;
     }
     if (option.name === "sameGenderOnly" && options[option.name] && hostGender) {
-      result += hostGender === "MALE" ? "♂️ " : "♀️ ";
+      result += hostGender === "MALE" ? "남성만️ " : "여성만️ ";
     }
   }
   if (result === "") return "";

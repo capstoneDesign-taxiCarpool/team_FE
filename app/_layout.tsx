@@ -1,11 +1,10 @@
 import messaging, { RemoteMessage } from "@react-native-firebase/messaging";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// 💡 Expo Notifications 임포트
 import * as Notifications from "expo-notifications";
 import { Stack, StackScreenProps, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect } from "react";
-import { PermissionsAndroid, Platform } from "react-native";
+import { InteractionManager, PermissionsAndroid, Platform } from "react-native";
 
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { authCode } from "@/entities/common/util/storage";
@@ -16,13 +15,18 @@ type ChatPageParams = { roomId?: string; startPlace?: string; endPlace?: string 
 
 const DEVICE_ID_KEY = "my_app_device_id_v1";
 
+/* ================= Device ID ================= */
+
 async function getDeviceIdOrGenerate() {
   const stored = await SecureStore.getItemAsync(DEVICE_ID_KEY);
   if (stored) return stored;
+
   const newId = `generated-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
   await SecureStore.setItemAsync(DEVICE_ID_KEY, newId);
   return newId;
 }
+
+/* ================= FCM Token Register ================= */
 
 async function registerFcmToken(token: string) {
   try {
@@ -34,90 +38,114 @@ async function registerFcmToken(token: string) {
       appVersion: "1.0.0",
       bundleOrPackage: "com.myapp",
     };
+
     const auth = await authCode.get();
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (auth) headers["Authorization"] = `Bearer ${auth}`;
+
     await fetch("https://knu-carpool.store/api/fcm/token", {
       method: "POST",
       headers,
       body: JSON.stringify(body),
     });
-  } catch (e) {}
+  } catch {
+    // ignore
+  }
 }
 
-// 💡 setPartyStore에 대한 정확한 타입 정의
-type SetPartyStoreFn = (state: { partyId: number | null }) => void;
+/* ================= 알림 데이터 타입 ================= */
 
-// FCM 초기화 및 리스너 등록 함수
+type NotificationData = {
+  type?: string;
+  partyId?: string | number;
+};
+
+/* ================= 공통 알림 클릭 처리 ================= */
+
+const navigateFromNotification = (
+  remoteData: NotificationData | null | undefined,
+  router: ReturnType<typeof useRouter>,
+  setPartyStore: (state: { partyId: number | null }) => void,
+) => {
+  if (remoteData?.type === "CHAT_MESSAGE" && remoteData.partyId !== undefined) {
+    const partyId = Number(remoteData.partyId);
+
+    setPartyStore({ partyId });
+
+    InteractionManager.runAfterInteractions(() => {
+      router.push({
+        pathname: "/chatpage",
+        params: { roomId: partyId },
+      });
+    });
+  }
+};
+
+/* ================= FCM 초기화 ================= */
+
 const initializeFCM = async (
   router: ReturnType<typeof useRouter>,
-  setPartyStore: SetPartyStoreFn, // 💡 any 타입 제거
+  setPartyStore: (state: { partyId: number | null }) => void,
 ) => {
-  // 1. 권한 요청
+  /* 1️⃣ 권한 요청 */
   if (Platform.OS === "ios") {
     await messaging().requestPermission({ alert: true, sound: true, badge: true });
   }
+
   if (Platform.OS === "android" && Platform.Version >= 33) {
     await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
   }
 
-  // 2. Android 채널 생성 (중복 진동/소리 방지를 위해 null 설정)
+  /* 2️⃣ Android 채널 */
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("fcm_default_channel", {
       name: "Default Channel",
       importance: Notifications.AndroidImportance.MAX,
-      // 🟢 수정: 진동 및 소리 비활성화 (OS 기본 알림만 사용)
       vibrationPattern: null,
       sound: null,
     });
   }
 
-  // 3. 토큰 획득 및 서버 등록
+  /* 3️⃣ 토큰 등록 */
   const token = await messaging().getToken();
-  if (token) {
-    await registerFcmToken(token);
-  }
+  if (token) await registerFcmToken(token);
 
-  // 4. 토큰 갱신 리스너 등록
+  /* 4️⃣ 토큰 갱신 */
   const unsubscribeTokenRefresh = messaging().onTokenRefresh(registerFcmToken);
 
-  // 5. 포그라운드 메시지 리스너 등록 (Expo Notifications로 직접 띄우며 진동/소리 제거)
+  /* 5️⃣ 포그라운드 수신 */
   const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
     const title = remoteMessage.notification?.title || remoteMessage.data?.title || "새 알림";
+
     const body = remoteMessage.notification?.body || remoteMessage.data?.body || "";
 
-    // Expo Notifications로 알림 직접 표시: 진동/소리 비활성화
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: title,
-        body: body,
+        title,
+        body,
         data: remoteMessage.data,
         sound: false,
         vibration: false,
         channelId: "fcm_default_channel",
       },
-      trigger: {
-        seconds: 1,
-      },
+      trigger: { seconds: 1 },
     });
   });
 
-  // 6. 백그라운드/종료 상태 알림 클릭 처리 (딥링크)
-  const handleNotificationClick = (remoteMessage: RemoteMessage | null) => {
-    // 💡 any 타입 제거
-    const data = remoteMessage?.data;
-    if (data?.type === "CHAT_MESSAGE" && data?.partyId) {
-      setPartyStore({ partyId: Number(data.partyId) });
-      router.push({ pathname: "/chatpage", params: { roomId: data.partyId } });
-    }
-  };
+  /* 6️⃣ 백그라운드 클릭 */
+  const unsubscribeOpened = messaging().onNotificationOpenedApp(
+    (remoteMessage: RemoteMessage | null) => {
+      navigateFromNotification(remoteMessage?.data as NotificationData, router, setPartyStore);
+    },
+  );
 
-  const unsubscribeOpened = messaging().onNotificationOpenedApp(handleNotificationClick);
+  /* 7️⃣ 종료 상태 클릭 */
+  messaging()
+    .getInitialNotification()
+    .then((remoteMessage) => {
+      navigateFromNotification(remoteMessage?.data as NotificationData, router, setPartyStore);
+    });
 
-  // 7. 종료 상태 클릭 처리
-  messaging().getInitialNotification().then(handleNotificationClick);
-
-  // 8. 클린업 함수 반환
   return () => {
     unsubscribeTokenRefresh();
     unsubscribeOnMessage();
@@ -125,7 +153,8 @@ const initializeFCM = async (
   };
 };
 
-// 💡 포그라운드에서 알림 배너가 보이도록 설정 (소리/진동은 false로 유지)
+/* ================= Expo 알림 설정 ================= */
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -134,13 +163,16 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/* ================= Root Layout ================= */
+
 export default function RootLayout() {
   const router = useRouter();
   const setPartyStore = usePartyStore((state) => state.setPartyState);
 
-  // FCM 초기화
+  /* FCM 초기화 */
   useEffect(() => {
-    let cleanup: () => void;
+    let cleanup: (() => void) | undefined;
+
     initializeFCM(router, setPartyStore).then((c) => {
       cleanup = c;
     });
@@ -148,6 +180,17 @@ export default function RootLayout() {
     return () => {
       if (cleanup) cleanup();
     };
+  }, [router, setPartyStore]);
+
+  /* Expo 알림 클릭 (포그라운드 iOS 필수) */
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as NotificationData | undefined;
+
+      navigateFromNotification(data, router, setPartyStore);
+    });
+
+    return () => sub.remove();
   }, [router, setPartyStore]);
 
   return (
@@ -171,6 +214,7 @@ export default function RootLayout() {
           options={({ route }: StackScreenProps<{ chatpage: ChatPageParams }>["route"]) => {
             const start = route?.params?.startPlace || "출발지";
             const end = route?.params?.endPlace || "목적지";
+
             return {
               title: route?.params?.roomId ? `채팅방 ${route.params.roomId}` : `${start} → ${end}`,
               headerTintColor: "#000",

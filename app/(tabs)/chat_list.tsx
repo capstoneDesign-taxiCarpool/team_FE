@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Alert, ScrollView, Text } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import styled from "styled-components/native";
 
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
@@ -14,6 +14,9 @@ import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import PartyCard from "@/entities/common/components/party_card";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
+
+/* ================= util ================= */
+
 interface AxiosErrorResponse {
   response?: {
     data?: {
@@ -22,9 +25,8 @@ interface AxiosErrorResponse {
   };
 }
 
-const isAxiosError = (err: unknown): err is AxiosErrorResponse => {
-  return typeof err === "object" && err !== null && "response" in err;
-};
+const isAxiosError = (err: unknown): err is AxiosErrorResponse =>
+  typeof err === "object" && err !== null && "response" in err;
 
 const mapRawPartyWithSavings = (raw: RawPartyResponse): PartyResponse => ({
   ...mapRawParty(raw),
@@ -35,8 +37,7 @@ const fetchChatList = async (): Promise<PartyResponse[]> => {
   try {
     const res = await fetchInstance(true).get<RawPartyResponse[]>("/api/party/my-parties");
     return res.data.map(mapRawPartyWithSavings);
-  } catch (err) {
-    console.error(err);
+  } catch {
     return [];
   }
 };
@@ -49,12 +50,14 @@ const groupByDate = (parties: PartyResponse[]) =>
     return acc;
   }, {});
 
+/* ================= component ================= */
+
 export default function ChatList() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const { isLoading, data: chatRoomsData } = useQuery({
+  const { isLoading, data } = useQuery({
     queryKey: ["parties", "my"],
     queryFn: fetchChatList,
   });
@@ -66,8 +69,8 @@ export default function ChatList() {
   const stompClients = useRef<Record<number, Client>>({});
 
   useEffect(() => {
-    if (chatRoomsData) setChatRooms(chatRoomsData);
-  }, [chatRoomsData]);
+    if (data) setChatRooms(data);
+  }, [data]);
 
   useEffect(() => {
     fetchInstance(true)
@@ -82,11 +85,13 @@ export default function ChatList() {
 
   const unsubscribeStomp = (partyId: number) => {
     const client = stompClients.current[partyId];
-    if (client && client.connected) {
+    if (client?.connected) {
       client.deactivate();
       delete stompClients.current[partyId];
     }
   };
+
+  /* ================= handlers ================= */
 
   const handleLeave = (party: PartyResponse) => {
     Alert.alert("⚠️ 퇴장 확인", "정말 퇴장하시겠습니까?", [
@@ -96,15 +101,13 @@ export default function ChatList() {
         style: "destructive",
         onPress: async () => {
           try {
-            await fetchInstance(true).post(`/api/party/${party.id}/leave`, { preventFcm: true });
-
+            await fetchInstance(true).post(`/api/party/${party.id}/leave`, {
+              preventFcm: true,
+            });
             unsubscribeStomp(party.id);
-
-            Alert.alert("완료", "정상적으로 퇴장했습니다.");
             refreshChatList();
-          } catch (err: unknown) {
+          } catch (err) {
             const message = isAxiosError(err) ? err.response?.data?.message : "알 수 없는 오류";
-
             Alert.alert("오류", message ?? "알 수 없는 오류");
           }
         },
@@ -121,18 +124,17 @@ export default function ChatList() {
         onPress: async () => {
           try {
             await fetchInstance(true).post(`/api/party/${party.id}/savings`);
-
-            Alert.alert("완료", "카풀이 정상적으로 완료되었습니다.");
             refreshChatList();
-          } catch (err: unknown) {
+          } catch (err) {
             const message = isAxiosError(err) ? err.response?.data?.message : "알 수 없는 오류";
-
             Alert.alert("오류", message ?? "알 수 없는 오류");
           }
         },
       },
     ]);
   };
+
+  /* ================= empty ================= */
 
   if ((userId ?? -1) < 0 || isLoading || chatRooms.length === 0) {
     return (
@@ -150,12 +152,14 @@ export default function ChatList() {
     );
   }
 
-  const groupedChatRooms = groupByDate(chatRooms);
+  const grouped = groupByDate(chatRooms);
   const now = new Date();
+
+  /* ================= render ================= */
 
   return (
     <Container ref={scrollViewRef} onScrollToTop={refreshChatList}>
-      {Object.entries(groupedChatRooms).map(([date, parties]) => (
+      {Object.entries(grouped).map(([date, parties]) => (
         <DateGroup key={date}>
           <RowContainer justifyContent="flex-start">
             <IconSymbol name="calendar" />
@@ -169,13 +173,79 @@ export default function ChatList() {
           {parties.map((v) => {
             const isHost = userId === v.hostMemberId;
             const start = new Date(v.startDateTime);
-            const isActive = start > now;
+
+            /* ===== 버튼 목록 구성 ===== */
+            const buttons: JSX.Element[] = [];
+
+            if (isHost && now < start) {
+              buttons.push(
+                <BasicButton
+                  key="setting"
+                  icon="settings"
+                  title="설정변경"
+                  color={Colors.main}
+                  onPress={() => {
+                    setPartyStore({
+                      partyId: v.id,
+                      when2go: v.startDateTime,
+                      departure: v.startPlace,
+                      destination: v.endPlace,
+                      maxMembers: v.maxParticipantCount,
+                      curMembers: v.currentParticipantCount,
+                      comment: v.comment,
+                      options: {
+                        sameGenderOnly: v.sameGenderOnly,
+                        costShareBeforeDropOff: v.costShareBeforeDropOff,
+                        quietMode: v.quietMode,
+                        destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
+                      },
+                      isHandOveredData: true,
+                    });
+                    router.push("/carpool/edit");
+                  }}
+                />,
+              );
+            }
+
+            if (isHost && now >= start && !v.savingsCalculated) {
+              buttons.push(
+                <BasicButton
+                  key="complete"
+                  icon="checkmark"
+                  title="카풀완료"
+                  color="#27ae60"
+                  onPress={() => handleComplete(v)}
+                />,
+              );
+            }
+
+            buttons.push(
+              <BasicButton
+                key="leave"
+                icon="trash"
+                title="카풀퇴장"
+                color="#e74c3c"
+                onPress={() => handleLeave(v)}
+              />,
+            );
+
+            buttons.push(
+              <BasicButton
+                key="chat"
+                icon="chatbubble-ellipses"
+                title="채팅하기"
+                onPress={() => {
+                  usePartyStore.setState({ partyId: v.id });
+                  router.push({ pathname: "/chatpage", params: { roomId: v.id } });
+                }}
+              />,
+            );
 
             return (
               <PartyCard
                 key={v.id}
-                isActive={isActive}
-                showTitle={true}
+                isActive={start > now}
+                showTitle
                 when2go={v.startDateTime}
                 departure={v.startPlace}
                 destination={v.endPlace}
@@ -188,70 +258,7 @@ export default function ChatList() {
                   quietMode: v.quietMode,
                   destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
                 }}
-                buttons={
-                  <RowContainer justifyContent="flex-end" gap={18}>
-                    {isHost && (
-                      <>
-                        {now < start && (
-                          <BasicButton
-                            icon="settings"
-                            title="설정변경"
-                            color={Colors.main}
-                            onPress={() => {
-                              setPartyStore({
-                                partyId: v.id,
-                                when2go: v.startDateTime,
-                                departure: v.startPlace,
-                                destination: v.endPlace,
-                                maxMembers: v.maxParticipantCount,
-                                curMembers: v.currentParticipantCount,
-                                comment: v.comment,
-                                options: {
-                                  sameGenderOnly: v.sameGenderOnly,
-                                  costShareBeforeDropOff: v.costShareBeforeDropOff,
-                                  quietMode: v.quietMode,
-                                  destinationChangeIn5Minutes: v.destinationChangeIn5Minutes,
-                                },
-                                isHandOveredData: true,
-                              });
-                              router.push("/carpool/edit");
-                            }}
-                          />
-                        )}
-                        {now >= start && !v.savingsCalculated && (
-                          <BasicButton
-                            icon="checkmark"
-                            title="카풀완료"
-                            color="#27ae60"
-                            onPress={() => handleComplete(v)}
-                          />
-                        )}
-                        <BasicButton
-                          icon="arrow-back"
-                          title="퇴장하기"
-                          color="#e67e22"
-                          onPress={() => handleLeave(v)}
-                        />
-                      </>
-                    )}
-                    {!isHost && (
-                      <BasicButton
-                        icon="trash"
-                        title="카풀퇴장"
-                        color="#e74c3c"
-                        onPress={() => handleLeave(v)}
-                      />
-                    )}
-                    <BasicButton
-                      icon="chatbubble-ellipses"
-                      title="채팅"
-                      onPress={() => {
-                        usePartyStore.setState({ partyId: v.id });
-                        router.push({ pathname: "/chatpage", params: { roomId: v.id } });
-                      }}
-                    />
-                  </RowContainer>
-                }
+                buttons={<FixedSlotButtons buttons={buttons} />}
               />
             );
           })}
@@ -260,6 +267,34 @@ export default function ChatList() {
     </Container>
   );
 }
+
+/* ================= 버튼 슬롯 ================= */
+
+function FixedSlotButtons({ buttons }: { buttons: JSX.Element[] }) {
+  const slots: (JSX.Element | null)[] = [null, null, null];
+  const used = buttons.slice(0, 3);
+
+  if (used.length === 1) {
+    slots[2] = used[0];
+  } else if (used.length === 2) {
+    slots[1] = used[0];
+    slots[2] = used[1];
+  } else {
+    slots[0] = used[0];
+    slots[1] = used[1];
+    slots[2] = used[2];
+  }
+
+  return (
+    <ButtonRow>
+      {slots.map((btn, idx) => (
+        <ButtonSlot key={idx}>{btn}</ButtonSlot>
+      ))}
+    </ButtonRow>
+  );
+}
+
+/* ================= styled ================= */
 
 const Container = styled(ScrollView)({
   flex: 1,
@@ -271,17 +306,25 @@ const EmptyState = styled.View({
   flex: 1,
   justifyContent: "center",
   alignItems: "center",
-  fontSize: FontSizes.large,
 });
 
 const DateGroup = styled.View({
   marginBottom: 30,
-  display: "flex",
-  flexDirection: "column",
   gap: 10,
 });
 
 const DateHeader = styled.Text({
   fontSize: FontSizes.medium,
   fontWeight: "bold",
+});
+
+const ButtonRow = styled.View({
+  flexDirection: "row",
+  width: "100%",
+  marginTop: 12,
+});
+
+const ButtonSlot = styled.View({
+  width: "33.333%",
+  alignItems: "center",
 });

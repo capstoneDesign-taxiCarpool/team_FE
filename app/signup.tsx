@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -11,10 +11,16 @@ import VertifyEmail from "@/entities/signup/vertify_email";
 const handleSignup = (
   email: string,
   password: string,
+  passwordConfirm: string,
   nickname: string,
   sex: number,
   onSuccess: () => void,
 ) => {
+  if (password !== passwordConfirm) {
+    Alert.alert("회원가입 실패", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+    return;
+  }
+
   fetchInstance()
     .post("/api/auth/signup", {
       email: email.trim() + "@kangwon.ac.kr",
@@ -48,68 +54,67 @@ const handleSignup = (
 export default function Signup() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [passwordConfirm, setPasswordConfirm] = useState<string>("");
   const [nickname, setNickname] = useState<string>("");
   const [sex, setSex] = useState<number>(0);
   const router = useRouter();
 
   return (
-    <Background source={{ uri: "여기에 이미지 경로 입력" }} resizeMode="cover">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1, width: "100%" }}
-      >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <Container>
-            <SignupContainer>
-              <NoticeText>
-                <BoldText>
-                  강원대학교 학생만을 위한{"\n"}
-                  택시 카풀 서비스,{"\n"}
-                </BoldText>
-                강택에서 회원가입을 진행하세요.
-              </NoticeText>
+    <KeyboardAvoidingView
+      style={{ flex: 1, width: "100%" }}
+      behavior={Platform.OS === "ios" ? "padding" : "position"}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <Container>
+          <SignupContainer>
+            <NoticeText>
+              <BoldText>
+                강원대학교 학생만을 위한{"\n"}
+                택시 카풀 서비스,{"\n"}
+              </BoldText>
+              강택에서 회원가입을 진행하세요.
+            </NoticeText>
 
-              {/* 이메일 인증 컴포넌트 */}
-              <InputWrapper>
-                <VertifyEmail email={email} setEmail={setEmail} />
-              </InputWrapper>
+            {/* 이메일 인증 컴포넌트 */}
+            <InputWrapper>
+              <VertifyEmail email={email} setEmail={setEmail} />
+            </InputWrapper>
 
-              {/* 개인정보 입력 컴포넌트 */}
-              <InputWrapper>
-                <PersonalInfo
-                  password={password}
-                  setPassword={setPassword}
-                  sex={sex}
-                  setSex={setSex}
-                  nickname={nickname}
-                  setNickname={setNickname}
-                />
-              </InputWrapper>
+            {/* 개인정보 입력 컴포넌트 */}
+            <InputWrapper>
+              <PersonalInfo
+                password={password}
+                setPassword={setPassword}
+                sex={sex}
+                setSex={setSex}
+                nickname={nickname}
+                setNickname={setNickname}
+                passwordConfirm={passwordConfirm}
+                setPasswordConfirm={setPasswordConfirm}
+              />
+            </InputWrapper>
 
-              {/* 회원가입 버튼 */}
-              <LoginButton
-                onPress={() => handleSignup(email, password, nickname, sex, () => router.push("/"))}
-              >
-                <LoginButtonText>회원가입</LoginButtonText>
-              </LoginButton>
+            {/* 회원가입 버튼 */}
+            <LoginButton
+              onPress={() =>
+                handleSignup(email, password, passwordConfirm, nickname, sex, () =>
+                  router.push("/"),
+                )
+              }
+            >
+              <LoginButtonText>회원가입</LoginButtonText>
+            </LoginButton>
 
-              {/* 로그인 이동 버튼 */}
-              <SignupButton onPress={() => router.push("/signin")}>
-                <SignupButtonText>로그인으로 돌아가기</SignupButtonText>
-              </SignupButton>
-            </SignupContainer>
-          </Container>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Background>
+            {/* 로그인 이동 버튼 */}
+            <SignupButton onPress={() => router.push("/signin")}>
+              <SignupButtonText>로그인으로 돌아가기</SignupButtonText>
+            </SignupButton>
+          </SignupContainer>
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
-const Background = styled(ImageBackground)({
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-});
 
 const Container = styled.View({
   width: "100%",

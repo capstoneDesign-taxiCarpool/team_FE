@@ -1,7 +1,7 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, KeyboardAvoidingView } from "react-native";
+import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -185,24 +185,28 @@ export default function ChatPage() {
         renderItem={renderMessage}
         contentContainerStyle={{ paddingVertical: 16 }}
       />
-
-      <InputContainer>
-        <StyledInput
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="메시지를 입력하세요"
-        />
-        <SendButton onPress={sendMessage}>
-          <SendText>전송</SendText>
-        </SendButton>
-      </InputContainer>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "position"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 120 : 80}
+      >
+        <InputContainer>
+          <StyledInput
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="메시지를 입력하세요"
+          />
+          <SendButton onPress={sendMessage}>
+            <SendText>전송</SendText>
+          </SendButton>
+        </InputContainer>
+      </KeyboardAvoidingView>
     </Container>
   );
 }
 
 /* ================= 스타일 ================= */
 
-const Container = styled(KeyboardAvoidingView)({
+const Container = styled.View({
   flex: 1,
   backgroundColor: "#f2f2f2",
   padding: 16,
@@ -258,6 +262,7 @@ const SystemText = styled.Text({
 });
 
 const InputContainer = styled.View({
+  display: "flex",
   flexDirection: "row",
   alignItems: "center",
   padding: 8,

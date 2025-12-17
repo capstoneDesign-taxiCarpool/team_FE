@@ -13,6 +13,8 @@ import InputContainer from "./input_container";
 export default function PersonalInfo({
   password,
   setPassword,
+  passwordConfirm,
+  setPasswordConfirm,
   sex,
   setSex,
   nickname,
@@ -20,6 +22,8 @@ export default function PersonalInfo({
 }: {
   password: string;
   setPassword: (v: string) => void;
+  passwordConfirm: string;
+  setPasswordConfirm: (v: string) => void;
   sex: number;
   setSex: (v: number) => void;
   nickname: string;
@@ -49,6 +53,15 @@ export default function PersonalInfo({
             ? "✅ 사용가능한 비밀번호입니다."
             : "❌ 비밀번호는 영문과 숫자를 포함한 8~20자여야 합니다."}
         </PasswordCheckText>
+        <InputContainer title="비밀번호 확인">
+          <Input
+            value={passwordConfirm}
+            onChangeText={(v) => setPasswordConfirm(v.trim())}
+            secureTextEntry
+            autoCapitalize="none"
+            placeholder="비밀번호를 다시 입력하세요"
+          />
+        </InputContainer>
       </ColContainer>
       <InputContainer title="닉네임">
         <Input value={nickname} onChangeText={setNickname} />

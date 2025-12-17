@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Alert } from "react-native";
+import { useRef, useState } from "react";
+import { Alert, TextInput } from "react-native";
 import styled from "styled-components/native";
 
 import BasicButton from "@/entities/common/components/button_basic";
@@ -70,12 +70,18 @@ export default function VertifyEmail({
 }) {
   const [emailCode, setEmailCode] = useState<string>("");
   const [checkState, setCheckState] = useState<CheckState>("before_send_code");
+  const emailRef = useRef<TextInput>(null);
 
   return (
     <Container>
       <AlignRight>
-        <InputContainer title="강원대 메일">
-          <Input value={email} onChangeText={setEmail} />
+        <InputContainer
+          title="강원대 메일"
+          handleClick={() => {
+            emailRef.current?.focus();
+          }}
+        >
+          <Input ref={emailRef} value={email} onChangeText={setEmail} />
           <MailText>@kangwon.ac.kr</MailText>
         </InputContainer>
         <BasicButton
@@ -112,7 +118,7 @@ const Container = styled.View({
   gap: "20px",
 });
 
-const Input = styled.TextInput({
+const Input = styled(TextInput)({
   fontSize: FontSizes.medium,
   maxWidth: "6rem",
   border: "none",

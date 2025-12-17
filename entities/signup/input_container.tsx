@@ -13,8 +13,7 @@ export default function InputContainer({
   handleClick?: () => void;
 }) {
   return (
-    <Container>
-      {handleClick && <HandleClick onPress={handleClick} />}
+    <Container onPress={handleClick}>
       <Label title={title} />
       <InputGroup>
         <InputGroupDiv>{children}</InputGroupDiv>
@@ -23,17 +22,7 @@ export default function InputContainer({
   );
 }
 
-const HandleClick = styled.Pressable({
-  position: "absolute",
-  right: 0,
-  top: 0,
-  zIndex: 2,
-  width: "100%",
-  height: "100%",
-});
-
-const Container = styled.View({
-  position: "relative",
+const Container = styled.Pressable({
   flexDirection: "row",
   alignItems: "center",
   width: "100%",

@@ -9,11 +9,13 @@ import { authCode } from "@/entities/common/util/storage";
 
 import defaultProfile from "../assets/images/default-profile.png";
 
+/* ================= 타입 ================= */
+
 interface Message {
   id: string;
   text: string;
   isMe?: boolean;
-  type?: "system" | "message";
+  type: "system" | "message";
   senderName?: string;
 }
 
@@ -26,58 +28,69 @@ interface IncomingMessagePayload {
   type?: string;
 }
 
+/* ================= 유틸 ================= */
+
+const isSystemType = (type?: string) => ["SYSTEM", "ENTER", "LEAVE"].includes(type ?? "");
+
+/* ================= 컴포넌트 ================= */
+
 export default function ChatPage() {
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
   const navigation = useNavigation();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
-  const [chatTitle, setChatTitle] = useState("채팅방");
+
   const stompClient = useRef<Client | null>(null);
-  const myInfo = useRef<{ id: number; nickname: string }>({ id: 0, nickname: "" });
   const flatListRef = useRef<FlatList>(null);
+
+  const myInfo = useRef<{ id: number; nickname: string }>({
+    id: 0,
+    nickname: "",
+  });
+
+  /* ================= 채팅방 제목 ================= */
 
   useEffect(() => {
     const fetchRoomInfo = async () => {
       try {
         const res = await fetchInstance(true).get(`/api/party/${roomId}`);
-        const startName = res.data.startPlace?.name || "출발지";
-        const endName = res.data.endPlace?.name || "목적지";
-        const title = `${startName} → ${endName}`;
-        setChatTitle(title);
-
-        navigation.setOptions({ title });
-      } catch (error) {}
+        const start = res.data.startPlace?.name || "출발지";
+        const end = res.data.endPlace?.name || "목적지";
+        navigation.setOptions({ title: `${start} → ${end}` });
+      } catch {}
     };
     fetchRoomInfo();
   }, [roomId, navigation]);
 
+  /* ================= 초기 로딩 + WebSocket ================= */
+
   useEffect(() => {
-    const connectSocket = async () => {
+    const connect = async () => {
       const token = await authCode.get();
       if (!token) return;
 
-      try {
-        const res = await fetchInstance(true).get<{ id: number; nickname: string }>(
-          "/api/member/me",
-        );
-        myInfo.current = res.data;
+      // 내 정보
+      const meRes = await fetchInstance(true).get("/api/member/me");
+      myInfo.current = meRes.data;
 
-        // 70개까지 메시지를 불러오도록 maxResults=70 파라미터를 추가했습니다.
-        const historyRes = await fetchInstance(true).get<IncomingMessagePayload[]>(
-          `/api/party/${roomId}/messages?maxResults=70`,
-        );
-        const historyMessages = historyRes.data.map((msg) => ({
-          id: `${msg.id}-${Date.now()}`,
-          text: msg.content,
-          isMe: msg.senderId === myInfo.current.id,
-          senderName: msg.senderNickname,
-          type: ["SYSTEM", "ENTER", "EXIT"].includes(msg.type || "") ? "system" : "message",
-        }));
-        setMessages(historyMessages);
+      // 과거 메시지
+      const historyRes = await fetchInstance(true).get<IncomingMessagePayload[]>(
+        `/api/party/${roomId}/messages?maxResults=70`,
+      );
 
-        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
-      } catch (error) {}
+      const historyMessages: Message[] = historyRes.data.map((msg) => ({
+        id: String(msg.id),
+        text: msg.content,
+        isMe: msg.senderId === myInfo.current.id,
+        senderName: msg.senderNickname,
+        type: isSystemType(msg.type) ? "system" : "message",
+      }));
 
+      setMessages(historyMessages);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
+
+      // WebSocket 연결
       const wsUrl = `wss://knu-carpool.store/chat?access_token=${token}`;
       stompClient.current = new Client({
         brokerURL: wsUrl,
@@ -87,69 +100,69 @@ export default function ChatPage() {
         forceBinaryWSFrames: true,
         onConnect: () => {
           stompClient.current?.subscribe(`/sub/party/${roomId}`, (msg: IMessage) => {
-            let data: IncomingMessagePayload;
-            try {
-              data = JSON.parse(msg.body);
-            } catch {
-              data = {
-                id: 0,
-                content: msg.body,
-                senderId: 0,
-                senderNickname: "알 수 없음",
-                createdAt: new Date().toISOString(),
-              };
-            }
-            handleIncomingMessage({ ...data, senderId: Number(data.senderId) });
+            const data: IncomingMessagePayload = JSON.parse(msg.body);
+            handleIncomingMessage(data);
           });
         },
       });
 
+      // null byte 보정
       const originalPublish = stompClient.current.publish.bind(stompClient.current);
       stompClient.current.publish = (params) =>
         originalPublish({ ...params, body: params.body + "\u0000" });
+
       stompClient.current.activate();
     };
 
-    connectSocket();
+    connect();
     return () => stompClient.current?.deactivate();
   }, [roomId]);
 
+  /* ================= 수신 처리 ================= */
+
   const handleIncomingMessage = (data: IncomingMessagePayload) => {
     const message: Message = {
-      id: `${data.id}-${Date.now()}`,
+      id: String(data.id),
       text: data.content,
       isMe: data.senderId === myInfo.current.id,
       senderName: data.senderNickname,
-      type: data.type === "SYSTEM" ? "system" : "message",
+      type: isSystemType(data.type) ? "system" : "message",
     };
-    setMessages((prev) => {
-      const updated = [...prev, message];
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
-      return updated;
-    });
+
+    setMessages((prev) => [...prev, message]);
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
   };
+
+  /* ================= 메시지 전송 ================= */
 
   const sendMessage = () => {
     if (!inputText.trim() || !stompClient.current?.connected) return;
-    const payload = {
-      content: inputText,
-      senderId: myInfo.current.id,
-      senderNickname: myInfo.current.nickname,
-    };
+
     stompClient.current.publish({
       destination: `/pub/party/${roomId}/message`,
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        content: inputText,
+        senderId: myInfo.current.id,
+        senderNickname: myInfo.current.nickname,
+      }),
     });
+
     setInputText("");
   };
 
+  /* ================= 렌더 ================= */
+
   const renderMessage = ({ item }: { item: Message }) => {
-    if (item.type === "system")
+    // ✅ 시스템 메시지 (입장 / 퇴장 / SYSTEM)
+    if (item.type === "system") {
       return (
         <SystemMessageContainer>
           <SystemText>{item.text}</SystemText>
         </SystemMessageContainer>
       );
+    }
+
+    // ✅ 일반 채팅 메시지
     return (
       <MessageRow isMe={item.isMe}>
         {!item.isMe && <ProfileImage source={defaultProfile} />}
@@ -164,15 +177,15 @@ export default function ChatPage() {
   };
 
   return (
-    <Container>
+    <Container behavior="padding">
       <FlatList
         ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={{ paddingVertical: 16 }}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
+
       <InputContainer>
         <StyledInput
           value={inputText}
@@ -187,18 +200,18 @@ export default function ChatPage() {
   );
 }
 
+/* ================= 스타일 ================= */
+
 const Container = styled(KeyboardAvoidingView)({
   flex: 1,
   backgroundColor: "#f2f2f2",
   padding: 16,
 });
 
-const MessageRow = styled.View<{ isMe?: boolean }>((props) => ({
+const MessageRow = styled.View<{ isMe?: boolean }>(({ isMe }) => ({
   flexDirection: "row",
-  alignItems: "flex-start",
-  justifyContent: props.isMe ? "flex-end" : "flex-start",
+  justifyContent: isMe ? "flex-end" : "flex-start",
   marginBottom: 12,
-  marginRight: props.isMe ? 5 : 0,
 }));
 
 const ProfileImage = styled(Image)({
@@ -208,8 +221,8 @@ const ProfileImage = styled(Image)({
   marginHorizontal: 8,
 });
 
-const MessageColumn = styled.View<{ isMe?: boolean }>((props) => ({
-  alignItems: props.isMe ? "flex-end" : "flex-start",
+const MessageColumn = styled.View<{ isMe?: boolean }>(({ isMe }) => ({
+  alignItems: isMe ? "flex-end" : "flex-start",
   maxWidth: "75%",
 }));
 
@@ -219,24 +232,23 @@ const SenderName = styled.Text({
   marginBottom: 4,
 });
 
-const MessageBubble = styled.View<{ isMe: boolean }>((props) => ({
-  backgroundColor: props.isMe ? "rgb(148, 200, 230)" : "#ffffff",
+const MessageBubble = styled.View<{ isMe: boolean }>(({ isMe }) => ({
+  backgroundColor: isMe ? "rgb(148, 200, 230)" : "#fff",
   paddingVertical: 10,
   paddingHorizontal: 16,
   borderRadius: 16,
-  maxWidth: "100%",
-  borderTopLeftRadius: props.isMe ? 16 : 0,
-  borderTopRightRadius: props.isMe ? 0 : 16,
+  borderTopLeftRadius: isMe ? 16 : 0,
+  borderTopRightRadius: isMe ? 0 : 16,
 }));
 
 const MessageText = styled.Text({
   fontSize: 16,
-  color: "#333333",
+  color: "#333",
 });
 
 const SystemMessageContainer = styled.View({
   alignItems: "center",
-  marginBottom: 12,
+  marginVertical: 8,
 });
 
 const SystemText = styled.Text({
@@ -249,7 +261,7 @@ const InputContainer = styled.View({
   flexDirection: "row",
   alignItems: "center",
   padding: 8,
-  backgroundColor: "white",
+  backgroundColor: "#fff",
   borderTopWidth: 1,
   borderTopColor: "#ddd",
   borderRadius: 30,

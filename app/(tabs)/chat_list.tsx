@@ -181,7 +181,7 @@ export default function ChatList() {
               buttons.push(
                 <BasicButton
                   key="setting"
-                  icon="settings"
+                  icon="settings-outline"
                   title="설정변경"
                   color={Colors.main}
                   onPress={() => {
@@ -211,7 +211,7 @@ export default function ChatList() {
               buttons.push(
                 <BasicButton
                   key="complete"
-                  icon="checkmark"
+                  icon="checkmark-circle-outline"
                   title="카풀완료"
                   color="#27ae60"
                   onPress={() => handleComplete(v)}
@@ -232,7 +232,7 @@ export default function ChatList() {
             buttons.push(
               <BasicButton
                 key="chat"
-                icon="chatbubble-ellipses"
+                icon="chatbubble-ellipses-outline"
                 title="채팅하기"
                 onPress={() => {
                   usePartyStore.setState({ partyId: v.id });

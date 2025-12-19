@@ -8,10 +8,14 @@ interface storeThings {
   isHandOveredData: boolean;
   clearExceptId: () => void;
 
-  /* 🔴 [추가] 알림 기반 채팅 이동용 */
+  /* 🔴 알림 기반 채팅 이동용 */
   pendingChatRoomId: number | null;
   setPendingChatRoomId: (id: number) => void;
   clearPendingChatRoomId: () => void;
+
+  /* ✅ [필수] 현재 열려있는 채팅방 */
+  currentChatRoomId: number | null;
+  setCurrentChatRoomId: (id: number | null) => void;
 }
 
 const usePartyStore = create<Party & storeThings>((set) => ({
@@ -54,12 +58,14 @@ const usePartyStore = create<Party & storeThings>((set) => ({
       isHandOveredData: false,
     })),
 
-  /* ===== 🔴 알림 전용 상태 (기존 로직과 완전 분리) ===== */
+  /* ===== 🔴 알림 전용 ===== */
   pendingChatRoomId: null,
-
   setPendingChatRoomId: (id: number) => set({ pendingChatRoomId: id }),
-
   clearPendingChatRoomId: () => set({ pendingChatRoomId: null }),
+
+  /* ===== ✅ 현재 채팅방 ===== */
+  currentChatRoomId: null,
+  setCurrentChatRoomId: (id) => set({ currentChatRoomId: id }),
 }));
 
 export default usePartyStore;

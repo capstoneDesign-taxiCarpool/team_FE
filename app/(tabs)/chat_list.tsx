@@ -80,7 +80,9 @@ export default function ChatList() {
   }, []);
 
   const refreshChatList = () => {
-    queryClient.invalidateQueries({ queryKey: ["parties", "my"] });
+    queryClient.invalidateQueries({
+      queryKey: ["parties", "my"],
+    });
   };
 
   const unsubscribeStomp = (partyId: number) => {
@@ -101,9 +103,7 @@ export default function ChatList() {
         style: "destructive",
         onPress: async () => {
           try {
-            await fetchInstance(true).post(`/api/party/${party.id}/leave`, {
-              preventFcm: true,
-            });
+            await fetchInstance(true).post(`/api/party/${party.id}/leave`, { preventFcm: true });
             unsubscribeStomp(party.id);
             refreshChatList();
           } catch (err) {
@@ -162,6 +162,7 @@ export default function ChatList() {
       {Object.entries(grouped).map(([date, parties]) => (
         <DateGroup key={date}>
           <RowContainer justifyContent="flex-start">
+            {/* ✅ SF Symbol */}
             <IconSymbol name="calendar" />
             <DateHeader>
               {format(new Date(date), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
@@ -174,14 +175,13 @@ export default function ChatList() {
             const isHost = userId === v.hostMemberId;
             const start = new Date(v.startDateTime);
 
-            /* ===== 버튼 목록 구성 ===== */
             const buttons: JSX.Element[] = [];
 
             if (isHost && now < start) {
               buttons.push(
                 <BasicButton
                   key="setting"
-                  icon="settings-outline"
+                  icon="gearshape"
                   title="설정변경"
                   color={Colors.main}
                   onPress={() => {
@@ -211,7 +211,7 @@ export default function ChatList() {
               buttons.push(
                 <BasicButton
                   key="complete"
-                  icon="checkmark-circle-outline"
+                  icon="checkmark"
                   title="카풀완료"
                   color="#27ae60"
                   onPress={() => handleComplete(v)}
@@ -232,11 +232,16 @@ export default function ChatList() {
             buttons.push(
               <BasicButton
                 key="chat"
-                icon="chatbubble-ellipses-outline"
+                icon="bubble.left.fill"
                 title="채팅하기"
                 onPress={() => {
-                  usePartyStore.setState({ partyId: v.id });
-                  router.push({ pathname: "/chatpage", params: { roomId: v.id } });
+                  usePartyStore.setState({
+                    partyId: v.id,
+                  });
+                  router.push({
+                    pathname: "/chatpage",
+                    params: { roomId: v.id },
+                  });
                 }}
               />,
             );

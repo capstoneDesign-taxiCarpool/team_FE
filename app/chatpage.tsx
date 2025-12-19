@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
 import styled from "styled-components/native";
 
+import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { authCode } from "@/entities/common/util/storage";
 
@@ -38,16 +39,27 @@ export default function ChatPage() {
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
   const navigation = useNavigation();
 
+  // 🔥 최신 메시지가 index 0
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
 
   const stompClient = useRef<Client | null>(null);
-  const flatListRef = useRef<FlatList>(null);
 
   const myInfo = useRef<{ id: number; nickname: string }>({
     id: 0,
     nickname: "",
   });
+
+  /* ================= 현재 채팅방 상태 (알림 차단용) ================= */
+
+  const setCurrentChatRoomId = usePartyStore((state) => state.setCurrentChatRoomId);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    setCurrentChatRoomId(Number(roomId));
+    return () => setCurrentChatRoomId(null);
+  }, [roomId, setCurrentChatRoomId]);
 
   /* ================= 채팅방 제목 ================= */
 
@@ -74,21 +86,23 @@ export default function ChatPage() {
       const meRes = await fetchInstance(true).get("/api/member/me");
       myInfo.current = meRes.data;
 
-      // 과거 메시지
+      // 과거 메시지 (오래된 → 최신)
       const historyRes = await fetchInstance(true).get<IncomingMessagePayload[]>(
         `/api/party/${roomId}/messages?maxResults=70`,
       );
 
-      const historyMessages: Message[] = historyRes.data.map((msg) => ({
-        id: String(msg.id),
-        text: msg.content,
-        isMe: msg.senderId === myInfo.current.id,
-        senderName: msg.senderNickname,
-        type: isSystemType(msg.type) ? "system" : "message",
-      }));
+      // 🔥 최신 메시지가 앞에 오도록 reverse
+      const historyMessages: Message[] = historyRes.data
+        .map((msg) => ({
+          id: String(msg.id),
+          text: msg.content,
+          isMe: msg.senderId === myInfo.current.id,
+          senderName: msg.senderNickname,
+          type: isSystemType(msg.type) ? "system" : "message",
+        }))
+        .reverse();
 
       setMessages(historyMessages);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
 
       // WebSocket 연결
       const wsUrl = `wss://knu-carpool.store/chat?access_token=${token}`;
@@ -129,8 +143,8 @@ export default function ChatPage() {
       type: isSystemType(data.type) ? "system" : "message",
     };
 
-    setMessages((prev) => [...prev, message]);
-    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 50);
+    // 🔥 최신 메시지를 앞에 추가
+    setMessages((prev) => [message, ...prev]);
   };
 
   /* ================= 메시지 전송 ================= */
@@ -153,7 +167,6 @@ export default function ChatPage() {
   /* ================= 렌더 ================= */
 
   const renderMessage = ({ item }: { item: Message }) => {
-    // ✅ 시스템 메시지 (입장 / 퇴장 / SYSTEM)
     if (item.type === "system") {
       return (
         <SystemMessageContainer>
@@ -162,7 +175,6 @@ export default function ChatPage() {
       );
     }
 
-    // ✅ 일반 채팅 메시지
     return (
       <MessageRow isMe={item.isMe}>
         {!item.isMe && <ProfileImage source={defaultProfile} />}
@@ -177,14 +189,15 @@ export default function ChatPage() {
   };
 
   return (
-    <Container behavior="padding">
+    <Container>
       <FlatList
-        ref={flatListRef}
         data={messages}
+        inverted // 🔥 핵심
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={{ paddingVertical: 16 }}
       />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "position"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 120 : 80}
@@ -262,7 +275,6 @@ const SystemText = styled.Text({
 });
 
 const InputContainer = styled.View({
-  display: "flex",
   flexDirection: "row",
   alignItems: "center",
   padding: 8,

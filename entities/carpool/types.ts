@@ -5,7 +5,7 @@ export interface Party {
   destination?: LocationInfo;
   maxMembers: number;
   curMembers: number;
-  estimatedFare: number;
+  estimatedFare?: number;
   comment?: string;
   hostGender?: "MALE" | "FEMALE";
   options: {

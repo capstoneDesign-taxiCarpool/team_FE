@@ -177,7 +177,7 @@ export default function ChatPage() {
   };
 
   return (
-    <Container behavior="padding">
+    <Container>
       <FlatList
         ref={flatListRef}
         data={messages}

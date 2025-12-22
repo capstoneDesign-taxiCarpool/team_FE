@@ -27,10 +27,10 @@ export default function PartyCard({
   maxMembers,
   curMembers,
   hostGender,
-  estimatedFare,
   options,
   comment = "",
   buttons,
+  estimatedFare,
   showTitle = false,
   isActive = true, // ⭐ 기본값 true
 }: Omit<Party, "partyId"> & Buttons) {

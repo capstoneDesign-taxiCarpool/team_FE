@@ -161,7 +161,7 @@ export default function MapWithMarker({
               }}
             >
               <TooltipText>
-                왼쪽의 버튼을 눌러 마커를 추가할 수 있습니다. 추가된 마커는 꾹 눌러 원하는 위치로
+                오른쪽의 버튼을 눌러 마커를 추가할 수 있습니다. 추가된 마커는 꾹 눌러 원하는 위치로
                 이동시킬 수 있습니다.
               </TooltipText>
             </TooltipContainer>

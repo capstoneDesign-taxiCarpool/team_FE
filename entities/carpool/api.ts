@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 
 import { fetchInstance } from "../common/util/axios_instance";
 import { getISOString } from "../common/util/datetime_format";
-import { Party } from "./types";
+import { LocationInfo, Party } from "./types";
 
 export const joinParty = async (partyId: number, onSuccess: () => void) =>
   fetchInstance(true)
@@ -131,3 +131,11 @@ export const editParty = async ({
     setPartyState,
     onSuccess,
   });
+
+export const getReverseGeocoding = async (latitude: number, longitude: number) => {
+  return fetchInstance(true)
+    .get<{ places: LocationInfo[] }>(`/api/map/reverse-geocoding`, {
+      params: { latitude, longitude },
+    })
+    .then((res) => res.data.places[0]);
+};

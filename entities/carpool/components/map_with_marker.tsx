@@ -4,8 +4,10 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import styled from "styled-components/native";
 
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
+import { hasSeenMapTooltip } from "@/entities/common/util/storage";
 import { Colors } from "@/entities/common/util/style_var";
 
+import { getReverseGeocoding } from "../api";
 import { LocationInfo } from "../types";
 
 /**
@@ -36,6 +38,13 @@ export default function MapWithMarker({
     latitude: 37.868897,
     longitude: 127.744994,
   });
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    hasSeenMapTooltip.get().then((val) => {
+      if (!val) setShowTooltip(true);
+    });
+  }, []);
 
   useEffect(() => {
     if (markers.length > 0 && selectedIndex === undefined) {
@@ -103,12 +112,15 @@ export default function MapWithMarker({
             title={departure.name}
             pinColor={Colors.side}
             description={"출발지(꾹 누른 상태로 이동 가능)"}
-            onDragEnd={(e) => {
+            onDragEnd={async (e) => {
               if (setDeparture) {
+                const { latitude, longitude } = e.nativeEvent.coordinate;
+                const place = await getReverseGeocoding(latitude, longitude);
                 setDeparture({
-                  name: "사용자 지정 출발지",
-                  x: e.nativeEvent.coordinate.longitude,
-                  y: e.nativeEvent.coordinate.latitude,
+                  name: place?.name ?? "사용자 지정 출발지",
+                  roadAddressName: place?.roadAddressName,
+                  x: longitude,
+                  y: latitude,
                 });
               }
             }}
@@ -124,12 +136,15 @@ export default function MapWithMarker({
             title={destination.name}
             pinColor={Colors.main}
             description={"도착지(꾹 누른 상태로 이동 가능)"}
-            onDragEnd={(e) => {
+            onDragEnd={async (e) => {
               if (setDestination) {
+                const { latitude, longitude } = e.nativeEvent.coordinate;
+                const place = await getReverseGeocoding(latitude, longitude);
                 setDestination({
-                  name: "사용자 지정 도착지",
-                  x: e.nativeEvent.coordinate.longitude,
-                  y: e.nativeEvent.coordinate.latitude,
+                  name: place?.name ?? "사용자 지정 도착지",
+                  roadAddressName: place?.roadAddressName,
+                  x: longitude,
+                  y: latitude,
                 });
               }
             }}
@@ -137,23 +152,45 @@ export default function MapWithMarker({
         )}
       </Map>
       {showAddMarkerButton && (
-        <AddMarkerButton
-          onPress={() => {
-            // Handle adding a new marker at the center location
-            const newMarker: LocationInfo = {
-              name: `사용자 지정 ${departure ? "도착지" : "출발지"}`,
-              x: center.longitude,
-              y: center.latitude,
-            };
-            if (departure) {
-              setDestination!(newMarker);
-            } else {
-              setDeparture!(newMarker);
-            }
-          }}
-        >
-          <IconSymbol name="mappin.circle.fill" size={30} color="white" />
-        </AddMarkerButton>
+        <>
+          {showTooltip && (
+            <TooltipContainer
+              onPress={() => {
+                setShowTooltip(false);
+                hasSeenMapTooltip.set("true");
+              }}
+            >
+              <TooltipText>
+                왼쪽의 버튼을 눌러 마커를 추가할 수 있습니다. 추가된 마커는 꾹 눌러 원하는 위치로
+                이동시킬 수 있습니다.
+              </TooltipText>
+            </TooltipContainer>
+          )}
+          <AddMarkerButton
+            onPress={async () => {
+              if (showTooltip) {
+                setShowTooltip(false);
+                hasSeenMapTooltip.set("true");
+              }
+              // Handle adding a new marker at the center location
+              const { latitude, longitude } = center;
+              const place = await getReverseGeocoding(latitude, longitude);
+              const newMarker: LocationInfo = {
+                name: place?.name ?? `사용자 지정 ${departure ? "도착지" : "출발지"}`,
+                roadAddressName: place?.roadAddressName,
+                x: longitude,
+                y: latitude,
+              };
+              if (departure) {
+                setDestination!(newMarker);
+              } else {
+                setDeparture!(newMarker);
+              }
+            }}
+          >
+            <IconSymbol name="mappin.circle.fill" size={30} color="white" />
+          </AddMarkerButton>
+        </>
       )}
     </Container>
   );
@@ -180,4 +217,20 @@ const AddMarkerButton = styled(TouchableOpacity)({
   padding: 10,
   alignItems: "center",
   justifyContent: "center",
+});
+
+const TooltipContainer = styled(TouchableOpacity)({
+  position: "absolute",
+  bottom: 80,
+  right: 20,
+  backgroundColor: "rgba(0, 0, 0, 0.7)",
+  padding: 10,
+  borderRadius: 8,
+  maxWidth: 250,
+  zIndex: 20,
+});
+
+const TooltipText = styled.Text({
+  color: "white",
+  fontSize: 14,
 });

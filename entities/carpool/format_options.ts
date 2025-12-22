@@ -28,8 +28,9 @@ export const formatOptions = (options: Party["options"], hostGender?: "MALE" | "
     if (options[option.name]) {
       result += `#${option.ko}`;
     }
-    if (option.name === "sameGenderOnly" && options[option.name] && hostGender) {
-      result += hostGender === "MALE" ? "남성만️ " : "여성만️ ";
+    if (option.name === "sameGenderOnly" && options[option.name]) {
+      if (hostGender) result += hostGender === "MALE" ? "남성만️ " : "여성만️ ";
+      else result += "동성만️ ";
     }
   }
   if (result === "") return "";

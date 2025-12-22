@@ -37,7 +37,7 @@ export default function Recheck() {
     setModalVisible(false);
 
     if (partyId) {
-      joinParty(partyId, () => handleSuccess(partyId));
+      joinParty(partyId, () => handleSuccess(String(partyId)));
     } else {
       createParty({
         when2go,
@@ -48,7 +48,7 @@ export default function Recheck() {
         options,
         comment,
         setPartyState,
-        onSuccess: (newPartyId) => handleSuccess(newPartyId),
+        onSuccess: (newPartyId) => handleSuccess(String(newPartyId)),
       });
     }
   };

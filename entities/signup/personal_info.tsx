@@ -3,9 +3,8 @@ import { Pressable, Text } from "react-native";
 import styled from "styled-components/native";
 
 import { ColContainer } from "@/entities/common/components/containers";
+import InputContainer from "@/entities/common/components/input_container";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
-
-import InputContainer from "./input_container";
 
 /**
  * @returns (회원가입 페이지) 비밀번호, 닉네임, 성별 입력 필드

@@ -1,4 +1,4 @@
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, ImageBackground } from "react-native";
 import styled from "styled-components/native";
@@ -67,6 +67,9 @@ export default function Signin() {
               />
             </InputBox>
           </InputsWrapper>
+          <ForgotPasswordButton onPress={() => router.push("/reset_password")}>
+            <ForgotPasswordText>비밀번호를 잊으셨나요?</ForgotPasswordText>
+          </ForgotPasswordButton>
           <LoginButton onPress={() => handleSignin(email, password, () => router.push("/"))}>
             <LoginButtonText>로그인</LoginButtonText>
           </LoginButton>
@@ -192,4 +195,16 @@ const SignupButtonText = styled.Text({
   color: "#333",
   fontSize: 16,
   fontWeight: "600",
+});
+
+const ForgotPasswordButton = styled.TouchableOpacity({
+  alignSelf: "flex-end",
+  marginTop: -10,
+  marginBottom: 10,
+});
+
+const ForgotPasswordText = styled.Text({
+  color: "#333",
+  fontSize: 14,
+  textDecorationLine: "underline",
 });

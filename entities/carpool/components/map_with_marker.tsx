@@ -1,3 +1,4 @@
+import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -38,13 +39,14 @@ export default function MapWithMarker({
     longitude: 127.744994,
   });
   const [showTooltip, setShowTooltip] = useState(false);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    if (markers.length > 0 && selectedIndex === undefined) {
+    if (isFocused && markers.length > 0 && selectedIndex === undefined) {
       // 선택된 마커가 없고, 마커가 하나 이상일 때 첫 번째 마커를 선택
       setSelectedIndex!(0);
     }
-    if (markers.length > 0 && selectedIndex !== undefined && markers[selectedIndex]) {
+    if (isFocused && markers.length > 0 && selectedIndex !== undefined && markers[selectedIndex]) {
       // 마커가 선택되었을 때,
       // 해당 마커로 지도를 이동
       const selectedMarker = markers[selectedIndex];
@@ -58,7 +60,11 @@ export default function MapWithMarker({
         1000,
       );
     }
-  }, [markers, selectedIndex, setSelectedIndex]);
+  }, [markers, selectedIndex, setSelectedIndex, isFocused]);
+
+  if (!isFocused) {
+    return <Container />;
+  }
 
   return (
     <Container>
@@ -66,8 +72,8 @@ export default function MapWithMarker({
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         initialRegion={{
-          latitude: 37.868897,
-          longitude: 127.744994,
+          latitude: center.latitude,
+          longitude: center.longitude,
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         }}

@@ -1,7 +1,7 @@
 import messaging, { RemoteMessage } from "@react-native-firebase/messaging";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
-import { Stack, StackScreenProps, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect } from "react";
 import { InteractionManager, PermissionsAndroid, Platform } from "react-native";
@@ -9,13 +9,20 @@ import { InteractionManager, PermissionsAndroid, Platform } from "react-native";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import { authCode } from "@/entities/common/util/storage";
 
+/* ================= React Query ================= */
+
 const queryClient = new QueryClient();
 
-type ChatPageParams = { roomId?: string; startPlace?: string; endPlace?: string };
+/* ================= Types ================= */
 
-const DEVICE_ID_KEY = "my_app_device_id_v1";
+type NotificationData = {
+  type?: string;
+  partyId?: string | number;
+};
 
 /* ================= Device ID ================= */
+
+const DEVICE_ID_KEY = "my_app_device_id_v1";
 
 async function getDeviceIdOrGenerate() {
   const stored = await SecureStore.getItemAsync(DEVICE_ID_KEY);
@@ -26,134 +33,170 @@ async function getDeviceIdOrGenerate() {
   return newId;
 }
 
+/* ================= Utils ================= */
+
+/** FCM RemoteMessage 파서 (Android + iOS APNS flatten 대응) */
+function extractFromRemoteMessage(msg: RemoteMessage | null): NotificationData | null {
+  if (!msg) return null;
+
+  // Android / 정상 FCM
+  if (msg.data?.partyId) {
+    return {
+      type: msg.data.type,
+      partyId: msg.data.partyId,
+    };
+  }
+
+  // iOS APNS flatten 대응
+  const flattened = msg as unknown as {
+    partyId?: string | number;
+    type?: string;
+  };
+
+  if (flattened.partyId) {
+    return {
+      type: flattened.type,
+      partyId: flattened.partyId,
+    };
+  }
+
+  return null;
+}
+
+/** Expo foreground notification click 파서 */
+function extractFromExpoResponse(res: Notifications.NotificationResponse): NotificationData | null {
+  const data = res.notification.request.content.data;
+  if (!data) return null;
+
+  return {
+    type: (data as NotificationData).type,
+    partyId: (data as NotificationData).partyId,
+  };
+}
+
 /* ================= FCM Token Register ================= */
 
 async function registerFcmToken(token: string) {
   try {
     const deviceId = await getDeviceIdOrGenerate();
-    const body = {
-      fcmToken: token,
-      platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
-      deviceId,
-      appVersion: "1.0.0",
-      bundleOrPackage: "com.myapp",
-    };
-
     const auth = await authCode.get();
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (auth) headers["Authorization"] = `Bearer ${auth}`;
+
+    console.log("[FCM] register token:", token);
 
     await fetch("https://knu-carpool.store/api/fcm/token", {
       method: "POST",
-      headers,
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        ...(auth ? { Authorization: `Bearer ${auth}` } : {}),
+      },
+      body: JSON.stringify({
+        fcmToken: token,
+        platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
+        deviceId,
+        appVersion: "1.0.0",
+        bundleOrPackage: "com.myapp",
+      }),
     });
-  } catch {
-    // ignore
+  } catch (e) {
+    console.log("[FCM] token register error", e);
   }
 }
 
-/* ================= 알림 데이터 타입 ================= */
+/* ================= 알림 데이터 처리 ================= */
 
-type NotificationData = {
-  type?: string;
-  partyId?: string | number;
-};
+function handleNotificationData(data: NotificationData | null, source: string) {
+  console.log(`[FCM][${source}] parsed data =`, data);
 
-/* ================= 공통 알림 클릭 처리 ================= */
-
-const navigateFromNotification = (
-  remoteData: NotificationData | null | undefined,
-  router: ReturnType<typeof useRouter>,
-  setPartyStore: (state: { partyId: number | null }) => void,
-) => {
-  if (remoteData?.type === "CHAT_MESSAGE" && remoteData.partyId !== undefined) {
-    const partyId = Number(remoteData.partyId);
-
-    setPartyStore({ partyId });
-
-    InteractionManager.runAfterInteractions(() => {
-      router.push({
-        pathname: "/chatpage",
-        params: { roomId: partyId },
-      });
-    });
+  if (data?.type === "CHAT_MESSAGE" && data.partyId !== undefined) {
+    const roomId = Number(data.partyId);
+    console.log(`[FCM][${source}] setPendingChatRoomId →`, roomId);
+    usePartyStore.getState().setPendingChatRoomId(roomId);
   }
-};
+}
 
 /* ================= FCM 초기화 ================= */
 
-const initializeFCM = async (
-  router: ReturnType<typeof useRouter>,
-  setPartyStore: (state: { partyId: number | null }) => void,
-) => {
-  /* 1️⃣ 권한 요청 */
+async function initializeFCM() {
   if (Platform.OS === "ios") {
-    await messaging().requestPermission({ alert: true, sound: true, badge: true });
+    await messaging().requestPermission();
   }
 
   if (Platform.OS === "android" && Platform.Version >= 33) {
     await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
   }
 
-  /* 2️⃣ Android 채널 */
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("fcm_default_channel", {
       name: "Default Channel",
       importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: null,
-      sound: null,
     });
   }
 
-  /* 3️⃣ 토큰 등록 */
   const token = await messaging().getToken();
   if (token) await registerFcmToken(token);
 
-  /* 4️⃣ 토큰 갱신 */
-  const unsubscribeTokenRefresh = messaging().onTokenRefresh(registerFcmToken);
+  const unsubToken = messaging().onTokenRefresh(registerFcmToken);
 
-  /* 5️⃣ 포그라운드 수신 */
-  const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
-    const title = remoteMessage.notification?.title || remoteMessage.data?.title || "새 알림";
+  /* 🔥 포그라운드 수신 */
+  const unsubMessage = messaging().onMessage(async (msg) => {
+    console.log("[FCM][onMessage] received", msg.data);
 
-    const body = remoteMessage.notification?.body || remoteMessage.data?.body || "";
+    const data = extractFromRemoteMessage(msg);
+    const incomingRoomId = data?.partyId !== undefined ? Number(data.partyId) : null;
+
+    const { currentChatRoomId } = usePartyStore.getState();
+
+    // 채팅방 내부면 알림 차단
+    if (
+      data?.type === "CHAT_MESSAGE" &&
+      currentChatRoomId !== null &&
+      incomingRoomId === currentChatRoomId
+    ) {
+      console.log("[FCM][onMessage] suppressed (already in chat)");
+      return;
+    }
+
+    // iOS 포그라운드에서는 로컬 알림 생성 안 함
+    if (Platform.OS === "ios") {
+      console.log("[FCM][onMessage] ios foreground - skip");
+      return;
+    }
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title,
-        body,
-        data: remoteMessage.data,
-        sound: false,
-        vibration: false,
-        channelId: "fcm_default_channel",
+        title: msg.notification?.title ?? "새 알림",
+        body: msg.notification?.body ?? "",
+        data: msg.data,
       },
-      trigger: { seconds: 1 },
+      trigger: null,
     });
   });
 
-  /* 6️⃣ 백그라운드 클릭 */
-  const unsubscribeOpened = messaging().onNotificationOpenedApp(
-    (remoteMessage: RemoteMessage | null) => {
-      navigateFromNotification(remoteMessage?.data as NotificationData, router, setPartyStore);
-    },
-  );
+  /* 📲 백그라운드 클릭 */
+  const unsubOpened = messaging().onNotificationOpenedApp((msg: RemoteMessage | null) => {
+    console.log("[FCM][onNotificationOpenedApp]");
+    const data = extractFromRemoteMessage(msg);
+    handleNotificationData(data, "background");
+  });
 
-  /* 7️⃣ 종료 상태 클릭 */
+  /* 🧊 종료 상태 클릭 */
   messaging()
     .getInitialNotification()
-    .then((remoteMessage) => {
-      navigateFromNotification(remoteMessage?.data as NotificationData, router, setPartyStore);
+    .then((msg) => {
+      if (!msg) return;
+      console.log("[FCM][getInitialNotification]");
+      const data = extractFromRemoteMessage(msg);
+      handleNotificationData(data, "quit");
     });
 
   return () => {
-    unsubscribeTokenRefresh();
-    unsubscribeOnMessage();
-    unsubscribeOpened();
+    unsubToken();
+    unsubMessage();
+    unsubOpened();
   };
-};
+}
 
-/* ================= Expo 알림 설정 ================= */
+/* ================= Expo Notification Handler ================= */
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -167,40 +210,50 @@ Notifications.setNotificationHandler({
 
 export default function RootLayout() {
   const router = useRouter();
-  const setPartyStore = usePartyStore((state) => state.setPartyState);
+
+  const pendingChatRoomId = usePartyStore((state) => state.pendingChatRoomId);
+  const clearPendingChatRoomId = usePartyStore((state) => state.clearPendingChatRoomId);
+  const setPartyState = usePartyStore((state) => state.setPartyState);
 
   /* FCM 초기화 */
   useEffect(() => {
     let cleanup: (() => void) | undefined;
+    initializeFCM().then((c) => (cleanup = c));
+    return () => cleanup?.();
+  }, []);
 
-    initializeFCM(router, setPartyStore).then((c) => {
-      cleanup = c;
-    });
-
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, [router, setPartyStore]);
-
-  /* Expo 알림 클릭 (포그라운드 iOS 필수) */
+  /* iOS 포그라운드 알림 클릭 */
   useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data as NotificationData | undefined;
-
-      navigateFromNotification(data, router, setPartyStore);
+    const sub = Notifications.addNotificationResponseReceivedListener((res) => {
+      console.log("[Expo][notification click]");
+      const data = extractFromExpoResponse(res);
+      handleNotificationData(data, "expo-foreground");
     });
 
     return () => sub.remove();
-  }, [router, setPartyStore]);
+  }, []);
+
+  /* 🚀 실제 라우팅 */
+  useEffect(() => {
+    if (!pendingChatRoomId) return;
+
+    console.log("[ROUTER] navigate to chatpage:", pendingChatRoomId);
+
+    InteractionManager.runAfterInteractions(() => {
+      setPartyState({ partyId: pendingChatRoomId });
+
+      router.push({
+        pathname: "/chatpage",
+        params: { roomId: pendingChatRoomId },
+      });
+
+      clearPendingChatRoomId();
+    });
+  }, [pendingChatRoomId, router, clearPendingChatRoomId, setPartyState]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack
-        screenOptions={{
-          contentStyle: { backgroundColor: "#fff" },
-          headerBackButtonDisplayMode: "minimal",
-        }}
-      >
+      <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="signup" options={{ title: "회원가입" }} />
         <Stack.Screen name="signin" options={{ title: "로그인" }} />
@@ -210,21 +263,7 @@ export default function RootLayout() {
         <Stack.Screen name="carpool/recruit" options={{ title: "카풀 모집하기" }} />
         <Stack.Screen name="carpool/recheck" options={{ title: "설정확인" }} />
         <Stack.Screen name="carpool/find_track" options={{ title: "경로 설정" }} />
-        <Stack.Screen
-          name="chatpage"
-          options={({ route }: StackScreenProps<{ chatpage: ChatPageParams }>["route"]) => {
-            const start = route?.params?.startPlace || "출발지";
-            const end = route?.params?.endPlace || "목적지";
-
-            return {
-              title: route?.params?.roomId ? `채팅방 ${route.params.roomId}` : `${start} → ${end}`,
-              headerTintColor: "#000",
-              headerStyle: { backgroundColor: "#f2f2f2" },
-              headerTitleAlign: "left",
-              headerTitleStyle: { fontSize: 15 },
-            };
-          }}
-        />
+        <Stack.Screen name="chatpage" />
       </Stack>
     </QueryClientProvider>
   );

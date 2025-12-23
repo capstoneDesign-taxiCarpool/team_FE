@@ -29,6 +29,7 @@ const MAPPING = {
   gearshape: "settings",
   trash: "delete",
   "mappin.circle.fill": "add-location-alt",
+  "questionmark.circle": "help-outline",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

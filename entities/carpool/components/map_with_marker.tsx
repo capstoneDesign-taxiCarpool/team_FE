@@ -4,7 +4,6 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import styled from "styled-components/native";
 
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
-import { hasSeenMapTooltip } from "@/entities/common/util/storage";
 import { Colors } from "@/entities/common/util/style_var";
 
 import { getReverseGeocoding } from "../api";
@@ -39,12 +38,6 @@ export default function MapWithMarker({
     longitude: 127.744994,
   });
   const [showTooltip, setShowTooltip] = useState(false);
-
-  useEffect(() => {
-    hasSeenMapTooltip.get().then((val) => {
-      if (!val) setShowTooltip(true);
-    });
-  }, []);
 
   useEffect(() => {
     if (markers.length > 0 && selectedIndex === undefined) {
@@ -154,24 +147,18 @@ export default function MapWithMarker({
       {showAddMarkerButton && (
         <>
           {showTooltip && (
-            <TooltipContainer
-              onPress={() => {
-                setShowTooltip(false);
-                hasSeenMapTooltip.set("true");
-              }}
-            >
+            <TooltipContainer>
               <TooltipText>
-                오른쪽의 버튼을 눌러 마커를 추가할 수 있습니다. 추가된 마커는 꾹 눌러 원하는 위치로
-                이동시킬 수 있습니다.
+                상단의 주소입력창에서 장소를 검색하거나, 아래 버튼을 눌러 마커를 추가할 수 있습니다.
+                추가된 마커는 꾹 눌러 원하는 위치로 이동시킬 수 있습니다.
               </TooltipText>
             </TooltipContainer>
           )}
+          <HelpButton onPress={() => setShowTooltip((prev) => !prev)}>
+            <IconSymbol name="questionmark.circle" size={30} color="white" />
+          </HelpButton>
           <AddMarkerButton
             onPress={async () => {
-              if (showTooltip) {
-                setShowTooltip(false);
-                hasSeenMapTooltip.set("true");
-              }
               // Handle adding a new marker at the center location
               const { latitude, longitude } = center;
               const place = await getReverseGeocoding(latitude, longitude);
@@ -219,15 +206,27 @@ const AddMarkerButton = styled(TouchableOpacity)({
   justifyContent: "center",
 });
 
-const TooltipContainer = styled(TouchableOpacity)({
+const TooltipContainer = styled.View({
   position: "absolute",
   bottom: 80,
-  right: 20,
+  right: 80,
   backgroundColor: "rgba(0, 0, 0, 0.7)",
   padding: 10,
   borderRadius: 8,
   maxWidth: 250,
   zIndex: 20,
+});
+
+const HelpButton = styled(TouchableOpacity)({
+  position: "absolute",
+  bottom: 80,
+  right: 20,
+  backgroundColor: Colors.darkGray,
+  zIndex: 10,
+  borderRadius: 30,
+  padding: 10,
+  alignItems: "center",
+  justifyContent: "center",
 });
 
 const TooltipText = styled.Text({

@@ -3,10 +3,9 @@ import { Alert, TextInput } from "react-native";
 import styled from "styled-components/native";
 
 import BasicButton from "@/entities/common/components/button_basic";
+import InputContainer from "@/entities/common/components/input_container";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
-
-import InputContainer from "./input_container";
 
 type CheckState =
   | "before_send_code"

@@ -7,13 +7,15 @@ export default function InputContainer({
   title,
   children,
   handleClick,
+  variant = "underline",
 }: {
   title: string;
   children: React.ReactNode;
   handleClick?: () => void;
+  variant?: "underline" | "box";
 }) {
   return (
-    <Container onPress={handleClick}>
+    <Container onPress={handleClick} variant={variant}>
       <Label title={title} />
       <InputGroup>
         <InputGroupDiv>{children}</InputGroupDiv>
@@ -22,15 +24,24 @@ export default function InputContainer({
   );
 }
 
-const Container = styled.Pressable({
+const Container = styled.Pressable<{ variant: "underline" | "box" }>(({ variant }) => ({
   flexDirection: "row",
   alignItems: "center",
   width: "100%",
   gap: 10,
   paddingVertical: 8,
-  borderBottomColor: Colors.darkGray,
-  borderBottomWidth: 1,
-});
+  ...(variant === "underline"
+    ? {
+        borderBottomColor: Colors.darkGray,
+        borderBottomWidth: 1,
+      }
+    : {
+        backgroundColor: Colors.white,
+        borderRadius: 30,
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+      }),
+}));
 
 const InputGroup = styled.View({
   flexGrow: 1,

@@ -1,7 +1,13 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
-import { format, isAfter, isToday, parseISO } from "date-fns";
+import {
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  isAfter,
+  parseISO,
+} from "date-fns";
 import { setBadgeCountAsync } from "expo-notifications";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -16,8 +22,10 @@ import {
 } from "react-native";
 import styled from "styled-components/native";
 
+import { ColContainer } from "@/entities/common/components/containers";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { authCode } from "@/entities/common/util/storage";
+import { Colors } from "@/entities/common/util/style_var";
 
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
@@ -118,9 +126,11 @@ export default function HomeScreen() {
   });
 
   const formatScheduleDateTime = (date: Date) => {
-    const dateLabel = isToday(date) ? "오늘" : format(date, "MM-dd");
-    const timeLabel = format(date, "HH:mm");
-    return `${dateLabel} ${timeLabel}에 예정되어 있습니다.`;
+    const now = new Date();
+    const dateDiff = differenceInDays(date, now);
+    const hours = differenceInHours(date, now) % 24;
+    const minutes = differenceInMinutes(date, now) % 60;
+    return `${dateDiff}일 ${hours}시간 ${minutes}분`;
   };
 
   const handleSchedulePress = () => {
@@ -151,99 +161,107 @@ export default function HomeScreen() {
   };
 
   return (
-    <Container>
-      <ReportOrSuggestButton onPress={openReportModal}>
-        <Ionicons name="alert-circle" size={24} color="#fff" />
-      </ReportOrSuggestButton>
-
-      <ScheduleBox
-        onPress={handleSchedulePress}
-        disabled={isAuthChecking || (isLoggedIn && !schedule)}
+    <>
+      <TopContainer />
+      <ColContainer
+        style={{ padding: 16, alignItems: "stretch", justifyContent: "center", flex: 1 }}
       >
-        {isAuthChecking ? (
-          <BoxText>인증 정보를 확인 중입니다...</BoxText>
-        ) : !isLoggedIn ? (
-          <BoxText>로그인 후 이용해 주세요!</BoxText>
-        ) : isFetching ? (
-          <BoxText>불러오는 중...</BoxText>
-        ) : !schedule ? (
-          <BoxText>현재 카풀 일정이 없습니다!</BoxText>
-        ) : (
-          <>
-            <BoxText>
-              {schedule.departure} &gt; {schedule.destination}
-            </BoxText>
-            <BoxText>{formatScheduleDateTime(schedule.startDateTime)}</BoxText>
-          </>
-        )}
-      </ScheduleBox>
+        <ReportOrSuggestButton onPress={openReportModal}>
+          <Ionicons name="alert-circle" size={24} color="#fff" />
+        </ReportOrSuggestButton>
 
-      <PartyBox source={partyMakeImage}>
-        <OverlayTouchable
-          onPress={() => (isLoggedIn ? router.push("/carpool/recruit") : router.push("/signin"))}
-          disabled={isAuthChecking} // 🟢 로딩 중 비활성화
+        <ScheduleBox
+          onPress={handleSchedulePress}
+          disabled={isAuthChecking || (isLoggedIn && !schedule)}
         >
-          <IconContainer>
-            <Feather name="plus" size={30} color="#333333" />
-          </IconContainer>
-          <BoxText>카풀 생성하기</BoxText>
-          <BoxSmallText>직접 카풀을 만들어보세요!</BoxSmallText>
-        </OverlayTouchable>
-      </PartyBox>
+          {isAuthChecking ? (
+            <BoxText>인증 정보를 확인 중입니다...</BoxText>
+          ) : !isLoggedIn ? (
+            <BoxText>로그인 후 이용해 주세요!</BoxText>
+          ) : isFetching ? (
+            <BoxText>불러오는 중...</BoxText>
+          ) : !schedule ? (
+            <BoxText>현재 카풀 일정이 없습니다!</BoxText>
+          ) : (
+            <>
+              <ColoedBoxText color={Colors.main}>
+                {schedule.departure} &gt; {schedule.destination}
+              </ColoedBoxText>
+              <ColoedBoxText color={Colors.side}>
+                {formatScheduleDateTime(schedule.startDateTime)}
+                <BoxText> 후에 출발합니다!</BoxText>
+              </ColoedBoxText>
+            </>
+          )}
+        </ScheduleBox>
 
-      <PartyBox source={partyJoinImage}>
-        <OverlayTouchable
-          onPress={() => (isLoggedIn ? router.push("/carpool/join") : router.push("/signin"))}
-          disabled={isAuthChecking} // 🟢 로딩 중 비활성화
+        <PartyBox source={partyMakeImage}>
+          <OverlayTouchable
+            onPress={() => (isLoggedIn ? router.push("/carpool/recruit") : router.push("/signin"))}
+            disabled={isAuthChecking} // 🟢 로딩 중 비활성화
+          >
+            <IconContainer>
+              <Feather name="plus" size={30} color="#333333" />
+            </IconContainer>
+            <BoxText>카풀 생성하기</BoxText>
+            <BoxSmallText>직접 카풀을 만들어보세요!</BoxSmallText>
+          </OverlayTouchable>
+        </PartyBox>
+
+        <PartyBox source={partyJoinImage}>
+          <OverlayTouchable
+            onPress={() => (isLoggedIn ? router.push("/carpool/join") : router.push("/signin"))}
+            disabled={isAuthChecking} // 🟢 로딩 중 비활성화
+          >
+            <IconContainer>
+              <Ionicons name="search" size={30} color="#333333" />
+            </IconContainer>
+            <BoxText>카풀 참여하기</BoxText>
+            <BoxSmallText>다른 카풀에 참여 해보세요!</BoxSmallText>
+          </OverlayTouchable>
+        </PartyBox>
+
+        {/* 🟢 신고/건의 모달 렌더링 */}
+        <Modal
+          visible={isReportModalVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setIsReportModalVisible(false)}
         >
-          <IconContainer>
-            <Ionicons name="search" size={30} color="#333333" />
-          </IconContainer>
-          <BoxText>카풀 참여하기</BoxText>
-          <BoxSmallText>다른 카풀에 참여 해보세요!</BoxSmallText>
-        </OverlayTouchable>
-      </PartyBox>
+          <ModalOverlay>
+            <ModalContainer>
+              <ModalTitle>신고 및 건의</ModalTitle>
+              <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
+                해당 버튼을 누르면 외부 폼으로 이동합니다.
+              </Text>
 
-      {/* 🟢 신고/건의 모달 렌더링 */}
-      <Modal
-        visible={isReportModalVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setIsReportModalVisible(false)}
-      >
-        <ModalOverlay>
-          <ModalContainer>
-            <ModalTitle>신고 및 건의</ModalTitle>
-            <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
-              해당 버튼을 누르면 외부 폼으로 이동합니다.
-            </Text>
+              <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons name="megaphone" size={20} color="#fff" style={{ marginRight: 8 }} />
+                  <ReportModalButtonText>신고하기</ReportModalButtonText>
+                </View>
+              </ReportModalButton>
 
-            <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Ionicons name="megaphone" size={20} color="#fff" style={{ marginRight: 8 }} />
-                <ReportModalButtonText>신고하기</ReportModalButtonText>
-              </View>
-            </ReportModalButton>
+              <ReportModalButton bgColor="#2ecc71" onPress={() => handleOpenLink(SUGGESTION_URL)}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons
+                    name="chatbox-ellipses"
+                    size={20}
+                    color="#fff"
+                    style={{ marginRight: 8 }}
+                  />
+                  <ReportModalButtonText>건의하기</ReportModalButtonText>
+                </View>
+              </ReportModalButton>
 
-            <ReportModalButton bgColor="#2ecc71" onPress={() => handleOpenLink(SUGGESTION_URL)}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Ionicons
-                  name="chatbox-ellipses"
-                  size={20}
-                  color="#fff"
-                  style={{ marginRight: 8 }}
-                />
-                <ReportModalButtonText>건의하기</ReportModalButtonText>
-              </View>
-            </ReportModalButton>
-
-            <ReportModalButton bgColor="#aaa" onPress={() => setIsReportModalVisible(false)}>
-              <ReportModalButtonText>닫기</ReportModalButtonText>
-            </ReportModalButton>
-          </ModalContainer>
-        </ModalOverlay>
-      </Modal>
-    </Container>
+              <ReportModalButton bgColor="#aaa" onPress={() => setIsReportModalVisible(false)}>
+                <ReportModalButtonText>닫기</ReportModalButtonText>
+              </ReportModalButton>
+            </ModalContainer>
+          </ModalOverlay>
+        </Modal>
+      </ColContainer>
+    </>
   );
 }
 
@@ -268,30 +286,28 @@ const ModalTitle = styled(Text)({
   marginBottom: 12,
 });
 
-// -------------------------------------------------------------
-// 기존 스타일 컴포넌트
-// -------------------------------------------------------------
-const Container = styled.View({
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  padding: 16,
-});
-
 const ScheduleBox = styled.TouchableOpacity({
-  width: 400,
-  height: 80,
-  backgroundColor: "rgb(148, 200, 230)",
-  borderRadius: 40,
-  justifyContent: "center",
+  backgroundColor: Colors.white,
+  display: "flex",
+  justifyContent: "start",
   alignItems: "center",
   marginBottom: 16,
+  borderRadius: 50,
+  padding: "20px",
+});
+const TopContainer = styled.View({
+  position: "absolute",
+  height: "77%",
+  width: "180%",
+  borderRadius: 300,
+  top: "-53%",
+  left: "-40%",
+  backgroundColor: "rgba(36, 51, 148, 0.3)",
 });
 
 const PartyBox = styled(ImageBackground).attrs({
   imageStyle: { borderRadius: 40, opacity: 0.5 },
 })({
-  width: 400,
   height: 200,
   marginBottom: 16,
   overflow: "hidden",
@@ -314,6 +330,12 @@ const BoxText = styled.Text({
   color: "#333333",
   textAlign: "center",
 });
+const ColoedBoxText = styled.Text<{ color: string }>(({ color }) => ({
+  fontSize: 20,
+  fontWeight: "bold",
+  color: color,
+  textAlign: "center",
+}));
 
 const BoxSmallText = styled.Text({
   fontSize: 12,

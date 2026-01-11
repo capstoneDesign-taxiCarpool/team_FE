@@ -129,6 +129,7 @@ export default function ExtraSetting() {
 하고 싶은 말(20자 이내)`}
             value={comment}
             onChangeText={(v) => setPartyState({ comment: v })}
+            placeholderTextColor="#777"
           />
         }
       />

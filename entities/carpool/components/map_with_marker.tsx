@@ -38,7 +38,6 @@ export default function MapWithMarker({
     latitude: 37.868897,
     longitude: 127.744994,
   });
-  const [showTooltip, setShowTooltip] = useState(false);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -82,6 +81,21 @@ export default function MapWithMarker({
         onRegionChangeComplete={(region) =>
           setCenter({ latitude: region.latitude, longitude: region.longitude })
         }
+        onLongPress={async (event) => {
+          const { latitude, longitude } = event.nativeEvent.coordinate;
+          const place = await getReverseGeocoding(latitude, longitude);
+          const newMarker: LocationInfo = {
+            name: place?.name ?? `사용자 지정 ${departure ? "도착지" : "출발지"}`,
+            roadAddressName: place?.roadAddressName,
+            x: longitude,
+            y: latitude,
+          };
+          if (departure) {
+            setDestination!(newMarker);
+          } else {
+            setDeparture!(newMarker);
+          }
+        }}
       >
         {markers.map((loc, index) => (
           <Marker
@@ -152,17 +166,6 @@ export default function MapWithMarker({
       </Map>
       {showAddMarkerButton && (
         <>
-          {showTooltip && (
-            <TooltipContainer>
-              <TooltipText>
-                상단의 주소입력창에서 장소를 검색하거나, 아래 버튼을 눌러 마커를 추가할 수 있습니다.
-                추가된 마커는 꾹 눌러 원하는 위치로 이동시킬 수 있습니다.
-              </TooltipText>
-            </TooltipContainer>
-          )}
-          <HelpButton onPress={() => setShowTooltip((prev) => !prev)}>
-            <IconSymbol name="questionmark.circle" size={30} color="white" />
-          </HelpButton>
           <AddMarkerButton
             onPress={async () => {
               // Handle adding a new marker at the center location
@@ -210,32 +213,4 @@ const AddMarkerButton = styled(TouchableOpacity)({
   padding: 10,
   alignItems: "center",
   justifyContent: "center",
-});
-
-const TooltipContainer = styled.View({
-  position: "absolute",
-  bottom: 80,
-  right: 80,
-  backgroundColor: "rgba(0, 0, 0, 0.7)",
-  padding: 10,
-  borderRadius: 8,
-  maxWidth: 250,
-  zIndex: 20,
-});
-
-const HelpButton = styled(TouchableOpacity)({
-  position: "absolute",
-  bottom: 80,
-  right: 20,
-  backgroundColor: Colors.darkGray,
-  zIndex: 10,
-  borderRadius: 30,
-  padding: 10,
-  alignItems: "center",
-  justifyContent: "center",
-});
-
-const TooltipText = styled.Text({
-  color: "white",
-  fontSize: 14,
 });

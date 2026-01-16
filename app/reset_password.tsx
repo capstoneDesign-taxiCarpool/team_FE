@@ -1,14 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { 
-  Alert, 
-  Keyboard, 
-  KeyboardAvoidingView, 
-  Platform, 
-  Pressable, 
-  ActivityIndicator, 
-  Modal, 
-  View 
+import {
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
 } from "react-native";
 import styled from "styled-components/native";
 

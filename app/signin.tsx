@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert, ImageBackground } from "react-native";
+import { useRef, useState } from "react";
+import { Alert, ImageBackground, Keyboard, Pressable, TextInput } from "react-native";
 import styled from "styled-components/native";
 
 import { fetchInstance } from "@/entities/common/util/axios_instance";
@@ -28,56 +28,101 @@ export default function Signin() {
   const [password, setPassword] = useState<string>("");
   const router = useRouter();
 
+  // ✅ Next 누르면 비밀번호로 포커스 이동
+  const passwordRef = useRef<TextInput>(null);
+
   return (
     <Background source={{ uri: "여기에 경로 지정" }} resizeMode="cover">
-      <Container>
-        <LoginContainer>
-          <NoticeText>
-            <BoldText>
-              강원대학교 학생만을 위한{"\n"}
-              택시 카풀 서비스,{"\n"}
-            </BoldText>
-            강택을 만나보세요.
-          </NoticeText>
+      <Pressable style={{ flex: 1, width: "100%" }} onPress={Keyboard.dismiss}>
+        <Container>
+          <LoginContainer>
+            <NoticeText>
+              <BoldText>
+                강원대학교 학생만을 위한{"\n"}
+                택시 카풀 서비스,{"\n"}
+              </BoldText>
+              강택을 만나보세요.
+            </NoticeText>
 
-          <InputsWrapper>
-            <InputBox>
-              <Label>강원대 메일</Label>
-              <StyledInputRow>
+            <InputsWrapper>
+              <InputBox>
+                <Label>강원대 메일</Label>
+                <StyledInputRow>
+                  <StyledInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="이메일을 입력하세요"
+                    placeholderTextColor="#888"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => {
+                      // ✅ "다음"을 누르면 키보드를 내리는 게 아니라 비밀번호로 이동
+                      passwordRef.current?.focus();
+                    }}
+                    onPressIn={(e) => e.stopPropagation?.()}
+                  />
+                  <MailText>@kangwon.ac.kr</MailText>
+                </StyledInputRow>
+              </InputBox>
+
+              <InputBox>
+                <Label>비밀번호</Label>
                 <StyledInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="이메일을 입력하세요"
-                  placeholderTextColor="#888"
+                  ref={passwordRef}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
                   autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="비밀번호를 입력하세요"
+                  placeholderTextColor="#888"
+                  returnKeyType="done"
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
+                  onPressIn={(e) => e.stopPropagation?.()}
                 />
-                <MailText>@kangwon.ac.kr</MailText>
-              </StyledInputRow>
-            </InputBox>
+              </InputBox>
+            </InputsWrapper>
 
-            <InputBox>
-              <Label>비밀번호</Label>
-              <StyledInput
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                placeholder="비밀번호를 입력하세요"
-                placeholderTextColor="#888"
-              />
-            </InputBox>
-          </InputsWrapper>
-          <ForgotPasswordButton onPress={() => router.push("/reset_password")}>
-            <ForgotPasswordText>비밀번호를 잊으셨나요?</ForgotPasswordText>
-          </ForgotPasswordButton>
-          <LoginButton onPress={() => handleSignin(email, password, () => router.push("/"))}>
-            <LoginButtonText>로그인</LoginButtonText>
-          </LoginButton>
-          <SignupButton onPress={() => router.push("/signup")}>
-            <SignupButtonText>회원가입</SignupButtonText>
-          </SignupButton>
-        </LoginContainer>
-      </Container>
+            <ForgotPasswordButton
+              onPress={(e) => {
+                // @ts-ignore
+                e?.stopPropagation?.();
+                Keyboard.dismiss();
+                router.push("/reset_password");
+              }}
+            >
+              <ForgotPasswordText>비밀번호를 잊으셨나요?</ForgotPasswordText>
+            </ForgotPasswordButton>
+
+            <LoginButton
+              onPress={(e) => {
+                // @ts-ignore
+                e?.stopPropagation?.();
+                Keyboard.dismiss();
+                handleSignin(email, password, () => router.push("/"));
+              }}
+            >
+              <LoginButtonText>로그인</LoginButtonText>
+            </LoginButton>
+
+            <SignupButton
+              onPress={(e) => {
+                // @ts-ignore
+                e?.stopPropagation?.();
+                Keyboard.dismiss();
+                router.push("/signup");
+              }}
+            >
+              <SignupButtonText>회원가입</SignupButtonText>
+            </SignupButton>
+          </LoginContainer>
+        </Container>
+      </Pressable>
     </Background>
   );
 }
@@ -98,6 +143,7 @@ const Container = styled.View({
   paddingHorizontal: 20,
   alignItems: "center",
   justifyContent: "center",
+  flex: 1,
 });
 
 const LoginContainer = styled.View({

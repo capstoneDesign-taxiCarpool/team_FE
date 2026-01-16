@@ -1,6 +1,15 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { 
+  Alert, 
+  Keyboard, 
+  KeyboardAvoidingView, 
+  Platform, 
+  Pressable, 
+  ActivityIndicator, 
+  Modal, 
+  View 
+} from "react-native";
 import styled from "styled-components/native";
 
 import BasicButton from "@/entities/common/components/button_basic";
@@ -22,7 +31,7 @@ export default function ResetPassword() {
       Alert.alert("알림", "이메일을 입력해주세요.");
       return;
     }
-    setLoading(true);
+    setLoading(true); // 로딩 시작
     fetchInstance()
       .post("/api/password/reset-link", { email: email.trim() + "@kangwon.ac.kr" })
       .then(() => {
@@ -33,7 +42,7 @@ export default function ResetPassword() {
         Alert.alert("오류", err.response?.data?.message || "이메일 전송에 실패했습니다.");
       })
       .finally(() => {
-        setLoading(false);
+        setLoading(false); // 로딩 종료
       });
   };
 
@@ -46,7 +55,7 @@ export default function ResetPassword() {
       Alert.alert("알림", "비밀번호가 일치하지 않습니다.");
       return;
     }
-    setLoading(true);
+    setLoading(true); // 로딩 시작
     fetchInstance()
       .patch("/api/password/reset", { token, newPassword: password })
       .then(() => {
@@ -57,86 +66,147 @@ export default function ResetPassword() {
         Alert.alert("오류", err.response?.data?.message || "비밀번호 변경에 실패했습니다.");
       })
       .finally(() => {
-        setLoading(false);
+        setLoading(false); // 로딩 종료
       });
   };
 
   return (
-    <Container behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <LoginContainer>
-        <NoticeText>
-          <BoldText>비밀번호 재설정</BoldText>
-        </NoticeText>
+    <Pressable style={{ flex: 1, width: "100%" }} onPress={Keyboard.dismiss}>
+      {/* ✅ 로딩 오버레이 (API 응답 대기 중 화면 조작 방지) */}
+      <Modal transparent visible={loading} animationType="fade">
+        <LoadingOverlay>
+          <LoadingBox>
+            <ActivityIndicator size="large" color={Colors.main} />
+            <LoadingText>요청 처리 중...</LoadingText>
+          </LoadingBox>
+        </LoadingOverlay>
+      </Modal>
 
-        {!token ? (
-          <>
-            <Description>
-              가입한 이메일 주소를 입력하시면{"\n"}
-              비밀번호 재설정 링크를 보내드립니다.
-            </Description>
-            <InputsWrapper>
-              <InputBox>
-                <Label>강원대 메일</Label>
-                <StyledInputRow>
+      <Container behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <LoginContainer>
+          <NoticeText>
+            <BoldText>비밀번호 재설정</BoldText>
+          </NoticeText>
+
+          {!token ? (
+            <>
+              <Description>
+                가입한 이메일 주소를 입력하시면{"\n"}
+                비밀번호 재설정 링크를 보내드립니다.
+              </Description>
+
+              <InputsWrapper>
+                <InputBox>
+                  <Label>강원대 메일</Label>
+                  <StyledInputRow>
+                    <StyledInput
+                      value={email}
+                      onChangeText={setEmail}
+                      placeholder="이메일을 입력하세요"
+                      placeholderTextColor={Colors.darkGray}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="email-address"
+                      returnKeyType="done"
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                      onPressIn={(e) => e.stopPropagation?.()}
+                    />
+                    <MailText>@kangwon.ac.kr</MailText>
+                  </StyledInputRow>
+                </InputBox>
+              </InputsWrapper>
+
+              <Pressable onPress={(e) => e.stopPropagation?.()}>
+                <BasicButton
+                  title={loading ? "전송 중..." : "인증 메일 보내기"}
+                  icon="paperplane.fill"
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    handleRequestReset();
+                  }}
+                  color={Colors.main}
+                  disabled={loading}
+                />
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Description>새로운 비밀번호를 입력해주세요.</Description>
+
+              <InputsWrapper>
+                <InputBox>
+                  <Label>새 비밀번호</Label>
                   <StyledInput
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="이메일을 입력하세요"
-                    placeholderTextColor={Colors.darkGray}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
                     autoCapitalize="none"
+                    placeholder="비밀번호를 입력하세요"
+                    placeholderTextColor={Colors.darkGray}
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                    onPressIn={(e) => e.stopPropagation?.()}
                   />
-                  <MailText>@kangwon.ac.kr</MailText>
-                </StyledInputRow>
-              </InputBox>
-            </InputsWrapper>
-            <BasicButton
-              title="인증 메일 보내기"
-              icon="paperplane.fill"
-              onPress={handleRequestReset}
-              color={Colors.main}
-              disabled={loading}
-            />
-          </>
-        ) : (
-          <>
-            <Description>새로운 비밀번호를 입력해주세요.</Description>
-            <InputsWrapper>
-              <InputBox>
-                <Label>새 비밀번호</Label>
-                <StyledInput
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  placeholder="비밀번호를 입력하세요"
-                  placeholderTextColor={Colors.darkGray}
+                </InputBox>
+
+                <InputBox>
+                  <Label>비밀번호 확인</Label>
+                  <StyledInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    placeholder="비밀번호를 다시 입력하세요"
+                    placeholderTextColor={Colors.darkGray}
+                    returnKeyType="done"
+                    onSubmitEditing={() => Keyboard.dismiss()}
+                    onPressIn={(e) => e.stopPropagation?.()}
+                  />
+                </InputBox>
+              </InputsWrapper>
+
+              <Pressable onPress={(e) => e.stopPropagation?.()}>
+                <BasicButton
+                  title={loading ? "변경 중..." : "비밀번호 변경하기"}
+                  icon="checkmark"
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    handleResetPassword();
+                  }}
+                  color={Colors.main}
+                  disabled={loading}
                 />
-              </InputBox>
-              <InputBox>
-                <Label>비밀번호 확인</Label>
-                <StyledInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  placeholder="비밀번호를 다시 입력하세요"
-                  placeholderTextColor={Colors.darkGray}
-                />
-              </InputBox>
-            </InputsWrapper>
-            <BasicButton
-              title="비밀번호 변경하기"
-              icon="checkmark"
-              onPress={handleResetPassword}
-              color={Colors.main}
-              disabled={loading}
-            />
-          </>
-        )}
-      </LoginContainer>
-    </Container>
+              </Pressable>
+            </>
+          )}
+        </LoginContainer>
+      </Container>
+    </Pressable>
   );
 }
+
+// --- Styled Components ---
+
+const LoadingOverlay = styled.View({
+  flex: 1,
+  backgroundColor: "rgba(0, 0, 0, 0.4)",
+  justifyContent: "center",
+  alignItems: "center",
+});
+
+const LoadingBox = styled.View({
+  backgroundColor: "white",
+  padding: 30,
+  borderRadius: 15,
+  alignItems: "center",
+  gap: 15,
+});
+
+const LoadingText = styled.Text({
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#333",
+});
 
 const BoldText = styled.Text({
   fontWeight: "700",
@@ -158,13 +228,11 @@ const LoginContainer = styled.View({
   borderRadius: 16,
   paddingVertical: 30,
   paddingHorizontal: 15,
-
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.25,
   shadowRadius: 8,
   elevation: 6,
-
   alignItems: "center",
   gap: 20,
 });

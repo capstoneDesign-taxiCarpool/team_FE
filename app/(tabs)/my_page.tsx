@@ -262,14 +262,16 @@ export default function MyPage() {
                 <ModalContainer>
                   <ModalTitle>정보 변경</ModalTitle>
                   <ModalInput
-                    placeholder="변경할 닉네임을 입력해주세요!"
+                    placeholder="변경할 닉네임을 입력해주세요"
                     value={modalNickname}
                     onChangeText={setModalNickname}
+                    placeholderTextColor="#777"
                   />
                   <ModalInput
-                    placeholder="비밀번호를 변경하려면 입력해주세요!"
+                    placeholder="비밀번호를 변경하려면 입력해주세요"
                     value={modalPassword}
                     onChangeText={setModalPassword}
+                    placeholderTextColor="#777"
                     secureTextEntry
                   />
                   <Text style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>

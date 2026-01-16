@@ -99,7 +99,7 @@ const SelectText = styled.Text<{ active: boolean }>((props) =>
     ? {
         fontWeight: "bold",
         fontSize: FontSizes.medium,
-        color: Colors.main,
+        color: Colors.side,
       }
     : {
         fontSize: FontSizes.medium,

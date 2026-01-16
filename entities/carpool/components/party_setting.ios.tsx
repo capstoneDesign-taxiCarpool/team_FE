@@ -1,6 +1,5 @@
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { Alert, Image, TouchableOpacity } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 import styled from "styled-components/native";
@@ -10,7 +9,6 @@ import { ColContainer, RowContainer } from "@/entities/common/components/contain
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 import { OutShadow } from "@/entities/common/components/shadows";
-import datetimeFormat from "@/entities/common/util/datetime_format";
 import { FontSizes } from "@/entities/common/util/style_var";
 
 import usePartyStore from "../store/usePartyStore";

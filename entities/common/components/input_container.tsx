@@ -1,6 +1,5 @@
 import styled from "styled-components/native";
 
-import Label from "@/entities/common/components/label";
 import { Colors } from "@/entities/common/util/style_var";
 
 export default function InputContainer({
@@ -16,7 +15,7 @@ export default function InputContainer({
 }) {
   return (
     <Container onPress={handleClick} variant={variant}>
-      <Label title={title} />
+      <Label>{title}</Label>
       <InputGroup>
         <InputGroupDiv>{children}</InputGroupDiv>
       </InputGroup>
@@ -25,16 +24,15 @@ export default function InputContainer({
 }
 
 const Container = styled.Pressable<{ variant: "underline" | "box" }>(({ variant }) => ({
-  flexDirection: "row",
-  alignItems: "center",
   width: "100%",
-  gap: 10,
-  paddingVertical: 8,
+  gap: 5,
+  backgroundColor: "#f5f5f5",
+  minHeight: 75,
+  borderRadius: 12,
+  paddingVertical: 10,
+  paddingHorizontal: 10,
   ...(variant === "underline"
-    ? {
-        borderBottomColor: Colors.darkGray,
-        borderBottomWidth: 1,
-      }
+    ? {}
     : {
         backgroundColor: Colors.white,
         borderRadius: 30,
@@ -42,6 +40,13 @@ const Container = styled.Pressable<{ variant: "underline" | "box" }>(({ variant 
         paddingVertical: 5,
       }),
 }));
+
+const Label = styled.Text({
+  fontSize: 14,
+  fontWeight: "600",
+  color: "black",
+  marginBottom: 6,
+});
 
 const InputGroup = styled.View({
   flexGrow: 1,

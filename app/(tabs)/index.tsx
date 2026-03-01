@@ -23,9 +23,11 @@ import {
 import styled from "styled-components/native";
 
 import { ColContainer } from "@/entities/common/components/containers";
+import CustomModal from "@/entities/common/components/custom_modal";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { authCode } from "@/entities/common/util/storage";
 import { Colors } from "@/entities/common/util/style_var";
+import Notice from "@/entities/notice";
 
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
@@ -99,6 +101,7 @@ export default function HomeScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChanged, setAuthChanged] = useState(0);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isNoticeModalVisible, setIsNoticeModalVisible] = useState(true);
   // 🟢 추가: 신고/건의 모달 상태
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
@@ -220,6 +223,11 @@ export default function HomeScreen() {
             <BoxSmallText>다른 카풀에 참여 해보세요!</BoxSmallText>
           </OverlayTouchable>
         </PartyBox>
+
+        <CustomModal modalVisible={isNoticeModalVisible} setModalVisible={setIsNoticeModalVisible}>
+          <ColoedBoxText color={Colors.main}>공지사항</ColoedBoxText>
+          <Notice />
+        </CustomModal>
 
         {/* 🟢 신고/건의 모달 렌더링 */}
         <Modal

@@ -33,12 +33,15 @@ export const FloadContainer = ({
   );
 };
 
-export const ColContainer = styled.View<{ gap?: number; alignItems?: string }>((props) => ({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: props.alignItems ?? "center",
-  gap: props.gap ?? 10,
-}));
+export const ColContainer = styled.View<{ gap?: number; alignItems?: string; padding?: number }>(
+  (props) => ({
+    display: "flex",
+    flexDirection: "column",
+    alignItems: props.alignItems ?? "center",
+    gap: props.gap ?? 10,
+    padding: props.padding ?? 0,
+  }),
+);
 
 export const RowContainer = styled.View<{ gap?: number; justifyContent?: string; wrap?: boolean }>(
   (props) => ({

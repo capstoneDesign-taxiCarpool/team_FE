@@ -1,10 +1,15 @@
 import { Tabs } from "expo-router";
 
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
+import { Colors } from "@/entities/common/util/style_var";
 
 export default function TabLayout() {
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors.main,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{

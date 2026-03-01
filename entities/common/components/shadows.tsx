@@ -23,12 +23,12 @@ export const OutShadow = ({
       style={{
         shadowColor: "#000",
         shadowOffset: {
-          width: 0,
-          height: 4,
+          width: 1,
+          height: 1,
         },
         shadowOpacity: 0.23,
         shadowRadius: 2.62,
-        elevation: 4,
+        elevation: 1,
         backgroundColor: color,
         flexGrow: flexGrow,
         position: "relative",
@@ -63,10 +63,10 @@ export const InShadow = ({
         boxShadow: [
           {
             offsetX: 0,
-            offsetY: 4,
+            offsetY: 2,
             blurRadius: 4,
             spreadDistance: 0,
-            color: "rgba(0,0,0,0.3)",
+            color: "rgba(0,0,0,0.1)",
             inset: true,
           },
         ],

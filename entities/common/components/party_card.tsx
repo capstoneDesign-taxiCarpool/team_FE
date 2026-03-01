@@ -12,6 +12,7 @@ import { Colors, FontSizes } from "@/entities/common/util/style_var";
 
 import { formatOptions } from "../../carpool/format_options";
 import { Party } from "../../carpool/types";
+import { ColContainer, RowContainer } from "./containers";
 import { OutShadow } from "./shadows";
 
 type Buttons = {
@@ -34,7 +35,7 @@ export default function PartyCard({
   showTitle = false,
   isActive = true, // ⭐ 기본값 true
 }: Omit<Party, "partyId"> & Buttons) {
-  if (when2go === undefined) {
+  if (when2go === undefined || departure === undefined || destination === undefined) {
     return <MediumText>데이터 이상</MediumText>;
   }
 
@@ -43,7 +44,23 @@ export default function PartyCard({
   const getTitle = () => {
     const dateStr = format(targetDate, "M/d");
     const timeStr = format(targetDate, "HH:mm");
-    return `${dateStr} ${timeStr}에 ${destination?.name} (으)로`;
+    return `${dateStr} ${timeStr}에 ${destination.name} (으)로`;
+  };
+
+  const PathContent = () => {
+    return (
+      <>
+        <RowContainer justifyContent="start">
+          <StrongText isActive={isActive} color={Colors.main}>
+            {departure.name}
+          </StrongText>
+          <IconSymbol name="arrow.right" color={isActive ? Colors.main : Colors.darkGray} />
+        </RowContainer>
+        <StrongText isActive={isActive} color={Colors.main}>
+          {destination.name}
+        </StrongText>
+      </>
+    );
   };
 
   return (
@@ -51,15 +68,16 @@ export default function PartyCard({
       <Container isActive={isActive}>
         {showTitle && <Title isActive={isActive}>{getTitle()}</Title>}
 
-        <Path>
-          <MediumText isActive={isActive} color={Colors.main}>
-            {departure?.name}
-          </MediumText>
-          <IconSymbol name="arrow.right" color={isActive ? Colors.main : Colors.darkGray} />
-          <MediumText isActive={isActive} color={Colors.main}>
-            {destination?.name}
-          </MediumText>
-        </Path>
+        {departure.name.length + destination.name.length > 20 ? (
+          <ColContainer alignItems="start" gap={5}>
+            <PathContent />
+            <RowContainer />
+          </ColContainer>
+        ) : (
+          <RowContainer justifyContent="start">
+            <PathContent />
+          </RowContainer>
+        )}
 
         <Instructors>
           {/* 일정 표시 */}
@@ -122,7 +140,7 @@ export default function PartyCard({
 
 const Container = styled.View<{ isActive: boolean }>((props) => ({
   backgroundColor: props.isActive ? "white" : "rgba(220,220,220,0.5)",
-  padding: 20,
+  padding: "15px 20px 20px",
   borderRadius: 22,
   opacity: props.isActive ? 1 : 0.55, // ⭐ 비활성일 때 흐리게
 }));
@@ -134,19 +152,12 @@ const Title = styled.Text<{ isActive: boolean }>((props) => ({
   marginBottom: 10,
 }));
 
-const Path = styled.View({
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-});
-
 const Instructors = styled.View({
   marginVertical: 10,
   marginHorizontal: 5,
   display: "flex",
   flexDirection: "column",
-  gap: 10,
+  gap: 5,
 });
 
 const Instructor = styled.View({
@@ -155,6 +166,13 @@ const Instructor = styled.View({
   alignItems: "center",
   gap: 10,
 });
+
+const StrongText = styled.Text<{ color?: string; isActive?: boolean }>((props) => ({
+  fontSize: FontSizes.medium,
+  color: props.color ?? Colors.black,
+  fontWeight: "bold",
+  opacity: props.isActive ? 1 : 0.5, // ⭐ 비활성 텍스트 흐리게
+}));
 
 const MediumText = styled.Text<{ color?: string; isActive?: boolean }>((props) => ({
   fontSize: FontSizes.medium,

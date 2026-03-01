@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
-import CustomModal from "@/entities/carpool/components/custom_modal";
 import { formatOptions, optionsList } from "@/entities/carpool/format_options";
 import { ColContainer, RowContainer } from "@/entities/common/components/containers";
+import CustomModal from "@/entities/common/components/custom_modal";
 import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import Label from "@/entities/common/components/label";
 import { InShadow, OutShadow } from "@/entities/common/components/shadows";
@@ -122,7 +122,7 @@ export default function ExtraSetting() {
         </ColContainer>
       </CustomModal>
       <BoxWithDivider
-        title="comment"
+        title="Comment"
         children={
           <StyledTextInput
             placeholder={`추가적인 안내사항,
@@ -149,7 +149,6 @@ const NumberControl = styled.View({
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: 6,
 });
 
 const ControlButton = styled.Pressable({
@@ -193,16 +192,16 @@ const BoxWithDivider = ({ title, children }: { title: string; children: React.Re
   );
 };
 const ExtraSettingTitle = styled.Text({
-  textAlign: "center",
   fontSize: FontSizes.medium,
   fontWeight: "bold",
+  paddingLeft: 3,
   color: Colors.side,
 });
 const Line = styled.View({
   width: "100%",
   height: 1,
   border: `0.6px solid ${Colors.side}`,
-  marginVertical: 10,
+  margin: "3px 0px 10px",
 });
 
 // Radio UI for sameGenderOnly

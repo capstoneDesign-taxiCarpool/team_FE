@@ -4,11 +4,11 @@ import { Pressable } from "react-native";
 import styled from "styled-components/native";
 
 import { createParty, joinParty } from "@/entities/carpool/api";
-import CustomModal from "@/entities/carpool/components/custom_modal";
 import MapWithMarker from "@/entities/carpool/components/map_with_marker";
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
 import BasicButton from "@/entities/common/components/button_basic";
 import { RowContainer } from "@/entities/common/components/containers";
+import CustomModal from "@/entities/common/components/custom_modal";
 import PartyCard from "@/entities/common/components/party_card";
 import { Colors, FontSizes } from "@/entities/common/util/style_var";
 

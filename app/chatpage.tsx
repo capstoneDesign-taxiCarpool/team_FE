@@ -1,7 +1,7 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
+import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform } from "react-native";
 import styled from "styled-components/native";
 
 import usePartyStore from "@/entities/carpool/store/usePartyStore";
@@ -11,6 +11,8 @@ import { authCode } from "@/entities/common/util/storage";
 import defaultProfile from "../assets/images/default-profile.png";
 
 /* ================= 타입 ================= */
+
+const screenHeight = Dimensions.get("window").height;
 
 interface Message {
   id: string;
@@ -195,9 +197,8 @@ export default function ChatPage() {
         inverted // 🔥 핵심
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
-        contentContainerStyle={{ paddingVertical: 16 }}
+        contentContainerStyle={{ paddingTop: 50, paddingBottom: 16 }}
       />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "position"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 120 : 80}

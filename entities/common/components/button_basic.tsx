@@ -50,10 +50,10 @@ const StyledButton = styled.View<{ activeColor: string; disabled: boolean }>((pr
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
-  gap: "9px",
-  padding: "5px 8px 5px 15px",
+  gap: "5px",
+  padding: "5px 7px 5px 11px",
   background: props.disabled ? Colors.gray : props.activeColor,
-  borderRadius: "30px",
+  borderRadius: "13px",
 }));
 const Title = styled.Text({
   color: Colors.white,

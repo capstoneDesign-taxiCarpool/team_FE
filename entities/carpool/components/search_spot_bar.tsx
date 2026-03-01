@@ -8,7 +8,7 @@ import styled from "styled-components/native";
 import { LocationInfo } from "@/entities/carpool/types";
 import BasicButton from "@/entities/common/components/button_basic";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
-import { FontSizes } from "@/entities/common/util/style_var.native";
+import { FontSizes } from "@/entities/common/util/style_var";
 
 import { ColContainer, FloadContainer } from "../../common/components/containers";
 

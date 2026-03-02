@@ -16,7 +16,7 @@ export interface MainNotice extends Patch {
 export const patchs: Patch[] = [
   {
     date: Number(new Date("2026-03-02")),
-    name: "v4.0.0 업데이트 안내",
+    name: "v3.0.1 업데이트 안내",
     isPublic: true,
     content: `**🚖 택시 탑승 공유 앱 업데이트 안내**
 
@@ -37,7 +37,7 @@ export const patchs: Patch[] = [
 
 export const mainNotices: MainNotice[] = [
   {
-    date: Number(new Date("2026-01-16")),
+    date: Number(new Date("2026-03-02")),
     name: "강택 가입 - 강원대 메일 생성 방법",
     isPublic: true,
     content: `강택을 다운받아주신 학우분들께 감사 드리며 강원대학교 이메일 인증 방법에 대해서 안내 드립니다.

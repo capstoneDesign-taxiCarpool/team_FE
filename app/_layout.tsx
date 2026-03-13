@@ -258,7 +258,8 @@ export default function RootLayout() {
         <Stack.Screen name="signup" options={{ title: "회원가입" }} />
         <Stack.Screen name="signin" options={{ title: "로그인" }} />
         <Stack.Screen name="reset_password" options={{ title: "비밀번호 재설정" }} />
-        <Stack.Screen name="notice_detail" options={{ headerShown: false }} />
+        <Stack.Screen name="notice" options={{ title: "공지사항" }} />
+        <Stack.Screen name="notice_detail" options={{ title: "" }} />
         <Stack.Screen name="carpool/join" options={{ title: "카풀 참여하기" }} />
         <Stack.Screen name="carpool/edit" options={{ title: "카풀 설정 변경하기" }} />
         <Stack.Screen name="carpool/recruit" options={{ title: "카풀 모집하기" }} />

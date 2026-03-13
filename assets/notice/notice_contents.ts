@@ -15,6 +15,19 @@ export interface MainNotice extends Patch {
 
 export const patchs: Patch[] = [
   {
+    date: Number(new Date("2026-03-14")),
+    name: "v3.0.2 업데이트 안내",
+    isPublic: true,
+    content: `**🚖 택시 탑승 공유 앱 업데이트 안내**
+
+*UI/UX 개선과 버그 수정*이 포함된 앱 업데이트가 진행되었습니다.
+
+✅ 주요 변경사항
+- 공지사항을 팝업 대신 홈화면의 배너에 배치하여 사용자의 피로를 줄였습니다.
+- 카풀 수정 시 출발지/도착지 입력이 초기화되던 오류를 수정했습니다.
+`,
+  },
+  {
     date: Number(new Date("2026-03-02")),
     name: "v3.0.1 업데이트 안내",
     isPublic: true,

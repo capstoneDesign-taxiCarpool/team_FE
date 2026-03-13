@@ -23,11 +23,10 @@ import {
 import styled from "styled-components/native";
 
 import { ColContainer } from "@/entities/common/components/containers";
-import CustomModal from "@/entities/common/components/custom_modal";
+import { IconSymbol } from "@/entities/common/components/Icon_symbol";
 import { fetchInstance } from "@/entities/common/util/axios_instance";
 import { authCode } from "@/entities/common/util/storage";
 import { Colors } from "@/entities/common/util/style_var";
-import Notice from "@/entities/notice";
 
 import partyJoinImage from "../../assets/images/partyjoin.jpg";
 import partyMakeImage from "../../assets/images/partymake.jpg";
@@ -101,7 +100,6 @@ export default function HomeScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChanged, setAuthChanged] = useState(0);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [isNoticeModalVisible, setIsNoticeModalVisible] = useState(true);
   // 🟢 추가: 신고/건의 모달 상태
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
@@ -163,16 +161,16 @@ export default function HomeScreen() {
     }
   };
 
+  const handleToNotice = () => {
+    router.push("/notice");
+  };
+
   return (
     <>
       <TopContainer />
       <ColContainer
-        style={{ padding: 16, alignItems: "stretch", justifyContent: "center", flex: 1 }}
+        style={{ margin: 16, alignItems: "stretch", justifyContent: "center", flex: 1 }}
       >
-        <ReportOrSuggestButton onPress={openReportModal}>
-          <Ionicons name="alert-circle" size={24} color="#fff" />
-        </ReportOrSuggestButton>
-
         <ScheduleBox
           onPress={handleSchedulePress}
           disabled={isAuthChecking || (isLoggedIn && !schedule)}
@@ -197,6 +195,11 @@ export default function HomeScreen() {
             </>
           )}
         </ScheduleBox>
+
+        <NoticeBanner onPress={handleToNotice}>
+          <BoxText>공지사항</BoxText>
+          <IconSymbol name="arrow.right" />
+        </NoticeBanner>
 
         <PartyBox source={partyMakeImage}>
           <OverlayTouchable
@@ -223,52 +226,50 @@ export default function HomeScreen() {
             <BoxSmallText>다른 카풀에 참여 해보세요!</BoxSmallText>
           </OverlayTouchable>
         </PartyBox>
-
-        <CustomModal modalVisible={isNoticeModalVisible} setModalVisible={setIsNoticeModalVisible}>
-          <ColoedBoxText color={Colors.main}>공지사항</ColoedBoxText>
-          <Notice />
-        </CustomModal>
-
-        {/* 🟢 신고/건의 모달 렌더링 */}
-        <Modal
-          visible={isReportModalVisible}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setIsReportModalVisible(false)}
-        >
-          <ModalOverlay>
-            <ModalContainer>
-              <ModalTitle>신고 및 건의</ModalTitle>
-              <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
-                해당 버튼을 누르면 외부 폼으로 이동합니다.
-              </Text>
-
-              <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Ionicons name="megaphone" size={20} color="#fff" style={{ marginRight: 8 }} />
-                  <ReportModalButtonText>신고하기</ReportModalButtonText>
-                </View>
-              </ReportModalButton>
-
-              <ReportModalButton bgColor="#2ecc71" onPress={() => handleOpenLink(SUGGESTION_URL)}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Ionicons
-                    name="chatbox-ellipses"
-                    size={20}
-                    color="#fff"
-                    style={{ marginRight: 8 }}
-                  />
-                  <ReportModalButtonText>건의하기</ReportModalButtonText>
-                </View>
-              </ReportModalButton>
-
-              <ReportModalButton bgColor="#aaa" onPress={() => setIsReportModalVisible(false)}>
-                <ReportModalButtonText>닫기</ReportModalButtonText>
-              </ReportModalButton>
-            </ModalContainer>
-          </ModalOverlay>
-        </Modal>
       </ColContainer>
+
+      <ReportOrSuggestButton onPress={openReportModal}>
+        <Ionicons name="alert-circle" size={24} color="#fff" />
+      </ReportOrSuggestButton>
+      {/* 🟢 신고/건의 모달 렌더링 */}
+      <Modal
+        visible={isReportModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIsReportModalVisible(false)}
+      >
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalTitle>신고 및 건의</ModalTitle>
+            <Text style={{ textAlign: "center", marginBottom: 15, color: "#666" }}>
+              해당 버튼을 누르면 외부 폼으로 이동합니다.
+            </Text>
+
+            <ReportModalButton bgColor="#e74c3c" onPress={() => handleOpenLink(REPORT_URL)}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="megaphone" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <ReportModalButtonText>신고하기</ReportModalButtonText>
+              </View>
+            </ReportModalButton>
+
+            <ReportModalButton bgColor="#2ecc71" onPress={() => handleOpenLink(SUGGESTION_URL)}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons
+                  name="chatbox-ellipses"
+                  size={20}
+                  color="#fff"
+                  style={{ marginRight: 8 }}
+                />
+                <ReportModalButtonText>건의하기</ReportModalButtonText>
+              </View>
+            </ReportModalButton>
+
+            <ReportModalButton bgColor="#aaa" onPress={() => setIsReportModalVisible(false)}>
+              <ReportModalButtonText>닫기</ReportModalButtonText>
+            </ReportModalButton>
+          </ModalContainer>
+        </ModalOverlay>
+      </Modal>
     </>
   );
 }
@@ -303,6 +304,16 @@ const ScheduleBox = styled.TouchableOpacity({
   borderRadius: 50,
   padding: "20px",
 });
+const NoticeBanner = styled.TouchableOpacity({
+  backgroundColor: Colors.white,
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginBottom: 16,
+  borderRadius: 50,
+  padding: "20px",
+  color: Colors.side,
+});
 const TopContainer = styled.View({
   position: "absolute",
   height: "77%",
@@ -335,7 +346,7 @@ const IconContainer = styled.View({ marginBottom: 4 });
 const BoxText = styled.Text({
   fontSize: 18,
   fontWeight: "bold",
-  color: "#333333",
+  color: "inherit",
   textAlign: "center",
 });
 const ColoedBoxText = styled.Text<{ color: string }>(({ color }) => ({
@@ -347,6 +358,5 @@ const ColoedBoxText = styled.Text<{ color: string }>(({ color }) => ({
 
 const BoxSmallText = styled.Text({
   fontSize: 12,
-  color: "#333333",
   textAlign: "center",
 });

@@ -27,6 +27,6 @@ const DateText = styled.Text({
 });
 
 const Line = styled.View({
-  width: 300,
+  width: 350,
   border: "solid 0.3px #888",
 });

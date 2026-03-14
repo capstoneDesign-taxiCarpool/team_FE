@@ -1,3 +1,4 @@
+import { usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 
 import usePartyStore from "../store/usePartyStore";
@@ -13,13 +14,16 @@ export default function useStartEndPoint() {
   const [destination, setDestination] = useState<LocationInfo | undefined>(undefined);
   const isHandOveredData = usePartyStore((state) => state.isHandOveredData);
   const setPartyState = usePartyStore((state) => state.setPartyState);
+  const pathname = usePathname();
+
   useEffect(() => {
     if (isHandOveredData) {
       setDeparture(usePartyStore.getState().departure);
       setDestination(usePartyStore.getState().destination);
       setPartyState({ isHandOveredData: false });
     }
-  }, [isHandOveredData, setPartyState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return { departure, setDeparture, destination, setDestination };
 }

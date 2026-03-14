@@ -20,7 +20,7 @@ const Container = styled.View({
 });
 
 const BackImage = styled(Image)({
-  width: 300,
+  width: 350,
   height: 150,
 });
 
